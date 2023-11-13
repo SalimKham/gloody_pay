@@ -1,0 +1,10 @@
+"key","code","created_by","created_at","tenant_id"
+BASE_SALARY,R001,system,NOW,1
+GROSS_TOTAL,R100,system,NOW,1
+POSITION_SALARY,R101,system,NOW,1
+SOCIAL_CHARGE,R102,system,NOW,1
+TAXABLE_SALARY,R103,system,NOW,1
+NET_SALARY,R104,system,NOW,1
+PRIMES,R105,system,NOW,1
+SALARY,R999,system,NOW,1
+ABSENCE,R822,system,NOW,1

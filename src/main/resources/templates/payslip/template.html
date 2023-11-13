@@ -1,0 +1,411 @@
+<!--/*@thymesVar id="locale" type="java.util.Locale"*/-->
+<!DOCTYPE html>
+<html class="payslip-html" lang="fr" th:lang="${locale.getLanguage()}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*@thymesVar id="title" type="java.lang.String"*/-->
+    <title th:text="${title}"></title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta content="width=device-width" name="viewport"/>
+    <style type="text/css">
+        html {
+            margin: 0;
+            padding: 0;
+        }
+
+        body.payslip-html-body {
+            -webkit-print-color-adjust: exact;
+            height: 100%;
+            margin: 0.5cm;
+            padding: 0;
+            overflow: auto;
+            background: #ECEFF1;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            body.payslip-html-body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            @page {
+                margin: 0;
+                size: A4 portrait;
+            }
+
+            .page {
+                margin: 0;
+                border: initial;
+                border-radius: initial;
+                box-shadow: initial;
+                overflow: hidden;
+                transform: inherit !important;
+                transform-origin: inherit !important;
+            }
+
+            .page {
+                page-break-after: always;
+            }
+
+            .page:last-child {
+                page-break-after: avoid;
+            }
+        }
+
+        .payslip-page {
+            position: relative;
+            box-sizing: border-box;
+            width: 21cm;
+            max-width: 21cm;
+            min-height: 29.6cm;
+            padding: 0.5cm;
+            margin: 0;
+            font-size: 11px;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        .payslip-page h1 {
+            font-size: 15px;
+        }
+
+        .payslip-page h2 {
+            font-size: 13px;
+        }
+
+        .payslip-page h3 {
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .payslip-page p {
+            margin-bottom: 8px;
+        }
+
+        .payslip-page table.info-table {
+            font-size: 9px;
+            width: 100%;
+        }
+
+        .payslip-page table.info-table tbody tr td {
+            border-top: 1px dashed #CFD8DC;
+            line-height: 16px;
+        }
+
+        .payslip-page table.info-table tbody tr td:nth-child(1) {
+            text-align: left;
+        }
+
+        .payslip-page table.info-table tbody tr td:nth-child(n+2) {
+            text-align: right;
+        }
+
+        .payslip-page table.info-table tbody tr:nth-child(even) {
+            background: #FAFAFA;
+        }
+
+        .payslip-page table.data-table {
+            font-size: 9px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payslip-page table.data-table thead,
+        .payslip-page table.data-table tbody {
+            border: 1px dashed #CFD8DC;
+        }
+
+        .payslip-page table.data-table thead tr:not(:last-child) {
+            border-bottom: 1px dashed #CFD8DC;
+        }
+
+        .payslip-page table.data-table tbody tr.bold-row {
+            border: 1px dashed #CFD8DC;
+        }
+
+        .payslip-page table.data-table thead tr td {
+            line-height: 24px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .payslip-page table.data-table tbody tr td {
+            line-height: 16px;
+        }
+
+        .payslip-page table.data-table tbody tr.bold-row td {
+            font-weight: bold;
+            line-height: 20px;
+            padding: 0 4px;
+            border: none;
+        }
+
+        .payslip-page table.data-table thead tr td,
+        .payslip-page table.data-table tbody tr td {
+            border-right: 1px dashed #CFD8DC;
+            padding: 0 2px;
+        }
+
+        .payslip-page table.data-table thead tr td:last-child,
+        .payslip-page table.data-table tbody tr td:last-child {
+            border-right: none;
+        }
+
+        .payslip-page table.data-table tbody tr.bold-row td:nth-child(2) {
+            text-transform: uppercase;
+            font-weight: normal;
+        }
+
+        .payslip-page table.data-table tbody tr:last-child.bold-row td {
+            background: #ffffff;
+            line-height: 24px;
+            font-size: 10px;
+            text-align: right;
+        }
+
+        .payslip-page table.data-table tbody tr:nth-child(even) {
+            background: #FAFAFA;
+        }
+
+        .payslip-page .payslip-title {
+            text-align: center;
+        }
+
+        .payslip-page .payslip-header {
+        }
+
+        .payslip-page .payslip-header .payslip-header-left {
+            width: calc(33% - 8px);
+            min-height: 20px;
+            float: left;
+            padding: 0 8px 0 0;
+        }
+
+        .payslip-page .payslip-header .payslip-header-center {
+            width: calc(34% - 16px);
+            min-height: 20px;
+            float: left;
+            padding: 0 8px 0 8px;
+            text-align: right;
+        }
+
+        .payslip-page .payslip-header .payslip-header-right {
+            width: calc(33% - 8px);
+            min-height: 20px;
+            float: left;
+            padding: 0 0 0 8px;
+            text-align: right;
+        }
+
+        .payslip-page .payslip-body {
+            margin-top: 16px;
+        }
+
+        .payslip-page .payslip-footer {
+
+        }
+
+        .payslip-page .clear-both {
+            clear: both;
+        }
+
+        .payslip-page .align-right {
+            text-align: right;
+        }
+
+        .payslip-page .align-center {
+            text-align: center;
+        }
+
+        .payslip-page .align-left {
+            text-align: left;
+        }
+    </style>
+</head>
+<!--/*@thymesVar id="cmp_name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="cmp_adr" type="java.lang.String"*/-->
+<!--/*@thymesVar id="cmp_registration_number" type="java.lang.String"*/-->
+<!--/*@thymesVar id="cmp_tax_number" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_full_name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_address" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_social_security_number" type="java.lang.String"*/-->
+<!--/*@thymesVar id="contract_start" type="java.time.LocalDate"*/-->
+<!--/*@thymesVar id="contract_end" type="java.time.LocalDate"*/-->
+<!--/*@thymesVar id="emp_job_classification" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_job_category" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_job_title" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_department" type="java.lang.String"*/-->
+<!--/*@thymesVar id="emp_base_salary" type="java.lang.Double"*/-->
+<!--/*@thymesVar id="monthly_duration" type="java.lang.Double"*/-->
+<!--/*@thymesVar id="hourly_rate" type="java.lang.Double"*/-->
+<!--/*@thymesVar id="payroll_start" type="java.time.LocalDate"*/-->
+<!--/*@thymesVar id="payroll_end" type="java.time.LocalDate"*/-->
+<!--/*@thymesVar id="currency" type="java.lang.String"*/-->
+<!--/*@thymesVar id="show_employer_col" type="java.lang.Boolean"*/-->
+<body class="payslip-html-body">
+<div class="payslip-page">
+    <div class="payslip-title">
+        <h1 th:text="#{tpl.payroll.v1.payroll_info.title}">FICHE DE PAIE</h1>
+    </div>
+    <div class="payslip-header">
+        <div class="payslip-header-left">
+            <h3 th:if="${cmp_name != null}" th:text="${cmp_name}"></h3>
+            <p th:if="${cmp_adr != null}" th:text="${cmp_adr}"></p>
+            <table class="info-table" border="0" cellpadding="0" cellspacing="0">
+                <tbody>
+                <tr th:if="${cmp_registration_number != null}">
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.company_info.registration_number}"></span>
+                        <span th:text="${cmp_registration_number}"></span>
+                    </td>
+                </tr>
+                <tr th:if="${cmp_tax_number != null}">
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.company_info.tax_number}"></span>
+                        <span th:text="${cmp_tax_number}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="payslip-header-center">
+            <h3 th:if="${emp_full_name != null}" th:text="${emp_full_name}"></h3>
+            <p th:if="${emp_address != null}" th:text="${emp_address}"></p>
+            <table class="info-table" border="0" cellpadding="0" cellspacing="0">
+                <tbody>
+                <tr th:if="${payroll_start != null}">
+                    <td></td>
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.payroll_info.period_start}"></span>
+                        <span th:with="df=#{date.format.long}" th:text="${#temporals.format(payroll_start, df, locale)}"></span>
+                    </td>
+                </tr>
+                <tr th:if="${payroll_end != null}">
+                    <td></td>
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.payroll_info.period_end}"></span>
+                        <span th:with="df=#{date.format.long}" th:text="${#temporals.format(payroll_end, df, locale)}"></span>
+                    </td>
+                </tr>
+                <tr th:if="${contract_start != null}">
+                    <td></td>
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.payroll_info.contract_start}"></span>
+                        <span th:with="df=#{date.format.long}" th:text="${#temporals.format(contract_start, df, locale)}"></span>
+                    </td>
+                </tr>
+                <tr th:if="${contract_end != null}">
+                    <td></td>
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.payroll_info.contract_end}"></span>
+                        <span th:with="df=#{date.format.long}" th:text="${#temporals.format(contract_end, df, locale)}"></span>
+                    </td>
+                </tr>
+                <tr th:if="${emp_social_security_number != null}">
+                    <td></td>
+                    <td>
+                        <span th:text="#{tpl.payroll.v1.payroll_info.social_security_number}"></span>
+                        <span th:text="${emp_social_security_number}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="payslip-header-right">
+            <h3 th:text="#{tpl.payroll.v1.employee_info.title}"></h3>
+            <table class="info-table" border="0" cellpadding="0" cellspacing="0">
+                <tbody>
+                <tr th:if="${emp_job_classification != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.classification}"></td>
+                    <td><span th:text="${emp_job_classification}"></span></td>
+                </tr>
+                <tr th:if="${emp_job_category != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.job_category}"></td>
+                    <td><span th:text="${emp_job_category}"></span></td>
+                </tr>
+                <tr th:if="${emp_job_title != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.job}"></td>
+                    <td><span th:text="${emp_job_title}"></span></td>
+                </tr>
+                <tr th:if="${emp_department != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.department}"></td>
+                    <td><span th:text="${emp_department}"></span></td>
+                </tr>
+                <tr th:if="${emp_base_salary != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.base_salary}"></td>
+                    <td><span th:text="${#numbers.formatDecimal(emp_base_salary, 1, 2)}"></span> <small th:text="${currency}"></small></td>
+                </tr>
+                <tr th:if="${monthly_duration != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.monthly_duration}"></td>
+                    <td><span th:text="${#numbers.formatDecimal(monthly_duration, 1, 2)}"></span> <small>h</small></td>
+                </tr>
+                <tr th:if="${hourly_rate != null}">
+                    <td th:text="#{tpl.payroll.v1.employee_info.hourly_rate}"></td>
+                    <td><span th:text="${#numbers.formatDecimal(hourly_rate, 1, 2)}"></span> <small th:text="${currency}"></small></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="clear-both"></div>
+    </div>
+    <div class="payslip-body">
+        <table border="0" cellpadding="0" cellspacing="0" class="data-table">
+            <thead>
+            <tr>
+                <td width="32px" rowspan="2" th:text="#{tpl.payroll.v1.payroll_table.columns.code}">code</td>
+                <td rowspan="2" th:text="#{tpl.payroll.v1.payroll_table.columns.label}">Désignation</td>
+                <td width="100px" rowspan="2" th:text="#{tpl.payroll.v1.payroll_table.columns.base}">Base</td>
+                <td width="100px" rowspan="2" th:text="#{tpl.payroll.v1.payroll_table.columns.rate}">taux ou %</td>
+                <td width="240px" colspan="2" th:text="#{tpl.payroll.v1.payroll_table.columns.employee}">Salarié</td>
+                <td width="120px" th:if="${show_employer_col}">
+                    <span th:text="#{tpl.payroll.v1.payroll_table.columns.employer}">Patronale</span>
+                </td>
+            </tr>
+            <tr>
+                <td width="120px" th:text="#{tpl.payroll.v1.payroll_table.columns.gain}">Gain</td>
+                <td width="120px" th:text="#{tpl.payroll.v1.payroll_table.columns.deduction}">Retenue</td>
+                <td width="120px" th:if="${show_employer_col}">
+                    <span th:text="#{tpl.payroll.v1.payroll_table.columns.deduction}">Retenue</span>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="element: ${elements}">
+                <tr th:if="${element.total}" class="bold-row">
+                    <td></td>
+                    <td class="align-left" colspan="3">
+                        <span th:text="${element.label}"></span>
+                        <small th:if="${element.description != null && !element.description.isEmpty()}" th:text="${'(' + element.description + ')'}"></small>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(element.gain, 2, 2)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.deduction, 2, 2)}" class="align-right"></td>
+                    <td th:if="${show_employer_col}" class="align-right"></td>
+                </tr>
+                <tr th:if="${!element.total}">
+                    <td th:text="${element.code}" class="align-center"></td>
+                    <td class="align-left">
+                        <span th:text="${element.label}"></span>
+                        <small th:if="${element.description != null && !element.description.isEmpty()}" th:text="${'(' + element.description + ')'}"></small>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(element.base, 2, 2)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.rate, 1, 3)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.gain, 2, 2)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.deduction, 2, 2)}" class="align-right"></td>
+                    <td th:if="${show_employer_col}" class="align-right"></td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+    <div class="payslip-footer">
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+package com.zsoft.gloody.gloodypayroll.models.entities;
+
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+import javax.persistence.*;
+
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
+@ToString
+@Entity
+@Table(name = "section_setting")
+public class SectionSetting extends TenantSupport {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @Column(name = "key")
+    private String key;
+
+    @Column(name = "code")
+    private String code;
+}
