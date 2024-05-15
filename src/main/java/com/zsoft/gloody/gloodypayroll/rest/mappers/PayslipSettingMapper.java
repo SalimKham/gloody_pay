@@ -4,7 +4,6 @@ import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSettingElement;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingElementDto;
-import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import org.mapstruct.*;
 
 @Mapper(uses = {EmployeeMapper.class, SectionMapper.class})

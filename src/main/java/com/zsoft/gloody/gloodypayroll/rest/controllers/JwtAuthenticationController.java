@@ -1,7 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.User;
-import com.zsoft.gloody.gloodypayroll.services.JwtUserDetailsService;
 import com.zsoft.gloody.gloodypayroll.utils.JwtTokenUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

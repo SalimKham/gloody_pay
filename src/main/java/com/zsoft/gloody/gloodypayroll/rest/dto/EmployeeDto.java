@@ -1,9 +1,5 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.zsoft.gloody.gloodypayroll.models.entities.Company;
 import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
-import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;

@@ -3,7 +3,6 @@ package com.zsoft.gloody.gloodypayroll.rest.mappers;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(uses = {AddressMapper.class, CompanyMapper.class})
 public interface EmployeeMapper {

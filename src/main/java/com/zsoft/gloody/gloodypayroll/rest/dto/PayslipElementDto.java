@@ -1,6 +1,5 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.math.BigDecimal;

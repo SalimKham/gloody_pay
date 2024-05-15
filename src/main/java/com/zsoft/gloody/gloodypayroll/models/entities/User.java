@@ -1,5 +1,4 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
-import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;

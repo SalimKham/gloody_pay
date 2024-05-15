@@ -7,8 +7,6 @@ public class Constants {
     public static final String GROSS_TOTAL = "GROSS_TOTAL";
     public static final String POSITION_SALARY = "POSITION_SALARY";
     public static final String SOCIAL_CHARGE = "SOCIAL_CHARGE";
-    public static final String EXPENSES = "EXPENSES";
-    public static final String ADVANCES = "ADVANCES";
     public static final String TAXABLE_SALARY = "TAXABLE_SALARY";
     public static final String NET_SALARY = "NET_SALARY";
     public static final String PRIMES = "PRIMES";
