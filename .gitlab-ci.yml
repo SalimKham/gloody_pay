@@ -1,0 +1,22 @@
+build_production:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17-alpine
+  script:
+    - mvn clean install -Dmaven.test.skip=true -Denv=production
+  only:
+    - master
+  artifacts:
+    name: "jekt-production-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./target
+    expire_in: 1 day
+deploy_prod:
+  stage: deploy
+  image: python:3.9.1
+  dependencies:
+    - build_production
+  script:
+
+  only:
+    - master
+  when: manual

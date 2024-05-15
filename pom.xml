@@ -11,7 +11,7 @@
     <groupId>com.zsoft.gloody</groupId>
     <artifactId>gloody-payroll</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>gloody-payroll</name>
     <description>Gloody Payroll</description>
 
@@ -209,7 +209,7 @@
             <id>develop</id>
             <properties>
                 <spring.profiles.active>develop</spring.profiles.active>
-                <packageApp>jar</packageApp>
+                <packageApp>war</packageApp>
                 <nameAppWar>gloody-payroll-develop</nameAppWar>
                 <org.apache.maven.fork>false</org.apache.maven.fork>
             </properties>
@@ -218,6 +218,22 @@
                 <property>
                     <name>env</name>
                     <value>develop</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
+            <id>production</id>
+            <properties>
+                <spring.profiles.active>production</spring.profiles.active>
+                <packageApp>war</packageApp>
+                <nameAppWar>gloody-payroll-production</nameAppWar>
+                <org.apache.maven.fork>false</org.apache.maven.fork>
+            </properties>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>production</value>
                 </property>
             </activation>
         </profile>
