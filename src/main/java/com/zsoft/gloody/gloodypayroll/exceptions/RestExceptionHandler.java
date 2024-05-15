@@ -30,7 +30,6 @@ import java.util.Objects;
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private final Environment environment;
 
-    @Override
     @NonNull
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             @NonNull MethodArgumentNotValidException ex,
@@ -49,7 +48,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, response, headers, response.getStatus(), request);
     }
 
-    @Override
     @NonNull
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
             @NonNull MissingServletRequestParameterException ex,
@@ -83,13 +81,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
+ /*   @ExceptionHandler(MaxUploadSizeExceededException.class)
     public final ResponseEntity<Object> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
         String message = "file.upload.max-size";
         String error = String.format("max-size: %s", ex.getMaxUploadSize());
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_REQUEST, message, error);
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
+    }*/
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> exception(Exception ex) {

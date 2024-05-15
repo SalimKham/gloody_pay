@@ -1,4 +1,4 @@
-package com.zsoft.gloody.gloodypayroll.configs;
+/*package com.zsoft.gloody.gloodypayroll.configs;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -74,4 +74,4 @@ public class SwaggerConfig {
         authorizationScopes[0] = authorizationScope;
         return List.of(new SecurityReference("JWT", authorizationScopes));
     }
-}
+}*/

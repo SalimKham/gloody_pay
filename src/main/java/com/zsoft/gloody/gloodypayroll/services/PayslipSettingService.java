@@ -20,10 +20,7 @@ public class PayslipSettingService extends TenantSupportService {
     private final EmployeeService employeeService;
 
     public Optional<PayslipSettingDto> findByEmployeeId(Long employeeId) {
-        return this.payslipSettingRepository.findByEmployeeId(employeeId)
-                .stream()
-                .findFirst()
-                .map(this.payslipSettingMapper::toDto);
+        return this.payslipSettingRepository.findTopByOrderByIdAsc().map(this.payslipSettingMapper::toDto);
     }
 
     @Transactional

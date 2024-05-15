@@ -34,11 +34,6 @@ public class SecurityUtils {
                 .orElse(null);
     }
 
-    public static Long getCurrentTenantId() {
-        return getCurrentUser()
-                .map(User::getTenantId)
-                .orElse(null);
-    }
 
     public static List<String> getGrantedAuthorities() {
         SecurityContext context = SecurityContextHolder.getContext();

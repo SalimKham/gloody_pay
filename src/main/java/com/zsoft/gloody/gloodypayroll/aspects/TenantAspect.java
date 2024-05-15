@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class TenantAspect {
-    @Before("execution(* com.zsoft.gloody.gloodypayroll.services..*(..)) && target(object) ")
+  /*  @Before("execution(* com.zsoft.gloody.gloodypayroll.services..*(..)) && target(object) ")
     public void aroundExecution(JoinPoint pjp, Object object) throws Throwable {
         if (object instanceof TenantSupportService) {
             Session session = ((TenantSupportService) object).getSession();
@@ -25,5 +25,5 @@ public class TenantAspect {
 
     private Long getCurrentTenant() {
         return SecurityUtils.getCurrentTenantId();
-    }
+    }*/
 }

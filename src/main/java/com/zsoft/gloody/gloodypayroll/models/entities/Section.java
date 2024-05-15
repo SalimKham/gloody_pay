@@ -5,7 +5,9 @@ import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.util.Objects;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -69,27 +71,27 @@ public class Section extends TenantSupport {
     }
 
     public boolean isContribution() {
-        return category != null && category.equals(SectionCategory.TAXABLE_CONTRIBUTORY);
+        return Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY);
     }
 
     public boolean isTaxationNotContribution() {
-        return category != null && category.equals(SectionCategory.TAXABLE_NOT_CONTRIBUTORY);
+        return Objects.equals(category, SectionCategory.TAXABLE_NOT_CONTRIBUTORY);
     }
 
     public boolean isContributionNotTaxation() {
-        return category != null && category.equals(SectionCategory.NOT_TAXABLE_CONTRIBUTORY);
+        return Objects.equals(category, SectionCategory.NOT_TAXABLE_CONTRIBUTORY);
     }
 
     public boolean notTaxationNotContribution() {
-        return category != null && category.equals(SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY);
+        return Objects.equals(category, SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY);
     }
 
     public boolean isCharge() {
-        return category != null && category.equals(SectionCategory.CHARGE);
+        return Objects.equals(category, SectionCategory.CHARGE);
     }
 
     public boolean isGrossSalary() {
-        return category != null && category.equals(SectionCategory.GROSS);
+        return Objects.equals(category, SectionCategory.GROSS);
     }
 
     public boolean isTaxation() {

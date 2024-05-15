@@ -3,7 +3,7 @@ package com.zsoft.gloody.gloodypayroll.models.entities;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -23,7 +23,7 @@ public class PayslipSettingElement extends TenantSupport {
     @ToString.Exclude
     private PayslipSetting payslipSetting;
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "section_code")
+    @JoinColumn(name = "section_code", referencedColumnName = "code")
     @ToString.Exclude
     private Section section;
     @Column(name = "value")

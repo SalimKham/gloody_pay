@@ -11,7 +11,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @SuperBuilder
@@ -21,24 +21,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@FilterDef(name = "createdFilter", parameters = {@ParamDef(name = "username", type = "string")})
+@FilterDef(name = "createdFilter", parameters = {@ParamDef(name = "username", type = String.class)})
 @Filter(name = "createdFilter", condition = "created_by=:username")
 public class EntityAudit {
     @CreatedBy
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", updatable = false)
-    @ToString.Exclude
-    private User createdBy;
+    @Column(name = "created_by", updatable = false)
+    private Long createdBy;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedBy
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "updated_by")
-    @ToString.Exclude
-    private User updatedBy;
+    @Column(name = "updated_by")
+    private Long updatedBy;
 
     @LastModifiedDate
     @Column(name = "updated_at")

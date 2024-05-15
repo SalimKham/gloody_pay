@@ -1,9 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
 
 @SuperBuilder
 @AllArgsConstructor

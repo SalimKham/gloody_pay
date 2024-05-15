@@ -4,7 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.enums.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @SuperBuilder
@@ -20,9 +20,10 @@ public class Employee extends TenantSupport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-
+    @Column(name = "origin_id", nullable = false, unique = true)
+    private Long originId;
     @Column(name = "registration_number")
-    private String registrationNumber;
+    private String identification;
     @Column(name = "last_name")
     private String lastName;
     @Column(name = "first_name")
@@ -33,27 +34,25 @@ public class Employee extends TenantSupport {
     @Enumerated(EnumType.STRING)
     private Gender gender;
     @Column(name = "family_situation")
-    private FamilySituation familySituation;
+    private MaritalStatus maritalStatus;
     @Column(name = "number_of_children")
     private Integer numberOfChildren;
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     @ToString.Exclude
     private Address address;
-    @Column(name = "identity_number")
-    private String identityNumber;
     @Column(name = "social_security_number")
-    private String socialSecurityNumber;
+    private String socialSecurity;
 
     @Column(name = "payment_method")
-    private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMode;
     @Column(name = "bank_name")
     private String bankName;
     @Column(name = "account_number")
-    private String accountNumber;
+    private String iban;
 
     @Column(name = "entered_date")
-    private LocalDate enteredDate;
+    private LocalDate hireDate;
     @Column(name = "contract_nature")
     private ContractNature contractNature;
     @Column(name = "job_classification")
@@ -68,7 +67,7 @@ public class Employee extends TenantSupport {
     private Double baseSalary;
     @Column(name = "salary_profile")
     @Enumerated(EnumType.STRING)
-    private SalaryProfile salaryProfile;
+    private SalaryProfile remunerationType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")

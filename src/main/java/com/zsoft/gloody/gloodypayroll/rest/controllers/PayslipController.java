@@ -5,10 +5,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedList;
 
@@ -24,11 +21,13 @@ public class PayslipController {
         return ResponseEntity.ok().body(result);
     }
 
+
     @PostMapping("/calculate")
     public ResponseEntity<LinkedList<PayslipElementDto>> calculate(
             @RequestBody PayslipSettingDto dto
     ) {
         LinkedList<PayslipElementDto> result = payslipService.calculate(dto);
+        long end = System.currentTimeMillis();
         return ResponseEntity.ok().body(result);
     }
 }

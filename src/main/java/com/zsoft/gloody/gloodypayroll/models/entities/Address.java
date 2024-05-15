@@ -1,8 +1,8 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
 
 @Builder
 @Setter

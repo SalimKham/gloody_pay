@@ -1,6 +1,12 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.zsoft.gloody.gloodypayroll.models.entities.Company;
+import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
+import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -12,53 +18,28 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @ToString
 public class EmployeeDto {
-    @JsonProperty(value = "id")
     private Long id;
-    @JsonProperty(value = "registration_number")
-    private String registrationNumber;
-    @JsonProperty(value = "last_name")
+    private String identification;
     private String lastName;
-    @JsonProperty(value = "first_name")
     private String firstName;
-    @JsonProperty(value = "middle_name")
     private String middleName;
-    @JsonProperty(value = "gender")
-    private String gender;
-    @JsonProperty(value = "family_situation")
-    private String familySituation;
-    @JsonProperty(value = "number_of_children")
+    private String title;
+    @Enumerated(EnumType.STRING)
+    private MaritalStatus maritalStatus;
     private Integer numberOfChildren;
-    @JsonProperty(value = "address")
     private AddressDto address;
-    @JsonProperty(value = "identity_number")
-    private String identityNumber;
-    @JsonProperty(value = "social_security_number")
-    private String socialSecurityNumber;
-
-    @JsonProperty(value = "payment_method")
-    private String paymentMethod;
-    @JsonProperty(value = "bank_name")
+    private String socialSecurity;
+    private String paymentMode;
     private String bankName;
-    @JsonProperty(value = "account_number")
-    private String accountNumber;
-
-    @JsonProperty(value = "entered_date")
-    private LocalDate enteredDate;
-    @JsonProperty(value = "contract_nature")
+    private String iban;
+    private LocalDate hireDate;
     private String contractNature;
-    @JsonProperty(value = "job_classification")
     private String jobClassification;
-    @JsonProperty(value = "job_category")
     private String jobCategory;
-    @JsonProperty(value = "job_title")
     private String jobTitle;
-    @JsonProperty(value = "department")
     private String department;
-    @JsonProperty(value = "base_salary")
     private Double baseSalary;
-    @JsonProperty(value = "salary_profile")
-    private String salaryProfile;
-
-    @JsonProperty(value = "company_id")
-    private Long companyId;
+    private String remunerationType;
+    @NotNull
+    private CompanyDto company;
 }

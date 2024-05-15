@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
-import javax.script.Compilable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.lang.reflect.Modifier;
 import java.time.LocalDate;
 import java.util.*;
@@ -23,9 +20,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 @Service
 @Slf4j
 public class FormulaEngineService {
-    public ScriptEngine getInstance() {
-        return getInstance(Collections.emptyMap());
-    }
+
 
     public ScriptEngine getInstance(Map<String, Object> context) {
         ScriptEngineManager manager = new ScriptEngineManager();

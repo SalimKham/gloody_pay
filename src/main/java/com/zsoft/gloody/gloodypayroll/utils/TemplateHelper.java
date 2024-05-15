@@ -1,8 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.utils;
-
-import com.zsoft.gloody.gloodypayroll.models.entities.Address;
-import com.zsoft.gloody.gloodypayroll.models.entities.Company;
-import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
+import com.zsoft.gloody.gloodypayroll.rest.dto.AddressDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.CompanyDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.EntityManagerService;
@@ -12,7 +10,6 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -50,40 +47,31 @@ public class TemplateHelper extends EntityManagerService {
         data.put("monthly_duration", hoursNbr);
         data.put("hourly_rate", hoursNbr > 0 ? baseSalary / hoursNbr : 0);
 
-        Long employeeId = Optional.ofNullable(dto.getEmployee()).map(EmployeeDto::getId).orElse(null);
-        data.putAll(getEmployeeData(employeeId, locale));
+        data.putAll(getEmployeeData(dto.getEmployee(), locale));
         return data;
     }
 
-    public Map<String, Object> getEmployeeData(Long employeeId, Locale locale) {
+    public Map<String, Object> getEmployeeData(EmployeeDto employee, Locale locale) {
         Map<String, Object> data = new HashMap<>();
-        if (employeeId == null) {
-            return data;
-        }
-        Employee employee = getProxyEntity(Employee.class, employeeId);
+
         if (employee != null) {
             data.put("emp_full_name", formatFullName(employee));
             data.put("emp_address", getFormattedAddress(employee.getAddress(), locale));
-            data.put("emp_social_security_number", employee.getSocialSecurityNumber());
-            data.put("contract_start", employee.getEnteredDate());
+            data.put("emp_social_security_number", employee.getSocialSecurity());
+            data.put("contract_start", employee.getHireDate());
             data.put("contract_end", null);
             data.put("emp_job_classification", employee.getJobClassification());
             data.put("emp_job_category", employee.getJobCategory());
             data.put("emp_job_title", employee.getJobTitle());
             data.put("emp_department", employee.getDepartment());
 
-            Long companyId = Optional.ofNullable(employee.getCompany()).map(Company::getId).orElse(null);
-            data.putAll(getCompanyData(companyId, locale));
+            data.putAll(getCompanyData(employee.getCompany(), locale));
         }
         return data;
     }
 
-    public Map<String, Object> getCompanyData(Long companyId, Locale locale) {
+    public Map<String, Object> getCompanyData(CompanyDto company, Locale locale) {
         Map<String, Object> data = new HashMap<>();
-        if (companyId == null) {
-            return data;
-        }
-        Company company = getProxyEntity(Company.class, companyId);
         if (company != null) {
             data.put("cmp_name", company.getName());
             data.put("cmp_adr", getFormattedAddress(company.getAddress(), locale));
@@ -106,18 +94,18 @@ public class TemplateHelper extends EntityManagerService {
         return StringUtils.capitalize(firstName) + " " + lastName.toUpperCase();
     }
 
-    public String formatFullName(Employee employee) {
+    public String formatFullName(EmployeeDto employee) {
         if (employee == null) {
             return "";
         }
         return formatFullName(employee.getFirstName(), employee.getLastName());
     }
 
-    public String getFormattedAddress(Address address, Locale locale) {
+    public String getFormattedAddress(AddressDto address, Locale locale) {
         return getFormattedAddress(address, locale, true);
     }
 
-    public String getFormattedAddress(Address address, Locale locale, boolean inline) {
+    public String getFormattedAddress(AddressDto address, Locale locale, boolean inline) {
         if (address == null) {
             return "";
         }

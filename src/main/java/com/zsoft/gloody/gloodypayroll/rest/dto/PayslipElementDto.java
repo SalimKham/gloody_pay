@@ -12,21 +12,13 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @ToString
 public class PayslipElementDto {
-    @JsonProperty(value = "code")
     private String code;
-    @JsonProperty(value = "label")
     private String label;
-    @JsonProperty(value = "description")
     private String description;
-    @JsonProperty(value = "base")
     private BigDecimal base;
-    @JsonProperty(value = "rate")
     private BigDecimal rate;
-    @JsonProperty(value = "gain")
     private BigDecimal gain;
-    @JsonProperty(value = "deduction")
     private BigDecimal deduction;
-    @JsonProperty(value = "total")
     @Builder.Default
     private boolean total = false;
 

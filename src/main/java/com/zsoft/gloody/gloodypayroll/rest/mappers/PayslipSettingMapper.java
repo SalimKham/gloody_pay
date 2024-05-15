@@ -23,11 +23,6 @@ public abstract class PayslipSettingMapper {
     public abstract PayslipSettingElement toEntity(PayslipSettingElementDto settingDto);
 
     @AfterMapping
-    public void afterMapping(@MappingTarget PayslipSettingElement element) {
-        element.setTenantId(SecurityUtils.getCurrentTenantId());
-    }
-
-    @AfterMapping
     public void afterMapping(@MappingTarget PayslipSetting setting) {
         if (setting.getElements() != null) {
             setting.getElements().forEach(element -> element.setPayslipSetting(setting));

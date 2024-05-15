@@ -24,16 +24,19 @@
             </column>
             <column name="name" type="VARCHAR(255)"/>
             <column name="address_id" type="BIGINT" defaultValueComputed="NULL"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="employee">
-            <column autoIncrement="true" name="id" type="BIGINT">
+            <column autoIncrement="true" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="origin_id" type="bigint">
+                <constraints unique="false"/>
             </column>
             <column name="first_name" type="VARCHAR(255)"/>
             <column name="last_name" type="VARCHAR(255)"/>
@@ -57,9 +60,9 @@
             <column name="salary_profile" type="VARCHAR(255)"/>
             <column name="address_id" type="BIGINT" defaultValueComputed="NULL"/>
             <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
@@ -68,12 +71,11 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="employee_id" type="BIGINT" defaultValueComputed="NULL"/>
             <column name="payment_date" type="date" defaultValueComputed="NULL"/>
             <column name="show_intermediate" type="BIT" defaultValueBoolean="false"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
@@ -83,14 +85,14 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="payslip_setting_id" type="BIGINT" defaultValueComputed="NULL"/>
-            <column name="section_code" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="section_code" type="VARCHAR(255)"/>
             <column name="base_value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="rate_value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="fix" type="BIT" defaultValueBoolean="false"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
@@ -99,7 +101,9 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="code" type="VARCHAR(255)"/>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
             <column name="label" type="VARCHAR(255)"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="category" type="VARCHAR(255)" defaultValueComputed="NULL"/>
@@ -109,25 +113,9 @@
             <column name="rate_percent" type="BIT" defaultValueBoolean="false"/>
             <column name="value_formula" type="VARCHAR(255)" defaultValueComputed="NULL"/>
             <column name="parental_id" type="BIGINT" defaultValueComputed="NULL"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
-            <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
-        </createTable>
-
-        <createTable tableName="user">
-            <column name="username" type="VARCHAR(255)">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="email" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="password_hash" type="VARCHAR(255)"/>
-            <column name="active" type="BIT" defaultValueBoolean="false"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
-            <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
@@ -138,9 +126,9 @@
             </column>
             <column name="key" type="VARCHAR(255)"/>
             <column name="formula" type="VARCHAR(255)"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
@@ -151,33 +139,12 @@
             </column>
             <column name="key" type="VARCHAR(255)"/>
             <column name="code" type="VARCHAR(255)"/>
-            <column name="created_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-            <column name="updated_by" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_payslip_setting_on_employee_id"
-                baseColumnNames="employee_id" baseTableName="payslip_setting"
-                referencedColumnNames="id" referencedTableName="employee"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_payslip_setting_on_created_by"
-                baseColumnNames="created_by" baseTableName="payslip_setting"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_payslip_setting_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="payslip_setting"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_payslip_setting_element_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="payslip_setting_element"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
         <addForeignKeyConstraint
                 constraintName="fk_payslip_setting_element_on_payslip_setting_id"
                 baseColumnNames="payslip_setting_id" baseTableName="payslip_setting_element"
@@ -186,42 +153,17 @@
         <addForeignKeyConstraint
                 constraintName="fk_payslip_setting_element_on_section_code"
                 baseColumnNames="section_code" baseTableName="payslip_setting_element"
-                referencedColumnNames="id" referencedTableName="section"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_payslip_setting_element_on_created_by"
-                baseColumnNames="created_by" baseTableName="payslip_setting_element"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
+                referencedColumnNames="code" referencedTableName="section"
+                onDelete="CASCADE"/>
         <addForeignKeyConstraint
                 constraintName="fk_employee_on_company_id"
                 baseColumnNames="company_id" baseTableName="employee"
                 referencedColumnNames="id" referencedTableName="company"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
         <addForeignKeyConstraint
-                constraintName="fk_employee_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="employee"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
                 constraintName="fk_employee_on_address_id"
                 baseColumnNames="address_id" baseTableName="employee"
                 referencedColumnNames="id" referencedTableName="address"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_employee_on_created_by"
-                baseColumnNames="created_by" baseTableName="employee"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_company_on_created_by"
-                baseColumnNames="created_by" baseTableName="company"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_company_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="company"
-                referencedColumnNames="username" referencedTableName="user"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
         <addForeignKeyConstraint
                 constraintName="fk_company_on_address_id"
@@ -233,68 +175,10 @@
                 baseColumnNames="parental_id" baseTableName="section"
                 referencedColumnNames="id" referencedTableName="section"
                 onDelete="SET NULL" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_section_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="section"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_section_on_created_by"
-                baseColumnNames="created_by" baseTableName="section"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_user_on_created_by"
-                baseColumnNames="created_by" baseTableName="user"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_user_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="user"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_variable_setting_on_created_by"
-                baseColumnNames="created_by" baseTableName="variable_setting"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_variable_setting_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="variable_setting"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_section_setting_on_created_by"
-                baseColumnNames="created_by" baseTableName="section_setting"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
-                constraintName="fk_section_setting_on_updated_by"
-                baseColumnNames="updated_by" baseTableName="section_setting"
-                referencedColumnNames="username" referencedTableName="user"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
+
     </changeSet>
 
     <changeSet author="Zitouni Bessem" id="default-data">
-        <insert tableName="user">
-            <column name="username" value="system"/>
-            <column name="email" value="system@local"/>
-            <column name="created_at" valueDate="now()"/>
-            <column name="updated_at" valueDate="now()"/>
-            <column name="password_hash" value="$2a$10$ohd.jkmR6.ShNCxxg0ad/u9.J9XBCty.pW9GM.szoP0r99yCWlOkC"/>
-            <column name="active" valueBoolean="false"/>
-        </insert>
-        <insert tableName="user">
-            <column name="username" value="admin"/>
-            <column name="email" value="admin@local"/>
-            <column name="created_by" value="system"/>
-            <column name="created_at" valueDate="now()"/>
-            <column name="updated_by" value="system"/>
-            <column name="updated_at" valueDate="now()"/>
-            <column name="password_hash" value="$2a$10$ohd.jkmR6.ShNCxxg0ad/u9.J9XBCty.pW9GM.szoP0r99yCWlOkC"/>
-            <column name="active" valueBoolean="true"/>
-            <column name="tenant_id" valueNumeric="1"/>
-        </insert>
         <loadData encoding="UTF-8" file="sections.csv" relativeToChangelogFile="true" tableName="section">
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
@@ -312,20 +196,18 @@
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
         </loadData>
-        <insert tableName="address">
-            <column name="id" value="1"/>
-            <column name="address_line1" value="84 Avenue Secretan"/>
-            <column name="city" value="Paris"/>
-            <column name="postal_code" value="75019"/>
-            <column name="country_code" value="FR"/>
-        </insert>
-        <insert tableName="company">
-            <column name="id" value="1"/>
-            <column name="name" value="John Doe Inc."/>
-            <column name="address_id" value="1"/>
-            <column name="created_by" value="system"/>
-            <column name="created_at" value="now()"/>
-            <column name="tenant_id" value="1"/>
-        </insert>
+    </changeSet>
+    <changeSet id="add_default_payslip_settings" author="Salim Kham">
+        <sql>
+            INSERT INTO payslip_setting  (`id`)
+            VALUES (1)
+        </sql>
+    </changeSet>
+
+    <changeSet id="add_default_payslip_elements" author="Salim Kham">
+         <loadData encoding="UTF-8" file="payslip_setting_elements.csv" relativeToChangelogFile="true" tableName="payslip_setting_element">
+             <column name="created_at" type="datetime" defaultValueDate="now()"/>
+             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
+         </loadData>
     </changeSet>
 </databaseChangeLog>

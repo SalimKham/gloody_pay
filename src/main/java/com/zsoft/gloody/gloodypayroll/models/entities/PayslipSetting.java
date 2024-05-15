@@ -3,7 +3,7 @@ package com.zsoft.gloody.gloodypayroll.models.entities;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,11 +20,6 @@ public class PayslipSetting extends TenantSupport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-
-    @OneToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "employee_id", referencedColumnName = "id")
-    @ToString.Exclude
-    private Employee employee;
 
     @Column(name = "show_intermediate")
     private boolean showIntermediate;

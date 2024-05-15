@@ -1,7 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.configs;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.User;
-import com.zsoft.gloody.gloodypayroll.models.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +15,9 @@ import java.util.Optional;
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
 @Configuration
 public class PersistenceConfig {
-    private final UserRepository userRepository;
 
     @Bean
-    AuditorAware<User> auditorProvider() {
+    AuditorAware<Long> auditorProvider() {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || !authentication.isAuthenticated()) {
@@ -29,10 +27,9 @@ public class PersistenceConfig {
                 return Optional.empty();
             }
             if (authentication.getPrincipal() instanceof User) {
-                return Optional.of((User)(authentication.getPrincipal()));
+                return Optional.of(((User)(authentication.getPrincipal())).getId());
             }
-            String username = authentication.getName();
-            return userRepository.findById(username);
+            return null;
         };
     }
 }

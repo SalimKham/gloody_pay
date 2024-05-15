@@ -10,6 +10,8 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class AddressDto {
+
+
     @JsonProperty(value = "id")
     private Long id;
     @JsonProperty(value = "address_line1")

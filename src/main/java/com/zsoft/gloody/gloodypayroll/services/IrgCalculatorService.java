@@ -39,7 +39,7 @@ public class IrgCalculatorService {
         );
         try {
             FormulaEngineService engineService = new FormulaEngineService();
-            ScriptEngine engine = engineService.getInstance();
+            ScriptEngine engine = null ;//engineService.getInstance();
             System.out.println("--------------------------------------------------------------------------------------");
             for (int base : bases) {
                 engine.put("base", base);

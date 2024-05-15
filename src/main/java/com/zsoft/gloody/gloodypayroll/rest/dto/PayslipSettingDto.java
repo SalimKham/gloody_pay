@@ -14,24 +14,14 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class PayslipSettingDto {
-    @JsonProperty(value = "id")
     private Long id;
-    @JsonProperty(value = "employee")
     private EmployeeDto employee;
-    @JsonProperty(value = "elements")
     private List<PayslipSettingElementDto> elements;
-    @JsonProperty(value = "absences")
-    private List<PayslipAbsenceDto> absences;
-
-    @JsonProperty(value = "rate")
+    private PayslipAbsenceDto absences;
     @Builder.Default
     private PayslipRate rate = PayslipRate.DAILY;
-
-    @JsonProperty(value = "show_intermediate")
     @Builder.Default
     private boolean showIntermediate = false;
-
-    @JsonProperty(value = "payment_date")
     @Builder.Default
     private LocalDate paymentDate = LocalDate.now();
 }

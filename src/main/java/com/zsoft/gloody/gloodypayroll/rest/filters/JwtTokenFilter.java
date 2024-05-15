@@ -1,6 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.rest.filters;
 
-import com.zsoft.gloody.gloodypayroll.models.repositories.UserRepository;
+import com.zsoft.gloody.gloodypayroll.models.entities.User;
 import com.zsoft.gloody.gloodypayroll.utils.JwtTokenUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
@@ -9,15 +9,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
@@ -25,7 +24,6 @@ import java.io.IOException;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenUtil jwtTokenUtil;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response, @Nullable FilterChain chain)
@@ -37,22 +35,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
         final String jwtToken = header.substring(7);
-        String username = null;
+        User user = null;
         try {
-            username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+             user = jwtTokenUtil.getUser(jwtToken);
         } catch (IllegalArgumentException e) {
             log.error("Unable to get JWT Token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
             log.error("JWT Token has expired: {}", e.getMessage());
         }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userRepository.findByUsername(username).orElse(null);
-            if (userDetails != null && jwtTokenUtil.validateToken(jwtToken, userDetails)) {
+        if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(user, null,  user.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
         }
         chain.doFilter(request, response);
     }

@@ -1,52 +1,25 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
-
+import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Collection;
-import java.util.Collections;
 
 @SuperBuilder
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@Entity
-@Table(name = "user")
-public class User extends EntityAudit implements UserDetails {
-    @Id
-    @Size(max = 255)
-    @Column(name = "username", nullable = false)
+@AllArgsConstructor
+public class User implements UserDetails {
+    private Long id;
     private String username;
-
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "email", nullable = false)
-    private String email;
-
-    @Size(max = 255)
-    @Column(name = "password_hash")
-    private String password;
-
-    @Column(name = "active")
-    @Builder.Default
-    private Boolean active = true;
-
-    @Column(name = "tenant_id", updatable = false)
-    private Long tenantId;
+    private Collection<? extends GrantedAuthority> authorities;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+    public String getPassword() {
+        return "";
     }
 
     @Override
@@ -56,16 +29,16 @@ public class User extends EntityAudit implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isEnabled() {
-        return active != null && active;
+        return true;
     }
 }

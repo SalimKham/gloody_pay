@@ -8,7 +8,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.time.LocalDate;
@@ -19,15 +19,15 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 @RequiredArgsConstructor
 public class SectionDictionaryService extends TenantSupportService {
     private final VariableSettingRepository settingRepository;
-    private final FormulaEngineService engineService;
     private LinkedHashMap<String, Object> variables;
+    private final  ScriptEngine engine;
 
     @PostConstruct
     private void initVariables() {
         variables = new LinkedHashMap<>();
         settingRepository.findAll().forEach(setting -> {
             try {
-                ScriptEngine engine = engineService.getInstance();
+
                 Object result = engine.eval(setting.getFormula());
                 if (result != null) {
                     setVariable(setting.getKey(), valueOf(result));
@@ -75,30 +75,16 @@ public class SectionDictionaryService extends TenantSupportService {
             setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY));
             setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY));
         }
-        double countAbsenceDays = workingDays.stream()
-                .map(d -> {
-                    if (dto.getAbsences() == null) return 0d;
-                    for (PayslipAbsenceDto ab : dto.getAbsences()) {
-                        if (DateUtils.isInPeriod(d, ab.getPeriod())) {
-                            if (d.isEqual(ab.getStartDate()) && ab.isStartHalfDay()) return 0.5d;
-                            if (d.isEqual(ab.getEndDate()) && ab.isEndHalfDay()) return 0.5d;
-                            return 1d;
-                        }
-                    }
-                    return 0d;
-                })
-                .mapToDouble(Double::valueOf)
-                .sum();
-        double countWorkingDays = findDoubleValue(DAYS_NBR) - countAbsenceDays;
+        double countWorkingDays = findDoubleValue(DAYS_NBR) - dto.getAbsences().getAbsenceDays();
         double hoursByDay = findDoubleValue(HOURS_BY_WEEK) / findDoubleValue(DAYS_BY_WEEK);
         setVariable(WORKING_DAYS_NBR, countWorkingDays);
         setVariable(WORKING_HOURS_NBR, (countWorkingDays * hoursByDay) - findDoubleValue(ABSENCES));
         if ((boolean) findValue(IS_DAILY_RATE)) {
-            setVariable(ABSENCES, countAbsences(dto.getAbsences(), workingDays));
+            setVariable(ABSENCES, countAbsences(dto.getAbsences()));
         } else {
-            setVariable(ABSENCES, countAbsences(dto.getAbsences(), workingDays) * hoursByDay);
+            setVariable(ABSENCES, countAbsences(dto.getAbsences()) * hoursByDay);
         }
-        setVariable(CP, countCP(dto.getAbsences(), workingDays));
+        setVariable(CP, countCP(dto.getAbsences()));
         if (dto.getEmployee() != null) {
             setVariable(BASE_SALARY, dto.getEmployee().getBaseSalary());
         }
@@ -113,23 +99,11 @@ public class SectionDictionaryService extends TenantSupportService {
         }
     }
 
-    private double countAbsences(List<PayslipAbsenceDto> absences, List<LocalDate> workingDays) {
-        return Optional.ofNullable(absences)
-                .orElse(Collections.emptyList())
-                .stream()
-                .filter(PayslipAbsenceDto::isAbsence)
-                .map(a -> a.count(workingDays))
-                .mapToDouble(Double::valueOf)
-                .sum();
+    private double countAbsences(PayslipAbsenceDto absences) {
+        return  absences.getAbsenceDays() - absences.getCpDays();
     }
 
-    private double countCP(List<PayslipAbsenceDto> absences, List<LocalDate> workingDays) {
-        return Optional.ofNullable(absences)
-                .orElse(Collections.emptyList())
-                .stream()
-                .filter(PayslipAbsenceDto::isCP)
-                .map(a -> a.count(workingDays))
-                .mapToDouble(Double::valueOf)
-                .sum();
+    private double countCP(PayslipAbsenceDto absences) {
+        return absences.getCpDays();
     }
 }

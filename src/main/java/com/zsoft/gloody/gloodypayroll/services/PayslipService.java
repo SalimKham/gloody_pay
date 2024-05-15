@@ -16,10 +16,9 @@ import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -39,18 +38,19 @@ public class PayslipService {
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
     private final EmployeeService employeeService;
+    private ScriptEngine engine;
 
     public String print(PayslipSettingDto dto) {
         EmployeeDto employeeDto = dto.getEmployee();
         if (employeeDto == null) {
             throw new ApiRuntimeException("error.employee.required");
         }
-        Long employeeId = employeeDto.getId();
+        /*Long employeeId = employeeDto.getId();
         if (employeeId == null || employeeService.notExistsById(employeeId)) {
             employeeService.create(employeeDto);
         } else {
             employeeService.update(employeeDto);
-        }
+        }*/
         LinkedList<PayslipElementDto> elements = calculate(dto);
         Locale locale = Locale.getDefault();
         Context context = new Context(locale);
@@ -76,8 +76,10 @@ public class PayslipService {
         if (absenceElement != null) {
             elements.add(absenceElement);
         }
+
         elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.GROSS));
-        double grossTotal = baseSalary + dictionaryService.findDoubleValue(SectionCategory.GROSS.name());
+
+        double grossTotal = baseSalary - (absenceElement != null ? absenceElement.getDeduction().doubleValue() : 0) + dictionaryService.findDoubleValue(SectionCategory.GROSS.name());
         dictionaryService.setVariable(GROSS_TOTAL, grossTotal);
         if (dto.isShowIntermediate()) {
             elements.addAll(getTotalElementByCategory(dto.getElements(), GROSS_TOTAL));
@@ -101,7 +103,7 @@ public class PayslipService {
             elements.addAll(getTotalElementByCategory(dto.getElements(), TAXABLE_SALARY));
         }
         elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.TAXATION));
-        double netSalary = taxableSalary + dictionaryService.findDoubleValue(SectionCategory.TAXATION.name());
+        double netSalary = taxableSalary  + charges + dictionaryService.findDoubleValue(SectionCategory.TAXATION.name());
         dictionaryService.setVariable(NET_SALARY, netSalary);
         if (dto.isShowIntermediate()) {
             elements.addAll(getTotalElementByCategory(dto.getElements(), NET_SALARY));
@@ -132,7 +134,7 @@ public class PayslipService {
         String code = sectionSettingRepository.findByKey(BASE_SALARY).map(SectionSetting::getCode).orElse(null);
         if (code != null) {
             return sectionRepository.findByCode(code)
-                    .map(section -> calculateSection(code, null, null, null))
+                    .map(section -> calculateSection(code, section.getLabel(),null, null, null))
                     .orElse(null);
         }
         return null;
@@ -146,7 +148,7 @@ public class PayslipService {
                 return null;
             }
             return sectionRepository.findByCode(code)
-                    .map(section -> calculateSection(code, null, null, null))
+                    .map(section -> calculateSection(code,null , null, null, null))
                     .orElse(null);
         }
         return null;
@@ -154,32 +156,34 @@ public class PayslipService {
 
     private LinkedList<PayslipElementDto> calculateSectionsByCategory(List<PayslipSettingElementDto> elements, SectionCategory category) {
         LinkedList<PayslipElementDto> result = new LinkedList<>();
+
         for (PayslipSettingElementDto element : elements) {
             Section section = sectionRepository.findByCode(element.getSection()).orElse(null);
             if (section == null) {
+                continue;
+            }
+            boolean isInCategory = false;
+
+            if ((Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY) && section.isContribution() && !section.isSalary()) ||
+                    (Objects.equals(category, SectionCategory.TAXABLE_NOT_CONTRIBUTORY) && section.isTaxationNotContribution()) ||
+                    (Objects.equals(category, SectionCategory.NOT_TAXABLE_CONTRIBUTORY) && section.isContributionNotTaxation()) ||
+                    (Objects.equals(category, SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY) && section.notTaxationNotContribution()) ||
+                    (Objects.equals(category, SectionCategory.TAXATION) && section.isTaxation()) ||
+                    (Objects.equals(category, SectionCategory.CHARGE) && section.isCharge()) ||
+                    (Objects.equals(category, SectionCategory.GROSS) && section.isGrossSalary()) ||
+                    (category == null && section.getCategory() == null)
+
+            ) {
+                isInCategory = true;
+            }
+            if (!isInCategory) {
                 continue;
             }
             PayslipElementDto el = calculateSection(element);
             if (!element.isFix() && el.isZero()) {
                 continue;
             }
-            if (Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY) && section.isContribution() && !section.isSalary()) {
-                result.add(el);
-            } else if (Objects.equals(category, SectionCategory.TAXABLE_NOT_CONTRIBUTORY) && section.isTaxationNotContribution()) {
-                result.add(el);
-            } else if (Objects.equals(category, SectionCategory.NOT_TAXABLE_CONTRIBUTORY) && section.isContributionNotTaxation()) {
-                result.add(el);
-            } else if (Objects.equals(category, SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY) && section.notTaxationNotContribution()) {
-                result.add(el);
-            } else if (Objects.equals(category, SectionCategory.TAXATION) && section.isTaxation()) {
-                result.add(el);
-            } else if (Objects.equals(category, SectionCategory.CHARGE) && section.isCharge()) {
-                result.add(el);
-            } else if (Objects.equals(category, SectionCategory.GROSS) && section.isGrossSalary()) {
-                result.add(el);
-            } else if (category == null && section.getCategory() == null) {
-                result.add(el);
-            }
+            result.add(el);
         }
         if (category != null) {
             calculateCategoryTotal(result, category.name());
@@ -254,27 +258,33 @@ public class PayslipService {
     }
 
     private PayslipElementDto calculateSection(PayslipSettingElementDto element) {
-        return calculateSection(element.getSection(), element.getBaseValue(), element.getRateValue(), element.getValue());
+        return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
     }
 
-    private PayslipElementDto calculateSection(String sectionCode, Double baseValue, Double rateValue, Double value) {
+    private PayslipElementDto calculateSection(String sectionCode, String label,  Double baseValue, Double rateValue, Double value) {
         PayslipElementDto elementDto = new PayslipElementDto();
         sectionRepository.findByCode(sectionCode).ifPresent(section -> {
             elementDto.setCode(section.getCode());
-            elementDto.setLabel(section.getLabel());
+            elementDto.setLabel(label == null ? section.getLabel() : label);
             elementDto.setDescription(section.getDescription());
             elementDto.setTotal(section.isIntermediate());
-            Map<String, Object> context = new HashMap<>(dictionaryService.getAllVariables());
-            BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context);
-            context.put(BASE, base.doubleValue());
-            elementDto.setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
-            BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context);
-            context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
-            elementDto.setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
-            BigDecimal sectionValue = calculateSectionValue(section.getValueFormula(), value, context);
+            Bindings context = new SimpleBindings(dictionaryService.getAllVariables());
+            BigDecimal sectionValue;
+            if (value == null) {
+                BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context);
+                context.put(BASE, base.doubleValue());
+                elementDto.setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
+                BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context);
+                context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
+                elementDto.setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
+                sectionValue = calculateSectionValue(section.getValueFormula(), value, context);
+            } else {
+                sectionValue = BigDecimal.valueOf(value);
+            }
             if (sectionValue == null) {
                 return;
             }
+
             dictionaryService.setVariable(sectionCode, sectionValue.doubleValue());
             BigDecimal gain = null;
             BigDecimal deduction = null;
@@ -304,12 +314,12 @@ public class PayslipService {
         }
         sections.forEach(code -> {
             if (!dictionaryService.hasVariable(code)) {
-                calculateSection(code, null, null, null);
+                calculateSection(code, null, null, null, null);
             }
         });
     }
 
-    private BigDecimal calculateSectionValue(String formula, Double value, Map<String, Object> context) {
+    private BigDecimal calculateSectionValue(String formula, Double value, Bindings context) {
         if (formula == null && value == null) {
             return ZERO;
         }
@@ -318,7 +328,7 @@ public class PayslipService {
         }
         calculateFormulaVariables(formula);
         try {
-            ScriptEngine engine = engineService.getInstance(context);
+            engine.setBindings(context, ScriptContext.GLOBAL_SCOPE);
             Object result = engine.eval(formula);
             if (result instanceof Integer) {
                 return BigDecimal.valueOf((int) result);
