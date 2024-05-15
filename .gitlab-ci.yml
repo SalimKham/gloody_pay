@@ -6,7 +6,7 @@ build_production:
   only:
     - master
   artifacts:
-    name: "jekt-production-$CI_COMMIT_REF_NAME"
+    name: "gloody-pay-production-$CI_COMMIT_REF_NAME"
     paths:
       - ./target
     expire_in: 1 day
