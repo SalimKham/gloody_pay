@@ -1,11 +1,17 @@
 package com.zsoft.gloody.gloodypayroll.configs;
 
+import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
+import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
+import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
+import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
+import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.SectionSettingRepository;
 import com.zsoft.gloody.gloodypayroll.services.IrgCalculatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.context.annotation.ApplicationScope;
+import org.springframework.web.context.annotation.RequestScope;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -14,15 +20,31 @@ import java.time.LocalDate;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.IRG_YEAR;
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.IS_HANDICAP;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Configuration
 @Slf4j
 public class ScriptEngineBeanConfig {
 
+    private final SectionRepository sectionRepository;
+    private final SectionSettingRepository sectionSettingRepository;
+
 
     @Bean
-    @ApplicationScope
+    @RequestScope
+    public CompanySections companySections() {
+        List<SectionMapEntry> sectionMap = sectionRepository.findAllAsMap();
+       return new CompanySections(sectionMap.stream().collect(Collectors.toMap(SectionMapEntry::getKey, SectionMapEntry::getValue)));
+    }
+
+    @Bean
+    public DefaultSectionSettings defaultSectionSettings() {
+        return new DefaultSectionSettings(sectionSettingRepository.findAll().stream().collect(Collectors.toMap(SectionSetting::getKey, sectionSetting -> sectionSetting)));
+    }
+
+    @Bean
     public ScriptEngine scriptEngine() {
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("js");

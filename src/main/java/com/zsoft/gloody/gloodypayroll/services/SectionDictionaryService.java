@@ -39,17 +39,12 @@ public class SectionDictionaryService extends TenantSupportService {
     }
 
     public Object findValue(String key) {
-        if (variables.containsKey(key)) {
             return variables.get(key);
-        }
-        return null;
     }
 
     public Double findDoubleValue(String key) {
-        if (variables.containsKey(key)) {
             return valueOf(variables.get(key));
-        }
-        return 0d;
+
     }
 
     public boolean hasVariable(String key) {
@@ -64,7 +59,7 @@ public class SectionDictionaryService extends TenantSupportService {
         variables.put(key, value);
     }
 
-    public void setVariables(PayslipSettingDto dto, Period period, List<LocalDate> workingDays) {
+    public void setVariables(PayslipSettingDto dto, Period period) {
         if (dto == null) {
             return;
         }

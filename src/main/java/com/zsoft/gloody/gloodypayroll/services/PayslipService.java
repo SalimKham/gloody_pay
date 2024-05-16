@@ -1,12 +1,12 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
+import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
+import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionCategory;
-import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.SectionSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
@@ -21,7 +21,6 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import javax.script.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,13 +30,11 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 @Service
 @AllArgsConstructor
 public class PayslipService {
-    private final SectionRepository sectionRepository;
+    private final CompanySections companySections;
     private final SectionDictionaryService dictionaryService;
-    private final FormulaEngineService engineService;
-    private final SectionSettingRepository sectionSettingRepository;
+    private final DefaultSectionSettings defaultSectionSettings;
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
-    private final EmployeeService employeeService;
     private ScriptEngine engine;
 
     public String print(PayslipSettingDto dto) {
@@ -62,8 +59,7 @@ public class PayslipService {
 
     public LinkedList<PayslipElementDto> calculate(PayslipSettingDto dto) {
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
-        List<LocalDate> workingDays = employeeService.getWorkingDays(dto.getEmployee(), period);
-        dictionaryService.setVariables(dto, period, workingDays);
+        dictionaryService.setVariables(dto, period);
         LinkedList<PayslipElementDto> elements = new LinkedList<>();
         PayslipElementDto baseSalaryElement = calculateBaseSalary(dto.getElements());
         double baseSalary = 0d;
@@ -126,14 +122,14 @@ public class PayslipService {
 
     private PayslipElementDto calculateBaseSalary(List<PayslipSettingElementDto> elements) {
         for (PayslipSettingElementDto element : elements) {
-            Section section = sectionRepository.findByCode(element.getSection()).orElse(null);
+            Section section = companySections.findByCode(element.getSection()).orElse(null);
             if (section != null && section.isSalary()) {
                 return calculateSection(element);
             }
         }
-        String code = sectionSettingRepository.findByKey(BASE_SALARY).map(SectionSetting::getCode).orElse(null);
+        String code = defaultSectionSettings.findByKey(BASE_SALARY).map(SectionSetting::getCode).orElse(null);
         if (code != null) {
-            return sectionRepository.findByCode(code)
+            return companySections.findByCode(code)
                     .map(section -> calculateSection(code, section.getLabel(),null, null, null))
                     .orElse(null);
         }
@@ -141,13 +137,13 @@ public class PayslipService {
     }
 
     private PayslipElementDto calculateAbsenceElement(List<PayslipSettingElementDto> elements) {
-        String code = sectionSettingRepository.findByKey(ABSENCE).map(SectionSetting::getCode).orElse(null);
+        String code = defaultSectionSettings.findByKey(ABSENCE).map(SectionSetting::getCode).orElse(null);
         if (code != null) {
             boolean alreadyInElements = elements.stream().anyMatch(element -> element.getSection().equals(code));
             if (alreadyInElements) {
                 return null;
             }
-            return sectionRepository.findByCode(code)
+            return companySections.findByCode(code)
                     .map(section -> calculateSection(code,null , null, null, null))
                     .orElse(null);
         }
@@ -158,24 +154,19 @@ public class PayslipService {
         LinkedList<PayslipElementDto> result = new LinkedList<>();
 
         for (PayslipSettingElementDto element : elements) {
-            Section section = sectionRepository.findByCode(element.getSection()).orElse(null);
+            Section section = companySections.findByCode(element.getSection()).orElse(null);
             if (section == null) {
                 continue;
             }
-            boolean isInCategory = false;
-
-            if ((Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY) && section.isContribution() && !section.isSalary()) ||
+            boolean isInCategory = (Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY) && section.isContribution() && !section.isSalary()) ||
                     (Objects.equals(category, SectionCategory.TAXABLE_NOT_CONTRIBUTORY) && section.isTaxationNotContribution()) ||
                     (Objects.equals(category, SectionCategory.NOT_TAXABLE_CONTRIBUTORY) && section.isContributionNotTaxation()) ||
                     (Objects.equals(category, SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY) && section.notTaxationNotContribution()) ||
                     (Objects.equals(category, SectionCategory.TAXATION) && section.isTaxation()) ||
                     (Objects.equals(category, SectionCategory.CHARGE) && section.isCharge()) ||
                     (Objects.equals(category, SectionCategory.GROSS) && section.isGrossSalary()) ||
-                    (category == null && section.getCategory() == null)
+                    (category == null && section.getCategory() == null);
 
-            ) {
-                isInCategory = true;
-            }
             if (!isInCategory) {
                 continue;
             }
@@ -195,7 +186,7 @@ public class PayslipService {
         if (category == null) {
             return Collections.emptyList();
         }
-        String code = sectionSettingRepository.findByKey(category).map(SectionSetting::getCode).orElse(null);
+        String code = defaultSectionSettings.findByKey(category).map(SectionSetting::getCode).orElse(null);
         if (code != null) {
             boolean alreadyInElements = elements.stream().anyMatch(element -> element.getSection().equals(code));
             if (alreadyInElements) {
@@ -203,7 +194,7 @@ public class PayslipService {
             }
             double value = dictionaryService.findDoubleValue(category);
             if (value != 0) {
-                return sectionRepository.findByCode(code)
+                return companySections.findByCode(code)
                         .map(section -> {
                             PayslipElementDto elementDto = new PayslipElementDto();
                             elementDto.setLabel(section.getLabel());
@@ -263,7 +254,7 @@ public class PayslipService {
 
     private PayslipElementDto calculateSection(String sectionCode, String label,  Double baseValue, Double rateValue, Double value) {
         PayslipElementDto elementDto = new PayslipElementDto();
-        sectionRepository.findByCode(sectionCode).ifPresent(section -> {
+        companySections.findByCode(sectionCode).ifPresent(section -> {
             elementDto.setCode(section.getCode());
             elementDto.setLabel(label == null ? section.getLabel() : label);
             elementDto.setDescription(section.getDescription());
