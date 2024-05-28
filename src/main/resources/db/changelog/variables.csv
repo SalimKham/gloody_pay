@@ -1,4 +1,4 @@
-"key","formula","created_at","tenant_id"
+"key","formula","created_at","company_id"
 BASE_SALARY,"0",NOW,1
 DAYS_NBR,"22",NOW,1
 WORKING_DAYS_NBR,"22",NOW,1

@@ -3,6 +3,8 @@ package com.zsoft.gloody.gloodypayroll.rest.controllers;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipSettingService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,18 +14,39 @@ import org.springframework.web.bind.annotation.*;
 public class PayslipSettingController {
     private final PayslipSettingService payslipSettingService;
 
-    @GetMapping("/{employeeId}")
-    public ResponseEntity<PayslipSettingDto> findById(@PathVariable("employeeId") Long employeeId) {
-        return payslipSettingService.findByEmployeeId(employeeId)
+    @GetMapping("/{id}")
+    public ResponseEntity<PayslipSettingDto> findById(@PathVariable("id") Long id) {
+        return payslipSettingService.findById(id)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("templates/find_first")
+    public ResponseEntity<PayslipSettingDto> findFirst() {
+        return payslipSettingService.findByEmployeeId(null)
+                .map(result -> ResponseEntity.ok().body(result))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/templates/{companyId}")
+    public ResponseEntity<Page<PayslipSettingDto>> findTemplates(@PathVariable("companyId") Long companyId, Pageable pageable) {
+        Page<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(companyId, pageable);
+        return  ResponseEntity.ok().body(result);
+    }
+
     @PutMapping
-    public ResponseEntity<PayslipSettingDto> findAll(
+    public ResponseEntity<PayslipSettingDto> update(
             @RequestBody PayslipSettingDto dto
     ) {
         PayslipSettingDto result = payslipSettingService.update(dto);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @PostMapping
+    public ResponseEntity<PayslipSettingDto> create(
+            @RequestBody PayslipSettingDto dto
+    ) {
+        PayslipSettingDto result = payslipSettingService.save(dto);
         return ResponseEntity.ok().body(result);
     }
 }

@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @ToString
 @Entity
 @Table(name = "employee")
-public class Employee extends TenantSupport {
+public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -68,9 +68,4 @@ public class Employee extends TenantSupport {
     @Column(name = "salary_profile")
     @Enumerated(EnumType.STRING)
     private SalaryProfile remunerationType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
-    @ToString.Exclude
-    private Company company;
 }

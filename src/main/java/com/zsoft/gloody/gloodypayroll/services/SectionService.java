@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 public class SectionService extends TenantSupportService {
     private final SectionRepository sectionRepository;
     private final SectionMapper sectionMapper;
-    private final FormulaEngineService engineService;
 
     public Optional<SectionDto> findByCode(String code) {
         return this.sectionRepository.findByCode(code)
@@ -99,7 +98,7 @@ public class SectionService extends TenantSupportService {
     }
 
     private SectionDto save(SectionDto dto) {
-        if (engineService.isInvalid(dto.getBaseFormula())) {
+     /*   if (engineService.isInvalid(dto.getBaseFormula())) {
             throw new ApiRuntimeException("error.section.base.formula-invalid");
         }
         if (engineService.isInvalid(dto.getRateFormula())) {
@@ -107,7 +106,8 @@ public class SectionService extends TenantSupportService {
         }
         if (engineService.isInvalid(dto.getValueFormula())) {
             throw new ApiRuntimeException("error.section.value.formula-invalid");
-        }
+        }*/
+        //TODO : ENABLE FORMULA VALIDATION LATER
         try {
             Section section = this.sectionMapper.toEntity(dto);
             section = this.sectionRepository.save(section);

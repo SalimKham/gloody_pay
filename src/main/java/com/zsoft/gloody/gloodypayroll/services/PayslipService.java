@@ -3,10 +3,10 @@ package com.zsoft.gloody.gloodypayroll.services;
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
 import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
+import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
-import com.zsoft.gloody.gloodypayroll.models.enums.SectionCategory;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
@@ -22,6 +22,7 @@ import javax.script.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +37,7 @@ public class PayslipService {
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
     private ScriptEngine engine;
+    private final PerRequestElements perRequestElements;
 
     public String print(PayslipSettingDto dto) {
         EmployeeDto employeeDto = dto.getEmployee();
@@ -60,15 +62,20 @@ public class PayslipService {
     public LinkedList<PayslipElementDto> calculate(PayslipSettingDto dto) {
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
         dictionaryService.setVariables(dto, period);
-        LinkedList<PayslipElementDto> elements = new LinkedList<>();
+        perRequestElements.setCalculatedElements(new LinkedList<>());
+        perRequestElements.setSettingsElements(dto.getElements());
+        perRequestElements.setShowIntermediate(dto.isShowIntermediate());
         PayslipElementDto baseSalaryElement = calculateBaseSalary(dto.getElements());
         double baseSalary = 0d;
         if (baseSalaryElement != null) {
             baseSalary = baseSalaryElement.getGain().doubleValue();
-            elements.add(baseSalaryElement);
         }
         dictionaryService.setVariable(BASE_SALARY, baseSalary);
-        PayslipElementDto absenceElement = calculateAbsenceElement(dto.getElements());
+
+        for(PayslipSettingElementDto elementDto: dto.getElements()) { // ignore base salary
+               calculateSection( elementDto);
+        }
+        /*PayslipElementDto absenceElement = calculateAbsenceElement(dto.getElements());
         if (absenceElement != null) {
             elements.add(absenceElement);
         }
@@ -110,14 +117,9 @@ public class PayslipService {
         if (dto.isShowIntermediate()) {
             elements.addAll(getTotalElementByCategory(dto.getElements(), PRIMES));
         }
-        if (dto.isShowIntermediate()) {
-            elements.add(getTotalElement(elements));
-        }
-        double salary = netSalary + primes;
-        dictionaryService.setVariable(SALARY, salary);
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), null));
-        elements.addAll(getTotalElementByCategory(dto.getElements(), SALARY));
-        return elements;
+
+         */
+        return   perRequestElements.getCalculatedElements();
     }
 
     private PayslipElementDto calculateBaseSalary(List<PayslipSettingElementDto> elements) {
@@ -150,36 +152,23 @@ public class PayslipService {
         return null;
     }
 
-    private LinkedList<PayslipElementDto> calculateSectionsByCategory(List<PayslipSettingElementDto> elements, SectionCategory category) {
-        LinkedList<PayslipElementDto> result = new LinkedList<>();
-
-        for (PayslipSettingElementDto element : elements) {
-            Section section = companySections.findByCode(element.getSection()).orElse(null);
+    private void calculateSectionsByCategory(String category) {
+        for (PayslipSettingElementDto element :   perRequestElements.getSettingsElements()) {
+            Section section = companySections.findByCode(element.getSection().replaceAll("-\\d+", "")).orElse(null);
             if (section == null) {
                 continue;
             }
-            boolean isInCategory = (Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY) && section.isContribution() && !section.isSalary()) ||
-                    (Objects.equals(category, SectionCategory.TAXABLE_NOT_CONTRIBUTORY) && section.isTaxationNotContribution()) ||
-                    (Objects.equals(category, SectionCategory.NOT_TAXABLE_CONTRIBUTORY) && section.isContributionNotTaxation()) ||
-                    (Objects.equals(category, SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY) && section.notTaxationNotContribution()) ||
-                    (Objects.equals(category, SectionCategory.TAXATION) && section.isTaxation()) ||
-                    (Objects.equals(category, SectionCategory.CHARGE) && section.isCharge()) ||
-                    (Objects.equals(category, SectionCategory.GROSS) && section.isGrossSalary()) ||
-                    (category == null && section.getCategory() == null);
-
+            boolean isInCategory = Objects.equals(category, section.getCategory().getCode());
             if (!isInCategory) {
                 continue;
             }
             PayslipElementDto el = calculateSection(element);
-            if (!element.isFix() && el.isZero()) {
+            if (el.isTotal() || section.isSalary()) {
                 continue;
             }
-            result.add(el);
+            updateCategoryTotal(category, el.getGain(), el.getDeduction());
         }
-        if (category != null) {
-            calculateCategoryTotal(result, category.name());
-        }
-        return result;
+        updateCategoryTotal(category, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
     private List<PayslipElementDto> getTotalElementByCategory(List<PayslipSettingElementDto> elements, String category) {
@@ -213,35 +202,26 @@ public class PayslipService {
         return Collections.emptyList();
     }
 
-    private void calculateCategoryTotal(List<PayslipElementDto> elements, String category) {
-        Double gain = elements.stream()
-                .map(PayslipElementDto::getGain)
-                .filter(Objects::nonNull)
-                .map(BigDecimal::doubleValue)
-                .reduce(0d, Double::sum);
-        Double deduction = elements.stream()
-                .map(PayslipElementDto::getDeduction)
-                .filter(Objects::nonNull)
-                .map(BigDecimal::doubleValue)
-                .reduce(0d, Double::sum);
-        dictionaryService.setVariable(category, gain - deduction);
+    private void updateCategoryTotal(String category, BigDecimal gain, BigDecimal deduction) {
+        BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(String.format("CAT_%s",category)));
+        dictionaryService.setVariable(String.format("CAT_%s",category), recentTotal.add( (gain != null ? gain : BigDecimal.ZERO) ).subtract((deduction != null ? deduction : BigDecimal.ZERO)) );
     }
 
-    private PayslipElementDto getTotalElement(List<PayslipElementDto> elements) {
-        Double gain = elements.stream()
+    private PayslipElementDto getTotalElement( String label) {
+        Double gain = perRequestElements.getCalculatedElements().stream()
                 .filter(element -> !element.isTotal())
                 .map(PayslipElementDto::getGain)
                 .filter(Objects::nonNull)
                 .map(BigDecimal::doubleValue)
                 .reduce(0d, Double::sum);
-        Double deduction = elements.stream()
+        Double deduction = perRequestElements.getCalculatedElements().stream()
                 .filter(element -> !element.isTotal())
                 .map(PayslipElementDto::getDeduction)
                 .filter(Objects::nonNull)
                 .map(BigDecimal::doubleValue)
                 .reduce(0d, Double::sum);
         PayslipElementDto elementDto = new PayslipElementDto();
-        elementDto.setLabel("total");
+        elementDto.setLabel(label);
         elementDto.setTotal(true);
         elementDto.setGain(BigDecimal.valueOf(gain));
         elementDto.setDeduction(BigDecimal.valueOf(deduction));
@@ -249,55 +229,77 @@ public class PayslipService {
     }
 
     private PayslipElementDto calculateSection(PayslipSettingElementDto element) {
+        PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> e.getCode().contains(element.getSection())).findFirst().orElse(null);
+        if (alreadyExistsElement != null) {
+            return alreadyExistsElement;
+        }
         return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
     }
 
-    private PayslipElementDto calculateSection(String sectionCode, String label,  Double baseValue, Double rateValue, Double value) {
-        PayslipElementDto elementDto = new PayslipElementDto();
-        companySections.findByCode(sectionCode).ifPresent(section -> {
-            elementDto.setCode(section.getCode());
-            elementDto.setLabel(label == null ? section.getLabel() : label);
-            elementDto.setDescription(section.getDescription());
-            elementDto.setTotal(section.isIntermediate());
-            Bindings context = new SimpleBindings(dictionaryService.getAllVariables());
-            BigDecimal sectionValue;
-            if (value == null) {
-                BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context);
-                context.put(BASE, base.doubleValue());
-                elementDto.setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
-                BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context);
-                context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
-                elementDto.setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
-                sectionValue = calculateSectionValue(section.getValueFormula(), value, context);
-            } else {
-                sectionValue = BigDecimal.valueOf(value);
-            }
-            if (sectionValue == null) {
-                return;
-            }
 
-            dictionaryService.setVariable(sectionCode, sectionValue.doubleValue());
-            BigDecimal gain = null;
-            BigDecimal deduction = null;
-            if (section.isGain() || section.isSalary()) {
-                gain = sectionValue.setScale(2, RoundingMode.HALF_UP);
-            } else if (section.isDeduction()) {
-                deduction = sectionValue.setScale(2, RoundingMode.HALF_UP);
-            } else if (section.isIntermediate()) {
-                if (sectionValue.doubleValue() < 0) {
-                    deduction = BigDecimal.valueOf(-sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
-                } else {
-                    gain = BigDecimal.valueOf(sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+    private PayslipElementDto calculateSection(String code, String label,  Double baseValue, Double rateValue, Double value) {
+        AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
+        if (code.startsWith("CAT_")) {
+            calculateSectionsByCategory(code.replace("CAT_", ""));
+            return null;
+        } else {
+            companySections.findByCode(code.replaceAll("-\\d+", "")).ifPresent(section -> {
+                if (section.isTotal()) {
+                    elementDto.set(getTotalElement(label == null ? section.getLabel() : label));
+                    elementDto.get().setCode(code);
+                    if (perRequestElements.isShowIntermediate()) {
+                        perRequestElements.getCalculatedElements().add(elementDto.get());
+                    }
+                    return;
                 }
-            }
-            elementDto.setGain(gain);
-            elementDto.setDeduction(deduction);
-        });
-        return elementDto;
+                elementDto.get().setCode(code);
+                elementDto.get().setLabel(label == null ? section.getLabel() : label);
+                elementDto.get().setDescription(section.getDescription());
+                elementDto.get().setTotal(section.isIntermediate());
+                Bindings context = new SimpleBindings(dictionaryService.getAllVariables());
+                BigDecimal sectionValue;
+                    BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context);
+                    context.put(BASE, base.doubleValue());
+                    elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
+                    BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context);
+                    context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
+                    elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
+                if (value == null) {
+                    sectionValue = calculateSectionValue(section.getValueFormula(), value, context);
+                } else {
+                    sectionValue = BigDecimal.valueOf(value);
+                }
+                if (sectionValue == null) {
+                    return;
+                }
+
+                dictionaryService.setVariable(code, sectionValue.doubleValue());
+                BigDecimal gain = null;
+                BigDecimal deduction = null;
+                if (section.isGain() || section.isSalary()) {
+                    gain = sectionValue.setScale(2, RoundingMode.HALF_UP);
+                } else if (section.isDeduction()) {
+                    deduction = sectionValue.setScale(2, RoundingMode.HALF_UP);
+                } else if (section.isIntermediate()) {
+                    if (sectionValue.doubleValue() < 0) {
+                        deduction = BigDecimal.valueOf(-sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+                    } else {
+                        gain = BigDecimal.valueOf(sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+                    }
+                }
+                elementDto.get().setGain(gain);
+                elementDto.get().setDeduction(deduction);
+                if ((perRequestElements.isShowIntermediate() && elementDto.get().isTotal()) || !elementDto.get().isTotal() ) {
+                    perRequestElements.getCalculatedElements().add(elementDto.get());
+                }
+            });
+        }
+
+        return elementDto.get();
     }
 
     private void calculateFormulaVariables(String formula) {
-        Pattern pattern = Pattern.compile("[A-Z]\\d{3}", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("([A-Z]\\d+)|(CAT_[A-Z]\\d+)", Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
         while (m.find()) {
@@ -321,13 +323,19 @@ public class PayslipService {
         try {
             engine.setBindings(context, ScriptContext.GLOBAL_SCOPE);
             Object result = engine.eval(formula);
+            if (result instanceof BigDecimal) {
+                return (BigDecimal) result;
+            }
             if (result instanceof Integer) {
                 return BigDecimal.valueOf((int) result);
-            } else if (result instanceof Long) {
+            }
+            if (result instanceof Long) {
                 return BigDecimal.valueOf((long) result);
-            } else if (result instanceof Float) {
+            }
+            if (result instanceof Float) {
                 return BigDecimal.valueOf((float) result);
-            } else if (result instanceof Double) {
+            }
+            if (result instanceof Double) {
                 return BigDecimal.valueOf((double) result);
             }
             return ZERO;

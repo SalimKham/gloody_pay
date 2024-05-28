@@ -1,0 +1,30 @@
+package com.zsoft.gloody.gloodypayroll.models.entities;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@SuperBuilder
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
+@Table(name = "section_category")
+public class SectionCategory extends CompanySupport{
+    @Id
+    @Column(name = "code")
+    private String code;
+    @Column(name = "name")
+    private String name;
+    @OneToMany(targetEntity = Section.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "category", nullable = false)
+    @OrderBy("code asc")
+    @ToString.Exclude
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Set<Section> sections = new HashSet<>();
+}

@@ -12,6 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class PayslipSettingDto {
+    private boolean template;
+    private String name;
     private Long id;
     private EmployeeDto employee;
     private List<PayslipSettingElementDto> elements;

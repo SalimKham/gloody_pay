@@ -28,7 +28,7 @@
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="employee">
@@ -59,12 +59,10 @@
             <column name="account_number" type="VARCHAR(255)"/>
             <column name="salary_profile" type="VARCHAR(255)"/>
             <column name="address_id" type="BIGINT" defaultValueComputed="NULL"/>
-            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
             <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="payslip_setting">
@@ -73,11 +71,13 @@
             </column>
             <column name="payment_date" type="date" defaultValueComputed="NULL"/>
             <column name="show_intermediate" type="BIT" defaultValueBoolean="false"/>
+            <column name="template" type="boolean" defaultValueBoolean="false"/>
+            <column name="name" type="VARCHAR(200)" defaultValueBoolean="false"/>
             <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="payslip_setting_element">
@@ -90,11 +90,24 @@
             <column name="rate_value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="fix" type="BIT" defaultValueBoolean="false"/>
+            <column name="element_order" type="int" defaultValueNumeric="0"/>
             <column name="created_by" type="bigint"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
+        </createTable>
+
+        <createTable tableName="section_category">
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="code" type="VARCHAR(30)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(300)"/>
+            <column name="created_by" type="bigint"/>
+            <column name="created_at" type="datetime" defaultValueDate="now()"/>
+            <column name="updated_by" type="bigint"/>
+            <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="section">
@@ -106,7 +119,7 @@
             </column>
             <column name="label" type="VARCHAR(255)"/>
             <column name="description" type="VARCHAR(255)"/>
-            <column name="category" type="VARCHAR(255)" defaultValueComputed="NULL"/>
+            <column name="category" type="VARCHAR(30)" defaultValueComputed="NULL"/>
             <column name="type" type="VARCHAR(255)" defaultValueComputed="NULL"/>
             <column name="base_formula" type="VARCHAR(255)" defaultValueComputed="NULL"/>
             <column name="rate_formula" type="VARCHAR(255)" defaultValueComputed="NULL"/>
@@ -117,7 +130,7 @@
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="variable_setting">
@@ -130,7 +143,7 @@
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
 
         <createTable tableName="section_setting">
@@ -143,7 +156,7 @@
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-            <column name="tenant_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
         <addForeignKeyConstraint
                 constraintName="fk_payslip_setting_element_on_payslip_setting_id"
@@ -156,11 +169,6 @@
                 referencedColumnNames="code" referencedTableName="section"
                 onDelete="CASCADE"/>
         <addForeignKeyConstraint
-                constraintName="fk_employee_on_company_id"
-                baseColumnNames="company_id" baseTableName="employee"
-                referencedColumnNames="id" referencedTableName="company"
-                onDelete="CASCADE" onUpdate="CASCADE"/>
-        <addForeignKeyConstraint
                 constraintName="fk_employee_on_address_id"
                 baseColumnNames="address_id" baseTableName="employee"
                 referencedColumnNames="id" referencedTableName="address"
@@ -171,11 +179,37 @@
                 referencedColumnNames="id" referencedTableName="address"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
         <addForeignKeyConstraint
+                constraintName="fk_section_on_seciton_category_id"
+                baseColumnNames="category" baseTableName="section"
+                referencedColumnNames="code" referencedTableName="section_category"
+                onDelete="CASCADE" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint
                 constraintName="fk_section_on_parental_id"
                 baseColumnNames="parental_id" baseTableName="section"
                 referencedColumnNames="id" referencedTableName="section"
                 onDelete="SET NULL" onUpdate="CASCADE"/>
 
+    </changeSet>
+
+    <changeSet id="add_default_categories" author="Salim Kham">
+        <sql>
+            INSERT INTO section_category  (`company_id`, `code`, `name` )
+            VALUES (1, 'C001', 'Imposable cotisable');
+            INSERT INTO section_category  (`company_id`,`code`, `name`)
+            VALUES (1, 'C002', 'Imposable non cotisable');
+            INSERT INTO section_category  (`company_id`,`code`, `name`)
+            VALUES (1, 'C003', 'Cotisable non imposable');
+            INSERT INTO section_category  (`company_id`, `code`, `name`)
+            VALUES (1,'C004', 'Non imposable non cotisable');
+            INSERT INTO section_category  (`company_id`,`code`, `name`)
+            VALUES (1,'C005', 'charge');
+            INSERT INTO section_category  (`company_id`,`code`, `name`)
+            VALUES (1,'C006', 'Brute');
+            INSERT INTO section_category  (`company_id`,`code`, `name`)
+            VALUES (1,'C007', 'Imposition');
+            INSERT INTO section_category  (`company_id`,`code`, `name`)
+            VALUES (1,'C999', '');
+        </sql>
     </changeSet>
 
     <changeSet author="Zitouni Bessem" id="default-data">
@@ -197,17 +231,5 @@
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
         </loadData>
     </changeSet>
-    <changeSet id="add_default_payslip_settings" author="Salim Kham">
-        <sql>
-            INSERT INTO payslip_setting  (`id`)
-            VALUES (1)
-        </sql>
-    </changeSet>
 
-    <changeSet id="add_default_payslip_elements" author="Salim Kham">
-         <loadData encoding="UTF-8" file="payslip_setting_elements.csv" relativeToChangelogFile="true" tableName="payslip_setting_element">
-             <column name="created_at" type="datetime" defaultValueDate="now()"/>
-             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
-         </loadData>
-    </changeSet>
 </databaseChangeLog>

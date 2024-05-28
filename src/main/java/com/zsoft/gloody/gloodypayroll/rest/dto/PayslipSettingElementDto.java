@@ -17,4 +17,5 @@ public class PayslipSettingElementDto {
     private Double baseValue;
     private Double rateValue;
     private boolean fix;
+    private int elementOrder;
 }

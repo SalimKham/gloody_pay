@@ -1,5 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.configs;
 
+import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingRepository;
 import com.zsoft.gloody.gloodypayroll.services.SectionDictionaryService;
 import lombok.RequiredArgsConstructor;
@@ -23,4 +24,11 @@ public class SingletonBeanConfig {
     public SectionDictionaryService dictionaryService() {
         return new SectionDictionaryService(settingRepository, engine);
     }
+    @Bean
+    @RequestScope
+    public PerRequestElements PerRequestElements() {
+        return new PerRequestElements();
+    }
+
+
 }

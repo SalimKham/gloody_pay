@@ -1,13 +1,10 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
-import com.zsoft.gloody.gloodypayroll.models.enums.SectionCategory;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.persistence.*;
-
-import java.util.Objects;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -17,7 +14,7 @@ import java.util.Objects;
 @ToString
 @Entity
 @Table(name = "section")
-public class Section extends TenantSupport {
+public class Section extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -45,8 +42,9 @@ public class Section extends TenantSupport {
     @Column(name = "value_formula")
     private String valueFormula;
 
-    @Column(name = "category")
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category", nullable = false, insertable = false, updatable = false)
+    @ToString.Exclude
     private SectionCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -54,8 +52,12 @@ public class Section extends TenantSupport {
     @ToString.Exclude
     private Section parental;
 
-    public boolean isSalary() {
+   public boolean isSalary() {
         return type != null && type.equals(SectionType.SALARY);
+    }
+
+    public boolean isTotal() {
+        return type != null && type.equals(SectionType.TOTAL);
     }
 
     public boolean isIntermediate() {
@@ -70,7 +72,7 @@ public class Section extends TenantSupport {
         return type != null && type.equals(SectionType.DEDUCTION);
     }
 
-    public boolean isContribution() {
+    /* public boolean isContribution() {
         return Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY);
     }
 
@@ -96,5 +98,5 @@ public class Section extends TenantSupport {
 
     public boolean isTaxation() {
         return category != null && category.equals(SectionCategory.TAXATION);
-    }
+    }*/
 }

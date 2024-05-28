@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 @ToString
 @Entity
 @Table(name = "variable_setting")
-public class VariableSetting extends TenantSupport {
+public class VariableSetting extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

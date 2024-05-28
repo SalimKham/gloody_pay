@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @Entity
 @Table(name = "company")
-public class Company extends TenantSupport {
+public class Company extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

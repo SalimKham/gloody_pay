@@ -4,5 +4,6 @@ public enum SectionType {
     SALARY,
     GAIN,
     DEDUCTION,
-    INTERMEDIATE
+    INTERMEDIATE,
+    TOTAL,
 }

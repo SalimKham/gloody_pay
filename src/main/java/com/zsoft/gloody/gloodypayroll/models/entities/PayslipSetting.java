@@ -15,7 +15,7 @@ import java.util.List;
 @ToString
 @Entity
 @Table(name = "payslip_setting")
-public class PayslipSetting extends TenantSupport {
+public class PayslipSetting extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -24,10 +24,19 @@ public class PayslipSetting extends TenantSupport {
     @Column(name = "show_intermediate")
     private boolean showIntermediate;
 
+    @Column(name = "template")
+    private boolean template;
+
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "payment_date")
     private LocalDate paymentDate;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "payslipSetting", orphanRemoval = true)
+
+    @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "payslip_setting_id", nullable = false)
     @ToString.Exclude
+    @OrderBy("elementOrder asc")
     private List<PayslipSettingElement> elements;
 }

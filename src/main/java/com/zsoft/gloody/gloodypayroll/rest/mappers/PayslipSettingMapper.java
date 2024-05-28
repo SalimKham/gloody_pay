@@ -20,12 +20,5 @@ public abstract class PayslipSettingMapper {
     @Mapping(target = "section", source = "section")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     public abstract PayslipSettingElement toEntity(PayslipSettingElementDto settingDto);
-
-    @AfterMapping
-    public void afterMapping(@MappingTarget PayslipSetting setting) {
-        if (setting.getElements() != null) {
-            setting.getElements().forEach(element -> element.setPayslipSetting(setting));
-        }
-    }
 }
 

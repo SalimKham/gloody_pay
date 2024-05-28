@@ -7,9 +7,10 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 
 @Service
@@ -19,8 +20,25 @@ public class PayslipSettingService extends TenantSupportService {
     private final PayslipSettingMapper payslipSettingMapper;
     private final EmployeeService employeeService;
 
-    public Optional<PayslipSettingDto> findByEmployeeId(Long employeeId) {
+    public Optional<PayslipSettingDto> findByEmployeeId(Long id) {
         return this.payslipSettingRepository.findTopByOrderByIdAsc().map(this.payslipSettingMapper::toDto);
+    }
+
+
+    public Optional<PayslipSettingDto> findById(Long id) {
+        return this.payslipSettingRepository.findById(id).map(this.payslipSettingMapper::toDto);
+    }
+
+    public Page<PayslipSettingDto> findAllTemplates(Long companyId, Pageable pageable) {
+        return this.payslipSettingRepository.findAllByCompanyAndTemplate(companyId, true, pageable)
+                .map(this.payslipSettingMapper::toDto);
+    }
+
+    @Transactional
+    public PayslipSettingDto save(PayslipSettingDto dto) {
+        PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
+        payslipSetting = this.payslipSettingRepository.save(payslipSetting);
+        return this.payslipSettingMapper.toDto(payslipSetting);
     }
 
     @Transactional

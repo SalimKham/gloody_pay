@@ -13,16 +13,16 @@ import jakarta.persistence.*;
 @ToString
 @Entity
 @Table(name = "payslip_setting_element")
-public class PayslipSettingElement extends TenantSupport {
+public class PayslipSettingElement extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "payslip_setting_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "payslip_setting_id", nullable = false, insertable = false, updatable = false)
     @ToString.Exclude
     private PayslipSetting payslipSetting;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "section_code", referencedColumnName = "code")
     @ToString.Exclude
     private Section section;
@@ -34,4 +34,6 @@ public class PayslipSettingElement extends TenantSupport {
     private Double rateValue;
     @Column(name = "fix")
     private boolean fix;
+    @Column(name = "element_order")
+    private int elementOrder;
 }
