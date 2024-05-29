@@ -43,7 +43,7 @@ public class Section extends CompanySupport {
     private String valueFormula;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "category", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "category", nullable = false)
     @ToString.Exclude
     private SectionCategory category;
 
