@@ -10,6 +10,7 @@ import java.util.Set;
 @NoArgsConstructor
 @ToString
 public class SectionCategoryDto {
+    private long id;
     private long company;
     private String code;
     private String name;

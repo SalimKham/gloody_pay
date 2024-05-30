@@ -2,6 +2,8 @@ package com.zsoft.gloody.gloodypayroll.rest.dto;
 
 import lombok.*;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @Builder
@@ -18,4 +20,16 @@ public class PayslipSettingElementDto {
     private Double rateValue;
     private boolean fix;
     private int elementOrder;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PayslipSettingElementDto that)) return false;
+        return Objects.equals(getSection(), that.getSection());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getSection());
+    }
 }

@@ -28,12 +28,11 @@ public class SecurityUtils {
                 });
     }
 
-    public static String getCurrentUserId() {
+    public static Long getCurrentCompanyId() {
         return getCurrentUser()
-                .map(User::getUsername)
+                .map(User::getCompanyId)
                 .orElse(null);
     }
-
 
     public static List<String> getGrantedAuthorities() {
         SecurityContext context = SecurityContextHolder.getContext();

@@ -15,13 +15,25 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class PayslipSettingService extends TenantSupportService {
+@Transactional
+public class PayslipSettingService extends CompanySupportService {
     private final PayslipSettingRepository payslipSettingRepository;
     private final PayslipSettingMapper payslipSettingMapper;
     private final EmployeeService employeeService;
 
+
+
+    public Optional<PayslipSettingDto> markAsDefault(Long templateId) {
+        payslipSettingRepository.markAsDefault(templateId);
+        return findById(templateId);
+    }
+
+    public Optional<PayslipSettingDto> findDefaultTemplate() {
+        return this.payslipSettingRepository.findTopByTemplateOrderByIdAsc(true).map(this.payslipSettingMapper::toDto);
+    }
+
     public Optional<PayslipSettingDto> findByEmployeeId(Long id) {
-        return this.payslipSettingRepository.findTopByOrderByIdAsc().map(this.payslipSettingMapper::toDto);
+        return this.payslipSettingRepository.findTopByTemplateOrderByIdAsc(true).map(this.payslipSettingMapper::toDto);
     }
 
 
@@ -29,8 +41,8 @@ public class PayslipSettingService extends TenantSupportService {
         return this.payslipSettingRepository.findById(id).map(this.payslipSettingMapper::toDto);
     }
 
-    public Page<PayslipSettingDto> findAllTemplates(Long companyId, Pageable pageable) {
-        return this.payslipSettingRepository.findAllByCompanyAndTemplate(companyId, true, pageable)
+    public Page<PayslipSettingDto> findAllTemplates(Pageable pageable) {
+        return this.payslipSettingRepository.findAll( pageable)
                 .map(this.payslipSettingMapper::toDto);
     }
 

@@ -22,12 +22,14 @@ public class JwtTokenUtil implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private static final String ID_CLAIM = "GLOODY_USER_ID";
+    private static final String GLOODY_COMPANY_ID = "GLOODY_COMPANY_ID";
     @Value("${com.zsoft.gloody.configuration.jwt.secret}")
     private String secret;
 
     public User getUser(String token) {
            return  User.builder()
                    .id(getClaimFromToken(token, ID_CLAIM, Long.class))
+                   .CompanyId(getClaimFromToken(token, GLOODY_COMPANY_ID, Long.class))
                 .username(getClaimFromToken(token, Claims::getSubject))
                 .build();
     }
@@ -50,6 +52,7 @@ public class JwtTokenUtil implements Serializable {
         claims.put("preferred_username", user.getUsername());
         claims.put("organization", "gloody-payroll");
         claims.put(ID_CLAIM, user.getId());
+        claims.put(GLOODY_COMPANY_ID, user.getCompanyId());
         String issuer = request.getRequestURL().toString();
         return Jwts.builder()
                 .setIssuer(issuer)

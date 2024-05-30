@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.TreeSet;
 
 @AllArgsConstructor
 @RestController
@@ -23,11 +25,10 @@ public class PayslipController {
 
 
     @PostMapping("/calculate")
-    public ResponseEntity<LinkedList<PayslipElementDto>> calculate(
+    public ResponseEntity<Set<PayslipElementDto>> calculate(
             @RequestBody PayslipSettingDto dto
     ) {
-        LinkedList<PayslipElementDto> result = payslipService.calculate(dto);
-        long end = System.currentTimeMillis();
+        TreeSet<PayslipElementDto> result = payslipService.calculate(dto);
         return ResponseEntity.ok().body(result);
     }
 }

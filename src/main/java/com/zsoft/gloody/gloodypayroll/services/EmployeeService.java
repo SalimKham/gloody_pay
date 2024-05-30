@@ -26,7 +26,7 @@ import java.util.stream.LongStream;
 
 @Service
 @AllArgsConstructor
-public class EmployeeService extends TenantSupportService {
+public class EmployeeService extends CompanySupportService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
 

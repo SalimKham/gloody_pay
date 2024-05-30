@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class SectionService extends TenantSupportService {
+public class SectionService extends CompanySupportService {
     private final SectionRepository sectionRepository;
     private final SectionMapper sectionMapper;
 

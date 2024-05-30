@@ -17,7 +17,7 @@ import java.util.*;
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @RequiredArgsConstructor
-public class SectionDictionaryService extends TenantSupportService {
+public class SectionDictionaryService extends CompanySupportService {
     private final VariableSettingRepository settingRepository;
     private LinkedHashMap<String, Object> variables;
     private final  ScriptEngine engine;

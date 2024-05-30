@@ -85,7 +85,7 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="payslip_setting_id" type="BIGINT" defaultValueComputed="NULL"/>
-            <column name="section_code" type="VARCHAR(255)"/>
+            <column name="section" type="bigint"/>
             <column name="base_value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="rate_value" type="DOUBLE" defaultValueComputed="NULL"/>
             <column name="value" type="DOUBLE" defaultValueComputed="NULL"/>
@@ -99,12 +99,15 @@
         </createTable>
 
         <createTable tableName="section_category">
-            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
             <column name="code" type="VARCHAR(30)">
-                <constraints primaryKey="true" nullable="false" unique="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(300)"/>
             <column name="created_by" type="bigint"/>
+            <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_by" type="bigint"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
@@ -115,11 +118,11 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="code" type="VARCHAR(255)">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="label" type="VARCHAR(255)"/>
             <column name="description" type="VARCHAR(255)"/>
-            <column name="category" type="VARCHAR(30)" defaultValueComputed="NULL"/>
+            <column name="category" type="bigint"/>
             <column name="type" type="VARCHAR(255)" defaultValueComputed="NULL"/>
             <column name="base_formula" type="VARCHAR(255)" defaultValueComputed="NULL"/>
             <column name="rate_formula" type="VARCHAR(255)" defaultValueComputed="NULL"/>
@@ -158,6 +161,8 @@
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
             <column name="company_id" type="BIGINT" defaultValueComputed="NULL"/>
         </createTable>
+        <addUniqueConstraint constraintName="code_company_unique_constraint" tableName="section_category" columnNames="company_id,code"/>
+        <addUniqueConstraint constraintName="section_code_company_unique_constraint" tableName="section" columnNames="company_id,code"/>
         <addForeignKeyConstraint
                 constraintName="fk_payslip_setting_element_on_payslip_setting_id"
                 baseColumnNames="payslip_setting_id" baseTableName="payslip_setting_element"
@@ -165,8 +170,8 @@
                 onDelete="CASCADE" onUpdate="CASCADE"/>
         <addForeignKeyConstraint
                 constraintName="fk_payslip_setting_element_on_section_code"
-                baseColumnNames="section_code" baseTableName="payslip_setting_element"
-                referencedColumnNames="code" referencedTableName="section"
+                baseColumnNames="section" baseTableName="payslip_setting_element"
+                referencedColumnNames="id" referencedTableName="section"
                 onDelete="CASCADE"/>
         <addForeignKeyConstraint
                 constraintName="fk_employee_on_address_id"
@@ -181,7 +186,7 @@
         <addForeignKeyConstraint
                 constraintName="fk_section_on_seciton_category_id"
                 baseColumnNames="category" baseTableName="section"
-                referencedColumnNames="code" referencedTableName="section_category"
+                referencedColumnNames="id" referencedTableName="section_category"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
         <addForeignKeyConstraint
                 constraintName="fk_section_on_parental_id"
@@ -191,7 +196,7 @@
 
     </changeSet>
 
-    <changeSet id="add_default_categories" author="Salim Kham">
+<!--    <changeSet id="add_default_categories" author="Salim Kham">
         <sql>
             INSERT INTO section_category  (`company_id`, `code`, `name` )
             VALUES (1, 'C001', 'Imposable cotisable');
@@ -210,9 +215,9 @@
             INSERT INTO section_category  (`company_id`,`code`, `name`)
             VALUES (1,'C999', '');
         </sql>
-    </changeSet>
+    </changeSet>-->
 
-    <changeSet author="Zitouni Bessem" id="default-data">
+   <!-- <changeSet author="Zitouni Bessem" id="default-data">
         <loadData encoding="UTF-8" file="sections.csv" relativeToChangelogFile="true" tableName="section">
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
@@ -230,6 +235,6 @@
             <column name="created_at" type="datetime" defaultValueDate="now()"/>
             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
         </loadData>
-    </changeSet>
+    </changeSet>-->
 
 </databaseChangeLog>

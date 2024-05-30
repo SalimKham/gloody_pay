@@ -14,6 +14,7 @@ import java.util.Collection;
 public class User implements UserDetails {
     private Long id;
     private String username;
+    private Long CompanyId;
     private Collection<? extends GrantedAuthority> authorities;
 
     @Override

@@ -3,6 +3,7 @@ package com.zsoft.gloody.gloodypayroll.rest.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -23,5 +24,17 @@ public class PayslipElementDto {
 
     public boolean isZero() {
         return (gain == null || gain.doubleValue() == 0d) && (deduction == null || deduction.doubleValue() == 0d);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PayslipElementDto that)) return false;
+        return Objects.equals(getCode(), that.getCode());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getCode());
     }
 }

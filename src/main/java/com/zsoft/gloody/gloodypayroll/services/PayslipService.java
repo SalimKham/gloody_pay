@@ -14,6 +14,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingElementDto;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.set.TransformedNavigableSet;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -38,6 +39,7 @@ public class PayslipService {
     private final SpringTemplateEngine templateEngine;
     private ScriptEngine engine;
     private final PerRequestElements perRequestElements;
+    private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
 
     public String print(PayslipSettingDto dto) {
         EmployeeDto employeeDto = dto.getEmployee();
@@ -50,7 +52,7 @@ public class PayslipService {
         } else {
             employeeService.update(employeeDto);
         }*/
-        LinkedList<PayslipElementDto> elements = calculate(dto);
+        Set<PayslipElementDto> elements = calculate(dto);
         Locale locale = Locale.getDefault();
         Context context = new Context(locale);
         context.setVariable("locale", locale);
@@ -59,10 +61,16 @@ public class PayslipService {
         return templateEngine.process("payslip/template", context);
     }
 
-    public LinkedList<PayslipElementDto> calculate(PayslipSettingDto dto) {
+    public TreeSet<PayslipElementDto> calculate(PayslipSettingDto dto) {
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
         dictionaryService.setVariables(dto, period);
-        perRequestElements.setCalculatedElements(new LinkedList<>());
+        TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>(new Comparator<PayslipElementDto>() {
+            @Override
+            public int compare(PayslipElementDto o1, PayslipElementDto o2) {
+                return Integer.compare(indexOf(o1), indexOf(o2));
+            }
+        });
+        perRequestElements.setCalculatedElements(calculatedElements);
         perRequestElements.setSettingsElements(dto.getElements());
         perRequestElements.setShowIntermediate(dto.isShowIntermediate());
         PayslipElementDto baseSalaryElement = calculateBaseSalary(dto.getElements());
@@ -120,6 +128,11 @@ public class PayslipService {
 
          */
         return   perRequestElements.getCalculatedElements();
+    }
+
+    private int indexOf(PayslipElementDto elementDto) {
+        EMPTY_SETTING_ELEMENT.setSection(elementDto.getCode());
+        return perRequestElements.getSettingsElements().indexOf(EMPTY_SETTING_ELEMENT);
     }
 
     private PayslipElementDto calculateBaseSalary(List<PayslipSettingElementDto> elements) {
@@ -236,6 +249,16 @@ public class PayslipService {
         return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
     }
 
+    public void addCalculatedElement( PayslipElementDto element) {
+        EMPTY_SETTING_ELEMENT.setSection(element.getCode());
+        if (!perRequestElements.getSettingsElements().contains(EMPTY_SETTING_ELEMENT)) {
+            return;
+        }
+        if ((perRequestElements.isShowIntermediate() && element.isTotal()) || !element.isTotal() ) {
+            perRequestElements.getCalculatedElements().add(element);
+        }
+    }
+
 
     private PayslipElementDto calculateSection(String code, String label,  Double baseValue, Double rateValue, Double value) {
         AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
@@ -247,9 +270,7 @@ public class PayslipService {
                 if (section.isTotal()) {
                     elementDto.set(getTotalElement(label == null ? section.getLabel() : label));
                     elementDto.get().setCode(code);
-                    if (perRequestElements.isShowIntermediate()) {
-                        perRequestElements.getCalculatedElements().add(elementDto.get());
-                    }
+                    addCalculatedElement(elementDto.get());
                     return;
                 }
                 elementDto.get().setCode(code);
@@ -289,9 +310,7 @@ public class PayslipService {
                 }
                 elementDto.get().setGain(gain);
                 elementDto.get().setDeduction(deduction);
-                if ((perRequestElements.isShowIntermediate() && elementDto.get().isTotal()) || !elementDto.get().isTotal() ) {
-                    perRequestElements.getCalculatedElements().add(elementDto.get());
-                }
+                addCalculatedElement(elementDto.get());
             });
         }
 

@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PayslipConfigRepository extends JpaRepository<SectionCategory, String> {
+public interface PayslipConfigRepository extends JpaRepository<SectionCategory, Long> {
      @Nonnull
      @OrderBy("code asc")
      List<SectionCategory> findByCompany(Long company);
+     Optional<SectionCategory> findByCodeAndCompany(String code, Long company);
 }

@@ -4,9 +4,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingElementDto;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,5 +13,6 @@ import java.util.List;
 public class PerRequestElements {
     private boolean showIntermediate;
     private List<PayslipSettingElementDto> settingsElements = new ArrayList<>();
-    private LinkedList<PayslipElementDto> calculatedElements = new LinkedList<>();
+    private TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>() {
+    };
 }

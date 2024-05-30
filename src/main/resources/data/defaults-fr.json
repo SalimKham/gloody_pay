@@ -1,0 +1,464 @@
+{
+  "default_section_codes" : [
+    {
+      "key": "BASE_SALARY",
+      "code": "R001"
+    },
+    {
+      "key": "GROSS_TOTAL",
+      "code": "R100"
+    },
+    {
+      "key": "POSITION_SALARY",
+      "code": "R101"
+    },
+    {
+      "key": "SOCIAL_CHARGE",
+      "code": "R102"
+    },
+    {
+      "key": "TAXABLE_SALARY",
+      "code": "R103"
+    },
+    {
+      "key": "NET_SALARY",
+      "code": "R104"
+    },
+    {
+      "key": "PRIMES",
+      "code": "R105"
+    },
+    {
+      "key": "SALARY",
+      "code": "R999"
+    },
+    {
+      "key": "ABSENCE",
+      "code": "R822"
+    }
+  ],
+  "default-variables": [
+    {
+      "key": "BASE_SALARY",
+      "formula": "0"
+    },
+    {
+      "key": "DAYS_NBR",
+      "formula": "22"
+    },
+    {
+      "key": "WORKING_DAYS_NBR",
+      "formula": "22"
+    },
+    {
+      "key": "HOURS_NBR",
+      "formula": "151.67"
+    },
+    {
+      "key": "WORKING_HOURS_NBR",
+      "formula": "151.67"
+    },
+    {
+      "key": "IS_DAILY_RATE",
+      "formula": "true"
+    },
+    {
+      "key": "IS_HOURLY_RATE",
+      "formula": "false"
+    },
+    {
+      "key": "DAYS_BY_WEEK",
+      "formula": "5"
+    },
+    {
+      "key": "HOURS_BY_WEEK",
+      "formula": "40"
+    }
+  ],
+  "default-categories": [
+    {
+      "code": "C001",
+      "name": "Imposable cotisable"
+    },
+    {
+      "code": "C002",
+      "name": "Imposable non cotisable"
+    },
+    {
+      "code": "C003",
+      "name": "Cotisable non imposable"
+    },
+    {
+      "code": "C004",
+      "name": "Non imposable non cotisable"
+    },
+    {
+      "code": "C005",
+      "name": "charge"
+    },
+    {
+      "code": "C006",
+      "name": "Brute"
+    },
+    {
+      "code": "C007",
+      "name": "Imposition"
+    },
+    {
+      "code": "C999",
+      "name": ""
+    }
+  ],
+  "default-sections": [
+    {
+      "code": "R001",
+      "label": "Salaire de base",
+      "description": "",
+      "category": "C001",
+      "type": "SALARY",
+      "baseFormula": "IS_HOURLY_RATE ? BASE_SALARY / HOURS_NBR : BASE_SALARY / DAYS_NBR",
+      "rateFormula": "IS_HOURLY_RATE ? HOURS_NBR : DAYS_NBR",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R041",
+      "label": "Heures Supplémentaires (25%)",
+      "description": "",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "(BASE_SALARY / HOURS_NBR) * 0.25",
+      "rateFormula": "",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R042",
+      "label": "Heures Supplémentaires (50%)",
+      "description": "",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "(BASE_SALARY / HOURS_NBR) * 0.5",
+      "rateFormula": "",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R043",
+      "label": "Heures Supplémentaires (75%)",
+      "description": "",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "(BASE_SALARY / HOURS_NBR) * 0.75",
+      "rateFormula": "",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R044",
+      "label": "Heures Supplémentaires (100%)",
+      "description": "",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "(BASE_SALARY / HOURS_NBR)",
+      "rateFormula": "",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R100",
+      "label": "Total brut",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "baseFormula": null,
+      "rateFormula": null,
+      "valueFormula": "BASE_SALARY+CAT_C006"
+    },
+    {
+      "code": "R101",
+      "label": "Salaire du poste",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "baseFormula": null,
+      "rateFormula": null,
+      "valueFormula": "R100+CAT_C001"
+    },
+    {
+      "code": "R102",
+      "label": "Charges à payer aux comptes sociaux",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "valueFormula": "CAT_C005"
+    },
+    {
+      "code": "R103",
+      "label": "Salaire Imposable",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "valueFormula": "R101 + CAT_C005 + CAT_C002"
+    },
+    {
+      "code": "R104",
+      "label": "Salaire net",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "valueFormula": "R103  + CAT_C007 "
+    },
+    {
+      "code": "R105",
+      "label": "Charges et primes",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "valueFormula": "CAT_C004"
+    },
+    {
+      "code": "R280",
+      "label": "Nuisance",
+      "description": "",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "R100",
+      "rateFormula": "0.10",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R510",
+      "label": "Retenue Securité Sociale",
+      "description": "",
+      "category": "C005",
+      "type": "DEDUCTION",
+      "baseFormula": "R101",
+      "rateFormula": "0.09",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R523",
+      "label": "Prime",
+      "description": "",
+      "category": "C004",
+      "type": "GAIN",
+      "rateFormula": "1",
+      "valueFormula": "BASE_SALARY * RATE"
+    },
+    {
+      "code": "R522",
+      "label": "Prime de panier",
+      "description": "",
+      "category": "C002",
+      "type": "GAIN",
+      "baseFormula": "150",
+      "rateFormula": "WORKING_DAYS_NBR",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R532",
+      "label": "Prime de transport",
+      "description": "",
+      "category": "C002",
+      "type": "GAIN",
+      "valueFormula": "1200"
+    },
+    {
+      "code": "R540",
+      "label": "Retenue Cacobath",
+      "description": "",
+      "category": "C005",
+      "type": "DEDUCTION",
+      "baseFormula": "R101",
+      "rateFormula": "0.375",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R541",
+      "label": "Notes de frais",
+      "description": "",
+      "category": "C004",
+      "type": "GAIN"
+    },
+    {
+      "code": "R542",
+      "label": "Prêts",
+      "description": "",
+      "category": "C004",
+      "type": "DEDUCTION"
+    },
+    {
+      "code": "R660",
+      "label": "Retenue IRG",
+      "description": "",
+      "category": "C007",
+      "type": "DEDUCTION",
+      "rateFormula": "IS_HOURLY_RATE ? R103 * HOURS_NBR / WORKING_HOURS_NBR : R103 * DAYS_NBR / WORKING_DAYS_NBR",
+      "valueFormula": "IS_HOURLY_RATE ? IRG(BASE) * WORKING_HOURS_NBR / HOURS_NBR : IRG(BASE) * WORKING_DAYS_NBR / DAYS_NBR"
+    },
+    {
+      "code": "R713",
+      "label": "Frais déplacement",
+      "description": "",
+      "category": "C004",
+      "type": "GAIN"
+    },
+    {
+      "code": "R714",
+      "label": "Salaire unique",
+      "description": "",
+      "category": "C004",
+      "type": "GAIN"
+    },
+    {
+      "code": "R790",
+      "label": "Conge",
+      "description": "",
+      "category": "C001",
+      "type": "GAIN"
+    },
+    {
+      "code": "R822",
+      "label": "Absence",
+      "description": "",
+      "category": "C006",
+      "type": "DEDUCTION",
+      "baseFormula": "IS_HOURLY_RATE ? BASE_SALARY / HOURS_NBR : BASE_SALARY / DAYS_NBR",
+      "rateFormula": "ABSENCES",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R998",
+      "label": "Total",
+      "description": "",
+      "category": "C999",
+      "type": "TOTAL"
+    },
+    {
+      "code": "R999",
+      "label": "NET à payer",
+      "description": "",
+      "category": "C999",
+      "type": "INTERMEDIATE",
+      "valueFormula": "R104+105"
+    },
+    {
+      "code": "R261",
+      "label": "I.E.P.",
+      "description": "Indemnité d'expérience professionnel",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "R100",
+      "rateFormula": "0.15",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R262",
+      "label": "I.F.S.P.",
+      "description": "Indemnité forfaitaire du service permanent",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "R100",
+      "rateFormula": "0.3",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R263",
+      "label": "I.F.R.I.",
+      "description": "Indemnité forfaitaire région isolée",
+      "category": "C002",
+      "type": "GAIN",
+      "baseFormula": "R100",
+      "rateFormula": "0.02",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R282",
+      "label": "P.R.C.",
+      "description": "Prime de rendement collectif",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "R100",
+      "rateFormula": "0.2",
+      "valueFormula": "BASE * RATE"
+    },
+    {
+      "code": "R281",
+      "label": "P.R.I.",
+      "category": "C001",
+      "type": "GAIN",
+      "baseFormula": "R100",
+      "rateFormula": "0.1",
+      "valueFormula": "BASE * RATE"
+    }
+  ],
+"default-templates": [
+  {
+  "name": "Modèle par défaut",
+  "elements": [
+    {
+      "sectionCode": "R001"
+    },
+    {
+      "sectionCode": "R822"
+    },
+    {
+      "sectionCode": "R100"
+    },
+    {
+      "sectionCode": "R280"
+    },
+    {
+      "sectionCode": "R281"
+    },
+    {
+      "sectionCode": "R282"
+    },
+    {
+      "sectionCode": "R261"
+    },
+    {
+      "sectionCode": "R101"
+    },
+    {
+      "sectionCode": "R510"
+    },
+    {
+      "sectionCode": "R540"
+    },
+    {
+      "sectionCode": "R102"
+    },
+    {
+      "sectionCode": "R263"
+    },
+    {
+      "sectionCode": "R522"
+    },
+    {
+      "sectionCode": "R532"
+    },
+    {
+      "sectionCode": "R103"
+    },
+    {
+      "sectionCode": "R660"
+    },
+    {
+      "sectionCode": "R104"
+    },
+    {
+      "sectionCode": "R714"
+    },
+    {
+      "sectionCode": "R713"
+    },
+    {
+      "sectionCode": "R105"
+    },
+    {
+      "sectionCode": "R998"
+    },
+    {
+      "sectionCode": "R999"
+    }
+  ]
+}
+]
+}

@@ -21,16 +21,23 @@ public class PayslipSettingController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("templates/find_first")
-    public ResponseEntity<PayslipSettingDto> findFirst() {
-        return payslipSettingService.findByEmployeeId(null)
+    @GetMapping("templates/default_template")
+    public ResponseEntity<PayslipSettingDto> findDefaultTemplate() {
+        return payslipSettingService.findDefaultTemplate()
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/templates/{companyId}")
-    public ResponseEntity<Page<PayslipSettingDto>> findTemplates(@PathVariable("companyId") Long companyId, Pageable pageable) {
-        Page<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(companyId, pageable);
+    @GetMapping("templates/mark_as_default/{id}")
+    public ResponseEntity<PayslipSettingDto> markAsDefault(@PathVariable(name = "id") Long templateId) {
+        return payslipSettingService.markAsDefault(templateId)
+                .map(result -> ResponseEntity.ok().body(result))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/templates")
+    public ResponseEntity<Page<PayslipSettingDto>> findTemplates(Pageable pageable) {
+        Page<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(pageable);
         return  ResponseEntity.ok().body(result);
     }
 

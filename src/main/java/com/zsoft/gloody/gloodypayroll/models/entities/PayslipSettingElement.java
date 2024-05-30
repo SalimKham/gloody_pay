@@ -23,7 +23,7 @@ public class PayslipSettingElement extends CompanySupport {
     @ToString.Exclude
     private PayslipSetting payslipSetting;
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "section_code", referencedColumnName = "code")
+    @JoinColumn(name = "section", referencedColumnName = "id")
     @ToString.Exclude
     private Section section;
     @Column(name = "value")
