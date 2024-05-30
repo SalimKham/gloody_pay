@@ -10,11 +10,9 @@ import com.zsoft.gloody.gloodypayroll.services.IrgCalculatorService;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.security.SecurityUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.annotation.RequestScope;
-import org.springframework.web.context.annotation.SessionScope;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;

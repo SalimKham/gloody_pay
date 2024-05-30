@@ -183,7 +183,7 @@ public class CompanyDefaultConfigurationService {
             File file = ResourceUtils.getFile("classpath:data/" + path);
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readTree(file);
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
         return null;
     }
