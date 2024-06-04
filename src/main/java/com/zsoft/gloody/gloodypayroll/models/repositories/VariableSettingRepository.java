@@ -11,4 +11,5 @@ public interface VariableSettingRepository extends JpaRepository<VariableSetting
     Optional<VariableSetting> findByKey(String key);
 
     boolean existsByKey(String key);
+    void deleteBySource(String key);
 }

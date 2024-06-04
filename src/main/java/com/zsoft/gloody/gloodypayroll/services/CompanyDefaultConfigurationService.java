@@ -51,6 +51,8 @@ public class CompanyDefaultConfigurationService {
             VariableSetting variableSetting = VariableSetting.builder()
                     .key(obj.get("key").asText())
                     .formula(obj.get("formula").asText())
+                    .label(obj.has("label") ? obj.get("label").asText() : null)
+                    .description(obj.has("description") ? obj.get("description").asText() : null)
                     .updatedAt(LocalDateTime.now())
                     .company(companyId)
                     .build();

@@ -1,4 +1,5 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
+import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import lombok.*;
 
 @Getter
@@ -17,6 +18,7 @@ public class SectionDto {
     private boolean ratePercent;
     private String rateFormula;
     private String valueFormula;
+    private SectionNature nature = SectionNature.TAXABLE_CONTRIBUTORY;
     private SectionCategoryDto category;
     private Long company;
 }

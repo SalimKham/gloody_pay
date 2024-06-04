@@ -21,6 +21,12 @@ public class PayslipSettingController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @DeleteMapping("/templates/{id}")
+    public ResponseEntity<Page<PayslipSettingDto>> deleteTemplate(@PathVariable("id") Long id, Pageable pageable) {
+        Page<PayslipSettingDto> result = payslipSettingService.deleteTemplate(id, pageable);
+         return ResponseEntity.ok().body(result);
+    }
+
     @GetMapping("templates/default_template")
     public ResponseEntity<PayslipSettingDto> findDefaultTemplate() {
         return payslipSettingService.findDefaultTemplate()

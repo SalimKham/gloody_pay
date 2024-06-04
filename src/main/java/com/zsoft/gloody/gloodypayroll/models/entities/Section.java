@@ -1,5 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -46,6 +47,10 @@ public class Section extends CompanySupport {
     @JoinColumn(name = "category", nullable = false)
     @ToString.Exclude
     private SectionCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nature")
+    private SectionNature nature;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "parental_id")

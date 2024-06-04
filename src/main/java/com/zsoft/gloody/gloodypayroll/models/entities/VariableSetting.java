@@ -19,9 +19,19 @@ public class VariableSetting extends CompanySupport {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "`key`")
+    @Column(name = "`key`", unique = true)
     private String key;
+
+    @Column(name = "source")
+    private String source;
 
     @Column(name = "`formula`")
     private String formula;
+
+    @Column(name = "label")
+    private String label;
+
+
+    @Column(name = "description")
+    private String description;
 }

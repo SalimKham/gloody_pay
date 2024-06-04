@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add-nature-column-to-section" author="SALIM KHAM">
+        <addColumn tableName="section">
+            <column name="nature" type="VARCHAR(100)" afterColumn="category"/>
+        </addColumn>
+        <sql>
+            update section s SET s.nature='TAXABLE_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and sc.code = 'C001' );
+            update section s SET s.nature='TAXABLE_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and  sc.code = 'C006'  );
+            update section s SET s.nature='TAXABLE_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and sc.code = 'C005' );
+            update section s SET s.nature='NOT_TAXABLE_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and sc.code = 'C003');
+            update section s SET s.nature='TAXABLE_NOT_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and sc.code = 'C002' );
+            update section s SET s.nature='NOT_TAXABLE_NOT_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and sc.code = 'C004');
+            update section s SET s.nature='NOT_TAXABLE_NOT_CONTRIBUTORY' WHERE EXISTS(SELECT 1 FROM section_category sc where sc.id = s.category and sc.code = 'C007' );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

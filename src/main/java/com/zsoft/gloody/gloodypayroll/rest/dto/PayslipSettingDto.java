@@ -3,6 +3,7 @@ import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -24,4 +25,5 @@ public class PayslipSettingDto {
     private boolean showIntermediate = false;
     @Builder.Default
     private LocalDate paymentDate = LocalDate.now();
+    private List<VariableSettingDto> variables = Collections.emptyList();
 }

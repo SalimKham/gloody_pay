@@ -72,4 +72,9 @@ public class PayslipSettingService extends CompanySupportService {
         payslipSetting = this.payslipSettingRepository.save(payslipSetting);
         return this.payslipSettingMapper.toDto(payslipSetting);
     }
+
+    public Page<PayslipSettingDto> deleteTemplate(Long templateId, Pageable pageable) {
+        payslipSettingRepository.deleteById(templateId);
+        return findAllTemplates(pageable);
+    }
 }

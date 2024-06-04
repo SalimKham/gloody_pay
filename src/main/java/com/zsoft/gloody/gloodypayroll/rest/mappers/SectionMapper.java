@@ -30,6 +30,7 @@ public abstract class SectionMapper {
             return null;
         }
         return SectionCategoryDto.builder()
+                .id(sectionCategory.getId())
                 .name(sectionCategory.getName())
                 .code(sectionCategory.getCode())
                 .company(sectionCategory.getCompany())

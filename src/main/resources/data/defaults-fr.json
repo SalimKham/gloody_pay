@@ -40,18 +40,32 @@
   "default-variables": [
     {
       "key": "BASE_SALARY",
+      "label": "Salaire de base",
+      "description": "Salaire de base",
+      "formula": "0"
+    },
+    {
+      "key": "IRG(BASE)",
+      "label": "Retenue IRG",
+      "description": "Retenue IRG",
       "formula": "0"
     },
     {
       "key": "DAYS_NBR",
+      "label": "Nombre de jours",
+      "description": "Nombre de jours",
       "formula": "22"
     },
     {
       "key": "WORKING_DAYS_NBR",
+      "label": "Nombre de jours ouvrables",
+      "description": "Nombre de jours ouvrables",
       "formula": "22"
     },
     {
       "key": "HOURS_NBR",
+      "label": "Nombre d'heures",
+      "description": "Nombre d'heures",
       "formula": "151.67"
     },
     {
@@ -68,10 +82,14 @@
     },
     {
       "key": "DAYS_BY_WEEK",
+      "label": "Jours par semaine",
+      "description": "Jours par semaine",
       "formula": "5"
     },
     {
       "key": "HOURS_BY_WEEK",
+      "label": "Heures par semaine",
+      "description": "Heures par semaine",
       "formula": "40"
     }
   ],

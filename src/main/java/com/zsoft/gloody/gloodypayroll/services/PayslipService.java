@@ -317,7 +317,7 @@ public class PayslipService {
     }
 
     private void calculateFormulaVariables(String formula) {
-        Pattern pattern = Pattern.compile("([A-Z]\\d+)|(CAT_[A-Z]\\d+)", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("(w+)|(CAT_[A-Z]\\d+)", Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
         while (m.find()) {
@@ -341,6 +341,9 @@ public class PayslipService {
         try {
             engine.setBindings(context, ScriptContext.GLOBAL_SCOPE);
             Object result = engine.eval(formula);
+            if (result instanceof String) {
+                return new BigDecimal(String.valueOf(result));
+            }
             if (result instanceof BigDecimal) {
                 return (BigDecimal) result;
             }

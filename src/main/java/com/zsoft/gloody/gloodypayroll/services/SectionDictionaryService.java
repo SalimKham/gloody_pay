@@ -5,6 +5,7 @@ import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
 import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipAbsenceDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -13,19 +14,20 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @RequiredArgsConstructor
 public class SectionDictionaryService extends CompanySupportService {
-    private final VariableSettingRepository settingRepository;
+   private final VariableSettingRepository settingRepository;
     private LinkedHashMap<String, Object> variables;
     private final  ScriptEngine engine;
 
     @PostConstruct
     private void initVariables() {
         variables = new LinkedHashMap<>();
-        settingRepository.findAll().forEach(setting -> {
+       /* settingRepository.findAll().forEach(setting -> {
             try {
 
                 Object result = engine.eval(setting.getFormula());
@@ -34,7 +36,7 @@ public class SectionDictionaryService extends CompanySupportService {
                 }
             } catch (ScriptException ignored) {
             }
-        });
+        });*/
         setVariable(IRG_YEAR, LocalDate.now().getYear());
     }
 
@@ -63,6 +65,13 @@ public class SectionDictionaryService extends CompanySupportService {
         if (dto == null) {
             return;
         }
+        variables.putAll(dto.getVariables()
+                .stream()
+                .collect(Collectors.
+                        toMap(VariableSettingDto::getKey,
+                                variableSettingDto -> variableSettingDto.getFormula() != null ? variableSettingDto.getFormula() : "0")
+                )
+        );
         setVariable(PAYMENT_START, DateUtils.startOfMonth(period.getStart()));
         setVariable(PAYMENT_END, DateUtils.endOfMonth(period.getEnd()));
         setVariable(IRG_YEAR, period.getStart().getYear());
