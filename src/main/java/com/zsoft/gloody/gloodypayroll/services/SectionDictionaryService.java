@@ -2,7 +2,6 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
-import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipAbsenceDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
@@ -10,8 +9,6 @@ import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 
 import jakarta.annotation.PostConstruct;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,9 +17,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @RequiredArgsConstructor
 public class SectionDictionaryService extends CompanySupportService {
-   private final VariableSettingRepository settingRepository;
     private LinkedHashMap<String, Object> variables;
-    private final  ScriptEngine engine;
 
     @PostConstruct
     private void initVariables() {

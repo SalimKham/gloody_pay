@@ -1,6 +1,5 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
-import com.zsoft.gloody.gloodypayroll.models.entities.VariableSetting;
 import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.VariableMapper;
@@ -9,9 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
