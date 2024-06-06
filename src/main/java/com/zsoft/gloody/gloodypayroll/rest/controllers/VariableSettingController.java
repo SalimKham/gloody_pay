@@ -29,13 +29,13 @@ public class VariableSettingController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Page<VariableSettingDto>> findAll(@PathVariable(name = "id") Long variableId, Pageable pageable) {
+    public ResponseEntity<Page<VariableSettingDto>> deleteById(@PathVariable(name = "id") Long variableId, Pageable pageable) {
         Page<VariableSettingDto> result = variableService.delete(variableId, pageable);
         return ResponseEntity.ok().body(result);
     }
 
     @DeleteMapping("/source/{source}")
-    public ResponseEntity<Void> findAll(@PathVariable String source) {
+    public ResponseEntity<Void> deleteBySource(@PathVariable String source) {
         variableService.delete(source);
         return ResponseEntity.ok().build();
     }

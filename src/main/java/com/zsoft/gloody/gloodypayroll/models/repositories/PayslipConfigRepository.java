@@ -15,4 +15,5 @@ public interface PayslipConfigRepository extends JpaRepository<SectionCategory, 
      @OrderBy("code asc")
      List<SectionCategory> findByCompany(Long company);
      Optional<SectionCategory> findByCodeAndCompany(String code, Long company);
+     Optional<SectionCategory> findByIdAndCompany(Long id, Long company);
 }

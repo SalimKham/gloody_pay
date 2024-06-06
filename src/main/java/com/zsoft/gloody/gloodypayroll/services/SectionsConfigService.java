@@ -36,7 +36,8 @@ public class SectionsConfigService extends CompanySupportService {
    }
 
     public Optional<List<SectionCategoryDto>> saveCategory(SectionCategoryDto category) {
-       SectionCategory sectionCategory = payslipConfigRepository.findByCodeAndCompany(category.getCode(), SecurityUtils.getCurrentCompanyId()).orElse(new SectionCategory());
+       SectionCategory sectionCategory = payslipConfigRepository.findByIdAndCompany(category.getId(), SecurityUtils.getCurrentCompanyId()).orElse(new SectionCategory());
+       sectionCategory.setId(category.getId());
        sectionCategory.setCompany(category.getCompany());
        sectionCategory.setCode(category.getCode());
        sectionCategory.setName(category.getName());
@@ -46,7 +47,7 @@ public class SectionsConfigService extends CompanySupportService {
 
     public Optional<List<SectionCategoryDto>> deleteCategory(Long id) {
         SectionCategory sectionCategory = payslipConfigRepository.findById(id).orElse(new SectionCategory());
-        if (sectionCategory != null) {
+        if (sectionCategory.getId() != null) {
             payslipConfigRepository.delete(sectionCategory);
             return getByCompany(sectionCategory.getCompany());
         }
