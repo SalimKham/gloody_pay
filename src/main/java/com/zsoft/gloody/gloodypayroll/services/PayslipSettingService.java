@@ -41,8 +41,9 @@ public class PayslipSettingService extends CompanySupportService {
         return this.payslipSettingRepository.findById(id).map(this.payslipSettingMapper::toDto);
     }
 
-    public Page<PayslipSettingDto> findAllTemplates(Pageable pageable) {
-        return this.payslipSettingRepository.findAll( pageable)
+    public Page<PayslipSettingDto> findAllTemplates(String query, Pageable pageable) {
+        query = query == null ? "%%" : "%" + query + "%";
+        return this.payslipSettingRepository.findAllByNameLike( query, pageable)
                 .map(this.payslipSettingMapper::toDto);
     }
 
@@ -75,6 +76,6 @@ public class PayslipSettingService extends CompanySupportService {
 
     public Page<PayslipSettingDto> deleteTemplate(Long templateId, Pageable pageable) {
         payslipSettingRepository.deleteById(templateId);
-        return findAllTemplates(pageable);
+        return findAllTemplates("", pageable);
     }
 }

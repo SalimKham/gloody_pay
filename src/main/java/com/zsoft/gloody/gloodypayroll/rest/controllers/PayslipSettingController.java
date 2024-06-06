@@ -42,8 +42,8 @@ public class PayslipSettingController {
     }
 
     @GetMapping("/templates")
-    public ResponseEntity<Page<PayslipSettingDto>> findTemplates(Pageable pageable) {
-        Page<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(pageable);
+    public ResponseEntity<Page<PayslipSettingDto>> findTemplates( @RequestParam(name = "query", required = false) String query,  Pageable pageable) {
+        Page<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(query, pageable);
         return  ResponseEntity.ok().body(result);
     }
 
