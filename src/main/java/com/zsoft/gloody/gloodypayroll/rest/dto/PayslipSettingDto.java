@@ -25,5 +25,6 @@ public class PayslipSettingDto {
     private boolean showIntermediate = false;
     @Builder.Default
     private LocalDate paymentDate = LocalDate.now();
+    private boolean byDefault;
     private List<VariableSettingDto> variables = Collections.emptyList();
 }

@@ -14,10 +14,12 @@ import java.util.Optional;
 @Repository
 public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, Long> {
      @Nonnull
-    Optional<PayslipSetting> findTopByTemplateOrderByIdAsc(boolean template);
+    Optional<PayslipSetting> findTopByByDefaultOrderByIdAsc(boolean template);
      Page<PayslipSetting> findAllByCompanyAndTemplate(Long company, boolean template, Pageable pageable);
      @Modifying
-     @Query("UPDATE PayslipSetting  p SET p.template = CASE WHEN p.id =:template_id THEN true ELSE false END")
+     @Query("UPDATE PayslipSetting  p SET p.byDefault = CASE WHEN p.id =:template_id THEN true ELSE false END")
      void markAsDefault(@Param("template_id") Long templateId);
-    Page<PayslipSetting> findAllByNameLike(String query, Pageable pageable);
+    Page<PayslipSetting> findAllByNameLikeAndTemplateIsTrue(String query, Pageable pageable);
+    @Query("SELECT ps FROM PayslipSetting ps where ps.employee = :employee_id AND MONTH(ps.paymentDate) = MONTH(CURRENT_DATE ) AND YEAR(ps.paymentDate) = YEAR (CURRENT_DATE) ")
+    Optional<PayslipSetting> findByEmployeeAndCurrentMonth(@Param("employee_id") Long employeeId);
 }

@@ -8,9 +8,11 @@ import org.mapstruct.*;
 
 @Mapper(uses = {EmployeeMapper.class, SectionMapper.class})
 public abstract class PayslipSettingMapper {
+    @Mapping(target = "employee.id", source = "employee")
     public abstract PayslipSettingDto toDto(PayslipSetting setting);
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
+    @Mapping(source = "employee.id", target = "employee")
     public abstract PayslipSetting toEntity(PayslipSettingDto settingDto);
 
     @Mapping(target = "payslipSettingId", source = "payslipSetting.id")

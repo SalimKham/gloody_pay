@@ -21,11 +21,17 @@ public class PayslipSetting extends CompanySupport {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Column(name = "employee_id")
+    private Long employee;
+
     @Column(name = "show_intermediate")
     private boolean showIntermediate;
 
     @Column(name = "template")
     private boolean template;
+
+    @Column(name = "is_default")
+    private boolean byDefault;
 
     @Column(name = "name")
     private String name;

@@ -15,8 +15,8 @@ public class PayslipSettingController {
     private final PayslipSettingService payslipSettingService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PayslipSettingDto> findById(@PathVariable("id") Long id) {
-        return payslipSettingService.findById(id)
+    public ResponseEntity<PayslipSettingDto> findById(@PathVariable("id") Long id, @RequestParam(name = "employee_id", required = false) Long employeeId) {
+        return payslipSettingService.findById(id, employeeId)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -28,8 +28,8 @@ public class PayslipSettingController {
     }
 
     @GetMapping("templates/default_template")
-    public ResponseEntity<PayslipSettingDto> findDefaultTemplate() {
-        return payslipSettingService.findDefaultTemplate()
+    public ResponseEntity<PayslipSettingDto> findDefaultTemplate(@RequestParam(name = "employee_id", required = false) Long employeeId) {
+        return payslipSettingService.findDefaultTemplate(employeeId)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
     }
