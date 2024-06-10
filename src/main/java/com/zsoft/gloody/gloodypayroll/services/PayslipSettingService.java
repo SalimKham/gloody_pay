@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -66,6 +68,7 @@ public class PayslipSettingService extends CompanySupportService {
     @Transactional
     public PayslipSettingDto save(PayslipSettingDto dto) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
+        payslipSetting.setPaymentDate(LocalDate.now());
         if (payslipSetting.getEmployee() != null) {
            Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee()).map(PayslipSetting::getId).orElse(null);
            payslipSetting.setId(id);
