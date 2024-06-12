@@ -308,17 +308,17 @@ public class PayslipService {
     }
 
     private void calculateFormulaVariables(String formula) {
-        Pattern pattern = Pattern.compile("(w+)|(NTR_[A-Z]+)", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("(R[0-9]+)|(NTR_[A-Z]+)", Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
         while (m.find()) {
             sections.add(m.group());
         }
-        sections.forEach(code -> {
+        for (String code : sections) {
             if (!dictionaryService.hasVariable(code)) {
                 calculateSection(code, null, null, null, null);
             }
-        });
+        }
     }
 
     private BigDecimal calculateSectionValue(String formula, Double value, Bindings context, SectionNature nature) {
@@ -357,5 +357,11 @@ public class PayslipService {
         } catch (ScriptException e) {
             return ZERO;
         }
+    }
+
+    public static void main(String[] args) {
+        Pattern pattern = Pattern.compile("([A-Z0-9]+)|(NTR_[A-Z]+)", Pattern.MULTILINE);
+        Matcher m = pattern.matcher("NTR_TC");
+        System.out.println(m.matches());
     }
 }
