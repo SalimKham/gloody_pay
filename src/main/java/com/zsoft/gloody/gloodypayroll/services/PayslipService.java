@@ -358,10 +358,4 @@ public class PayslipService {
             return ZERO;
         }
     }
-
-    public static void main(String[] args) {
-        Pattern pattern = Pattern.compile("([A-Z0-9]+)|(NTR_[A-Z]+)", Pattern.MULTILINE);
-        Matcher m = pattern.matcher("NTR_TC");
-        System.out.println(m.matches());
-    }
 }
