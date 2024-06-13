@@ -2,10 +2,13 @@ package com.zsoft.gloody.gloodypayroll.models.entities;
 
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
+import com.zsoft.gloody.gloodypayroll.support.StringListConverter;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -51,6 +54,10 @@ public class Section extends CompanySupport {
     @Enumerated(EnumType.STRING)
     @Column(name = "nature")
     private SectionNature nature;
+
+    @Convert(converter = StringListConverter.class)
+    @Column(name="label_keys")
+    private List<String> labelKeys;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "parental_id")

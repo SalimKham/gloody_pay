@@ -2,6 +2,9 @@ package com.zsoft.gloody.gloodypayroll.rest.dto;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import lombok.*;
 
+import java.util.Collections;
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -20,5 +23,6 @@ public class SectionDto {
     private String valueFormula;
     private SectionNature nature = SectionNature.TAXABLE_CONTRIBUTORY;
     private SectionCategoryDto category;
+    private List<String> labelKeys = Collections.emptyList();
     private Long company;
 }
