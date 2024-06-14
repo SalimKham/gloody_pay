@@ -335,7 +335,7 @@ public class PayslipService {
     }
 
     private void calculateFormulaVariables(String formula) {
-        Pattern pattern = Pattern.compile("(R[0-9]+)|(NTR_[A-Z]+)|(LBL_[A-Z0-9]+)", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("(R[0-9]+)|(NTR_[A-Z]+)|(LBL_[A-Z0-9_]+)", Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
         while (m.find()) {
