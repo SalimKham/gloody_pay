@@ -1,7 +1,6 @@
 stages:
   - build
   - deploy
-  -
 # Staging Environment
 build_staging:
   stage: build
