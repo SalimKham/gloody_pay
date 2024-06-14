@@ -1,22 +1,33 @@
-build_production:
+stages:
+  - build
+  - deploy
+  -
+# Staging Environment
+build_staging:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17-alpine
   script:
-    - mvn clean install -Dmaven.test.skip=true -Denv=production
+    - mvn clean install -Dmaven.test.skip=false -Denv=develop
   only:
-    - master
+    - staging
   artifacts:
-    name: "gloody-pay-production-$CI_COMMIT_REF_NAME"
+    name: "gloody-pay--staging-$CI_COMMIT_REF_NAME"
     paths:
       - ./target
     expire_in: 1 day
-deploy_prod:
+
+deploy_staging:
   stage: deploy
   image: python:3.9.1
   dependencies:
-    - build_production
+    - build_staging
   script:
-
+    - pip install awscli
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set region eu-west-3
+    - aws s3 cp ./target/gloody-payroll-develop.war s3://ssii-back/pay/Staging/Versions/gloody-payroll-develop-$CI_PIPELINE_ID.war
+    - aws elasticbeanstalk create-application-version --application-name "$AWS_EBS_APP" --version-label gloody-payroll-develop-$CI_PIPELINE_ID --source-bundle S3Bucket=ssii-back,S3Key=Staging/Versions/gloody-payroll-develop-$CI_PIPELINE_ID.war
+    - aws elasticbeanstalk update-environment --application-name "$AWS_EBS_APP" --environment-name "$AWS_EBS_ENV_STAGING" --version-label gloody-payroll-develop-$CI_PIPELINE_ID
   only:
-    - master
-  when: manual
+    - staging
