@@ -158,7 +158,7 @@ public class PayslipService {
     private void calculateByLabel(String label) {
         for (PayslipSettingElementDto element :   perRequestElements.getSettingsElements()) {
             Section section = companySections.findByCode(element.getSection()).orElse(null);
-            if (section == null || section.getNature() == null) {
+            if (section == null) {
                 continue;
             }
             boolean isInCategory = section.getLabelKeys() != null && section.getLabelKeys().contains(label);
