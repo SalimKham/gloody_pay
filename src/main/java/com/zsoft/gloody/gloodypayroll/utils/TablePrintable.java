@@ -4,7 +4,6 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
-import java.util.List;
 
 public class TablePrintable {
     private TablePrintable() {
@@ -70,11 +69,4 @@ public class TablePrintable {
         System.out.println(result);
     }
 
-    public static void main(String[] args) {
-        LinkedList<PayslipElementDto> elements = new LinkedList<>(List.of(
-                new PayslipElementDto("R001", "Salaire de base", null, BigDecimal.valueOf(329.67), BigDecimal.valueOf(151.667), BigDecimal.valueOf(50000.00), null, false),
-                new PayslipElementDto("R280", "Nuisance", null, BigDecimal.valueOf(50000.00), BigDecimal.valueOf(5.000), BigDecimal.valueOf(2500.00), null, false)
-        ));
-        TablePrintable.print(elements);
-    }
 }

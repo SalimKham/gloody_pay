@@ -294,6 +294,7 @@ public class PayslipService {
                 elementDto.get().setLabel(label == null ? section.getLabel() : label);
                 elementDto.get().setDescription(section.getDescription());
                 elementDto.get().setTotal(section.isIntermediate());
+                elementDto.get().setRatePercent(section.isRatePercent());
                 Bindings context = new SimpleBindings(dictionaryService.getAllVariables());
                 BigDecimal sectionValue;
                     BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context, section.getNature());

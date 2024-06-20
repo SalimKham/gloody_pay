@@ -19,6 +19,7 @@ public class PayslipElementDto {
     private BigDecimal rate;
     private BigDecimal gain;
     private BigDecimal deduction;
+    private boolean ratePercent;
     @Builder.Default
     private boolean total = false;
 
