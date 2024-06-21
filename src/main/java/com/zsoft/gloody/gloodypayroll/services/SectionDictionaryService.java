@@ -64,7 +64,16 @@ public class SectionDictionaryService extends CompanySupportService {
                 .stream()
                 .collect(Collectors.
                         toMap(VariableSettingDto::getKey,
-                                variableSettingDto -> variableSettingDto.getFormula() != null ? variableSettingDto.getFormula() : "0")
+                                variableSettingDto -> {
+                                     Double value = 0.0;
+                                    if (variableSettingDto.getFormula() != null) {
+                                        try {
+                                            value =  Double.parseDouble(variableSettingDto.getFormula());
+                                    } catch (Exception ignored) {
+                                        }
+                                    }
+                                    return value;
+                                })
                 )
         );
         setVariable(PAYMENT_START, DateUtils.startOfMonth(period.getStart()));

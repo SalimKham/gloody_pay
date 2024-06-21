@@ -382,7 +382,7 @@ public class PayslipService {
                 return BigDecimal.valueOf((double) result);
             }
             return ZERO;
-        } catch (ScriptException e) {
+        } catch (Exception e) {
             return ZERO;
         }
     }
