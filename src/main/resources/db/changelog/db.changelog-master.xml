@@ -10,4 +10,5 @@
     <include file="0.0.1/update_section_table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/update_payslip_settings_table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/create_label_table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_table_add_show_zero.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

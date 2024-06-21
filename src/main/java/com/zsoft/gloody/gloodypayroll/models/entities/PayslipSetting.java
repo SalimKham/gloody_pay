@@ -27,6 +27,9 @@ public class PayslipSetting extends CompanySupport {
     @Column(name = "show_intermediate")
     private boolean showIntermediate;
 
+    @Column(name="show_zero")
+    private boolean showZero;
+
     @Column(name = "template")
     private boolean template;
 

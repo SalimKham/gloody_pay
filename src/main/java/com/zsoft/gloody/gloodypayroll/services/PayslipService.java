@@ -76,6 +76,7 @@ public class PayslipService {
         perRequestElements.setCalculatedElements(calculatedElements);
         perRequestElements.setSettingsElements(dto.getElements());
         perRequestElements.setShowIntermediate(dto.isShowIntermediate());
+        perRequestElements.setShowZero(dto.isShowZero());
         PayslipElementDto baseSalaryElement = calculateBaseSalary(dto.getElements());
         double baseSalary = 0d;
         if (baseSalaryElement != null) {
@@ -263,12 +264,20 @@ public class PayslipService {
         return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
     }
 
+    private boolean isHidden(PayslipElementDto element) {
+        if ((element.isTotal() && !perRequestElements.isShowIntermediate()) ||
+                (!perRequestElements.isShowZero() && element.isZero())) {
+            return true;
+        }
+        return false;
+    }
+
     public void addCalculatedElement( PayslipElementDto element) {
         EMPTY_SETTING_ELEMENT.setSection(element.getCode());
         if (!perRequestElements.getSettingsElements().contains(EMPTY_SETTING_ELEMENT)) {
             return;
         }
-        if ((perRequestElements.isShowIntermediate() && element.isTotal()) || !element.isTotal() ) {
+        if (!isHidden(element)) {
             perRequestElements.getCalculatedElements().add(element);
         }
     }

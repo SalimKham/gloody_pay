@@ -12,6 +12,7 @@ import java.util.*;
 @Setter
 public class PerRequestElements {
     private boolean showIntermediate;
+    private boolean showZero;
     private List<PayslipSettingElementDto> settingsElements = new ArrayList<>();
     private TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>() {
     };
