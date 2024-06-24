@@ -214,7 +214,7 @@ public class PayslipService {
     }
 
     private void updateTotal(String prefix, String label, BigDecimal gain, BigDecimal deduction) {
-        String labelKey = String.format("%s_%s", prefix, label);
+        String labelKey = String.format("%s%s", prefix, label);
         BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(labelKey));
         dictionaryService.setVariable(labelKey, recentTotal.add( (gain != null ? gain : BigDecimal.ZERO) ).subtract((deduction != null ? deduction : BigDecimal.ZERO)) );
     }
@@ -330,10 +330,15 @@ public class PayslipService {
     }
 
     private BigDecimal calculateSectionValue(String formula, Double value, Bindings context, SectionNature nature) {
-        if (formula == null || value != null || (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature)))) {
-            return BigDecimal.valueOf(value != null ? value : 0);
+        if (formula == null && value == null) {
+            return ZERO;
         }
-
+        if (formula == null || value != null) {
+            return BigDecimal.valueOf(value);
+        }
+        if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
+            return ZERO;
+        }
         calculateFormulaVariables(formula);
         try {
             engine.setBindings(context, ScriptContext.GLOBAL_SCOPE);
