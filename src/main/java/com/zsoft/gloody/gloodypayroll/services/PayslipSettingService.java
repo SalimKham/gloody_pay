@@ -32,7 +32,7 @@ public class PayslipSettingService extends CompanySupportService {
 
     public Optional<PayslipSettingDto> findDefaultTemplate(Long employeeId) {
         if (employeeId != null) {
-            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId);
+            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, LocalDate.now());
             if (payslipSettingDto.isPresent()) {
                 return payslipSettingDto;
             }
@@ -44,14 +44,14 @@ public class PayslipSettingService extends CompanySupportService {
         return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this.payslipSettingMapper::toDto);
     }
 
-    public Optional<PayslipSettingDto> findByEmployeeIdAndCurrentMonth(Long employeeId) {
-        return this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId).map(this.payslipSettingMapper::toDto);
+    public Optional<PayslipSettingDto> findByEmployeeIdAndCurrentMonth(Long employeeId, LocalDate currentMonth) {
+        return this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId, currentMonth).map(this.payslipSettingMapper::toDto);
     }
 
 
     public Optional<PayslipSettingDto> findById(Long id, Long employeeId) {
         if (employeeId != null) {
-            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId);
+            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, LocalDate.now());
             if (payslipSettingDto.isPresent()) {
                 return payslipSettingDto;
             }
@@ -68,9 +68,13 @@ public class PayslipSettingService extends CompanySupportService {
     @Transactional
     public PayslipSettingDto save(PayslipSettingDto dto) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
-        payslipSetting.setPaymentDate(LocalDate.now());
+        if (dto.isTemplate()) {
+            payslipSetting.setPaymentDate(null);
+        } else {
+            payslipSetting.setPaymentDate(LocalDate.now());
+        }
         if (payslipSetting.getEmployee() != null) {
-           Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee()).map(PayslipSetting::getId).orElse(null);
+           Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee(), dto.getPaymentDate()).map(PayslipSetting::getId).orElse(null);
            payslipSetting.setId(id);
         }
         payslipSetting = this.payslipSettingRepository.save(payslipSetting);

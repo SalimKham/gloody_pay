@@ -32,8 +32,11 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 @Service
 @AllArgsConstructor
 public class PayslipService {
+    public static final String ATTRIBUTE_PREFIX = "LBL_";
+    public static final String NATURE_PREFIX = "NTR_";
     private final CompanySections companySections;
     private final SectionDictionaryService dictionaryService;
+    private final PayslipSettingService payslipSettingService;
     private final DefaultSectionSettings defaultSectionSettings;
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
@@ -71,7 +74,9 @@ public class PayslipService {
 
     public TreeSet<PayslipElementDto> calculate(PayslipSettingDto dto) {
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
-        dictionaryService.setVariables(dto, period);
+        if (!dto.isClosed()) {
+            dictionaryService.setVariables(dto, period);
+        }
         TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2)));
         perRequestElements.setCalculatedElements(calculatedElements);
         perRequestElements.setSettingsElements(dto.getElements());
@@ -85,8 +90,11 @@ public class PayslipService {
         dictionaryService.setVariable(BASE_SALARY, baseSalary);
 
         for(PayslipSettingElementDto elementDto: dto.getElements()) { // ignore base salary
-               calculateSection( elementDto);
+               PayslipElementDto calculatedElement = calculateSection( elementDto);
         }
+
+
+
         /*PayslipElementDto absenceElement = calculateAbsenceElement(dto.getElements());
         if (absenceElement != null) {
             elements.add(absenceElement);
@@ -131,6 +139,7 @@ public class PayslipService {
         }
 
          */
+
         return   perRequestElements.getCalculatedElements();
     }
 
@@ -156,13 +165,17 @@ public class PayslipService {
     }
 
 
-    private void calculateByLabel(String label) {
+    private void calculateByLabel(String prefix, String label) {
+        if (prefix == null || (!prefix.equals(ATTRIBUTE_PREFIX) && !prefix.equals(NATURE_PREFIX))) {
+            return;
+        }
         for (PayslipSettingElementDto element :   perRequestElements.getSettingsElements()) {
             Section section = companySections.findByCode(element.getSection()).orElse(null);
             if (section == null) {
                 continue;
             }
-            boolean isInCategory = section.getLabelKeys() != null && section.getLabelKeys().contains(label);
+            boolean isInCategory = prefix.equals(ATTRIBUTE_PREFIX) ? section.getLabelKeys() != null && section.getLabelKeys().contains(label) :
+                    Objects.equals(label, SECTION_NATURE_ABBR.get(section.getNature()));
             if (!isInCategory) {
                 continue;
             }
@@ -170,29 +183,11 @@ public class PayslipService {
             if (el.isTotal() || section.isSalary()) {
                 continue;
             }
-            updateLabelTotal(label, el.getGain(), el.getDeduction());
+            updateTotal(prefix, label, el.getGain(), el.getDeduction());
         }
-        updateLabelTotal(label, BigDecimal.ZERO, BigDecimal.ZERO);
+        updateTotal(prefix, label, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    private void calculateSectionsByNature(String category) {
-        for (PayslipSettingElementDto element :   perRequestElements.getSettingsElements()) {
-            Section section = companySections.findByCode(element.getSection()).orElse(null);
-            if (section == null || section.getNature() == null) {
-                continue;
-            }
-            boolean isInCategory = Objects.equals(category, SECTION_NATURE_ABBR.get(section.getNature()));
-            if (!isInCategory) {
-                continue;
-            }
-            PayslipElementDto el = calculateSection(element);
-            if (el.isTotal() || section.isSalary()) {
-                continue;
-            }
-            updateCategoryTotal(category, el.getGain(), el.getDeduction());
-        }
-        updateCategoryTotal(category, BigDecimal.ZERO, BigDecimal.ZERO);
-    }
 
     private List<PayslipElementDto> getTotalElementByCategory(List<PayslipSettingElementDto> elements, String category) {
         if (category == null) {
@@ -225,14 +220,15 @@ public class PayslipService {
         return Collections.emptyList();
     }
 
-    private void updateLabelTotal(String label, BigDecimal gain, BigDecimal deduction) {
-        BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(String.format("LBL_%s",label)));
-        dictionaryService.setVariable(String.format("LBL_%s",label), recentTotal.add( (gain != null ? gain : BigDecimal.ZERO) ).subtract((deduction != null ? deduction : BigDecimal.ZERO)) );
+    private void updateTotal(String prefix, String label, BigDecimal gain, BigDecimal deduction) {
+        String key = String.format(prefix + "%s",label);
+        BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(key));
+        dictionaryService.setVariable(key, recentTotal.add( (gain != null ? gain : BigDecimal.ZERO) ).subtract((deduction != null ? deduction : BigDecimal.ZERO)) );
     }
 
     private void updateCategoryTotal(String category, BigDecimal gain, BigDecimal deduction) {
-        BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(String.format("NTR_%s",category)));
-        dictionaryService.setVariable(String.format("NTR_%s",category), recentTotal.add( (gain != null ? gain : BigDecimal.ZERO) ).subtract((deduction != null ? deduction : BigDecimal.ZERO)) );
+        BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(String.format(NATURE_PREFIX + "%s",category)));
+        dictionaryService.setVariable(String.format(NATURE_PREFIX + "%s",category), recentTotal.add( (gain != null ? gain : BigDecimal.ZERO) ).subtract((deduction != null ? deduction : BigDecimal.ZERO)) );
     }
 
     private PayslipElementDto getTotalElement( String label) {
@@ -257,11 +253,16 @@ public class PayslipService {
     }
 
     private PayslipElementDto calculateSection(PayslipSettingElementDto element) {
-        PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> e.getCode().contains(element.getSection())).findFirst().orElse(null);
-        if (alreadyExistsElement != null) {
-            return alreadyExistsElement;
+        try {
+            PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> e.getCode().contains(element.getSection())).findFirst().orElse(null);
+            if (alreadyExistsElement != null) {
+                return alreadyExistsElement;
+            }
+            return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
+        }catch (Exception e)  {
+            System.out.println(e.getCause());
         }
-        return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
+       return null;
     }
 
     private boolean isHidden(PayslipElementDto element) {
@@ -285,11 +286,11 @@ public class PayslipService {
 
     private PayslipElementDto calculateSection(String code, String label,  Double baseValue, Double rateValue, Double value) {
         AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
-        if (code.startsWith("LBL_")) {
-            calculateByLabel(code.replace("LBL_", ""));
+        if (code.startsWith(ATTRIBUTE_PREFIX)) {
+            calculateByLabel(ATTRIBUTE_PREFIX, code.replace(ATTRIBUTE_PREFIX, ""));
             return null;
-        }else if (code.startsWith("NTR_")) {
-            calculateSectionsByNature(code.replace("NTR_", ""));
+        }else if (code.startsWith(NATURE_PREFIX)) {
+            calculateByLabel(NATURE_PREFIX, code.replace(NATURE_PREFIX, ""));
             return null;
         } else {
             companySections.findByCode(code).ifPresent(section -> {
@@ -345,7 +346,7 @@ public class PayslipService {
     }
 
     private void calculateFormulaVariables(String formula) {
-        Pattern pattern = Pattern.compile("(R[0-9]+)|(NTR_[A-Z]+)|(LBL_[A-Z0-9_]+)", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("[A-Z][A-Z0-9_]{2,}", Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
         while (m.find()) {
@@ -395,4 +396,5 @@ public class PayslipService {
             return ZERO;
         }
     }
+
 }

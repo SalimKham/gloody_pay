@@ -11,4 +11,6 @@
     <include file="0.0.1/update_payslip_settings_table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/create_label_table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/update_payslip_settings_table_add_show_zero.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_table_add_closed.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_clear_payment_date_when_is_template.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

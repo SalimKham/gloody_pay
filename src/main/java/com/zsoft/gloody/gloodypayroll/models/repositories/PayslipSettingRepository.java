@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -20,6 +22,6 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
      @Query("UPDATE PayslipSetting  p SET p.byDefault = CASE WHEN p.id =:template_id THEN true ELSE false END")
      void markAsDefault(@Param("template_id") Long templateId);
     Page<PayslipSetting> findAllByNameLikeAndTemplateIsTrue(String query, Pageable pageable);
-    @Query("SELECT ps FROM PayslipSetting ps where ps.employee = :employee_id AND MONTH(ps.paymentDate) = MONTH(CURRENT_DATE ) AND YEAR(ps.paymentDate) = YEAR (CURRENT_DATE) ")
-    Optional<PayslipSetting> findByEmployeeAndCurrentMonth(@Param("employee_id") Long employeeId);
+    @Query("SELECT ps FROM PayslipSetting ps where ps.employee = :employee_id AND MONTH(ps.paymentDate) = MONTH(:current_month ) AND YEAR(ps.paymentDate) = YEAR (:current_month ) ")
+    Optional<PayslipSetting> findByEmployeeAndCurrentMonth(@Param("employee_id") Long employeeId, @Param("current_month") LocalDate currentMonth);
 }

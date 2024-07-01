@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/payslip-setting")
@@ -19,6 +21,13 @@ public class PayslipSettingController {
         return payslipSettingService.findById(id, employeeId)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/by_month/{resource_id}")
+    public ResponseEntity<PayslipSettingDto> findByResourceAndMonth(@PathVariable("resource_id") Long id, @RequestParam(name = "month") LocalDate date) {
+        return payslipSettingService.findByEmployeeIdAndCurrentMonth(id, date)
+                .map(result -> ResponseEntity.ok().body(result))
+                .orElse(ResponseEntity.ok().body(null));
     }
 
     @DeleteMapping("/templates/{id}")
