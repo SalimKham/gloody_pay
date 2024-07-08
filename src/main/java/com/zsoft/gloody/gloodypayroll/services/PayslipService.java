@@ -8,10 +8,9 @@ import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
-import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingElementDto;
+import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
+import com.zsoft.gloody.gloodypayroll.rest.dto.*;
+import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.AllArgsConstructor;
@@ -34,14 +33,16 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 public class PayslipService {
     public static final String ATTRIBUTE_PREFIX = "LBL_";
     public static final String NATURE_PREFIX = "NTR_";
+    public static final String CODE_REGEX = "[A-Z][A-Z0-9_]{2,}";
     private final CompanySections companySections;
     private final SectionDictionaryService dictionaryService;
-    private final PayslipSettingService payslipSettingService;
     private final DefaultSectionSettings defaultSectionSettings;
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
     private ScriptEngine engine;
     private final PerRequestElements perRequestElements;
+    private final PayslipSettingRepository payslipSettingRepository;
+    private final PayslipSettingMapper payslipSettingMapper;
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
         {
@@ -52,17 +53,53 @@ public class PayslipService {
         }
     };
 
+    public List<Long> closePayslips (List<PayslipSettingDto> dtos) {
+        List<PayslipSettingDto>  result = new ArrayList<>();
+        List<Long> failedIds = new ArrayList<>();
+        long start = System.currentTimeMillis();
+        for (PayslipSettingDto payslipSetting: dtos) {
+             try {
+                 TreeSet<PayslipElementDto> elements = calculate(payslipSetting);
+                 payslipSetting.setClosed(true);
+                 payslipSetting.setTemplate(false);
+                 payslipSetting.setId(payslipSetting.isByDefault() ? null : payslipSetting.getId());
+                 payslipSetting.setName(String.format("%s-%s", payslipSetting.getEmployee().getId() ,payslipSetting.getPaymentDate()));
+                 payslipSetting.setElements(payslipSetting.getElements().stream().map(e -> {
+                     PayslipElementDto element =  elements.stream().filter(el -> el.getCode().equals(e.getSection())).findFirst().orElse(null);
+                     if (element == null) {
+                         e.setValue(0.0);
+                         e.setBaseValue(0.0);
+                         e.setRateValue(0.0);
+                     }
+                     e.setValue(element.getGain() != null
+                             ? element.getGain().doubleValue()
+                             : element.getDeduction() != null
+                             ? element.getDeduction().doubleValue()
+                             : 0);
+                     e.setBaseValue(element.getBase() != null ? element.getBase().doubleValue() : 0.0);
+                     e.setRateValue(element.getRate() != null ? element.getRate().doubleValue() : 0.0);
+                     e.setPayslipSettingId(payslipSetting.isByDefault() ? null : payslipSetting.getId());
+                     e.setId(payslipSetting.isByDefault() ? null : e.getId());
+                     return e;
+                 }).toList());
+                 payslipSetting.setByDefault(false);
+                 result.add(payslipSetting);
+             } catch (Exception e) {
+                 failedIds.add(payslipSetting.getEmployee().getId());
+             }
+        }
+        long end = System.currentTimeMillis() - start;
+        System.out.println("in "+ (end));
+        payslipSettingRepository.saveAll(result.stream().map(payslipSettingMapper::toEntity).toList());
+        return failedIds;
+
+    }
+
     public String print(PayslipSettingDto dto) {
         EmployeeDto employeeDto = dto.getEmployee();
         if (employeeDto == null) {
             throw new ApiRuntimeException("error.employee.required");
         }
-        /*Long employeeId = employeeDto.getId();
-        if (employeeId == null || employeeService.notExistsById(employeeId)) {
-            employeeService.create(employeeDto);
-        } else {
-            employeeService.update(employeeDto);
-        }*/
         Set<PayslipElementDto> elements = calculate(dto);
         Locale locale = Locale.getDefault();
         Context context = new Context(locale);
@@ -74,9 +111,13 @@ public class PayslipService {
 
     public TreeSet<PayslipElementDto> calculate(PayslipSettingDto dto) {
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
+        if (dictionaryService.getAllVariables()  != null) {
+            dictionaryService.getAllVariables().clear();
+        }
         if (!dto.isClosed()) {
             dictionaryService.setVariables(dto, period);
         }
+        engine.setBindings(new SimpleBindings(), ScriptContext.GLOBAL_SCOPE);
         TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2)));
         perRequestElements.setCalculatedElements(calculatedElements);
         perRequestElements.setSettingsElements(dto.getElements());
@@ -89,57 +130,9 @@ public class PayslipService {
         }
         dictionaryService.setVariable(BASE_SALARY, baseSalary);
 
-        for(PayslipSettingElementDto elementDto: dto.getElements()) { // ignore base salary
-               PayslipElementDto calculatedElement = calculateSection( elementDto);
+        for(PayslipSettingElementDto elementDto: dto.getElements()) {
+               calculateSection( elementDto);
         }
-
-
-
-        /*PayslipElementDto absenceElement = calculateAbsenceElement(dto.getElements());
-        if (absenceElement != null) {
-            elements.add(absenceElement);
-        }
-
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.GROSS));
-
-        double grossTotal = baseSalary - (absenceElement != null ? absenceElement.getDeduction().doubleValue() : 0) + dictionaryService.findDoubleValue(SectionCategory.GROSS.name());
-        dictionaryService.setVariable(GROSS_TOTAL, grossTotal);
-        if (dto.isShowIntermediate()) {
-            elements.addAll(getTotalElementByCategory(dto.getElements(), GROSS_TOTAL));
-        }
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.TAXABLE_CONTRIBUTORY));
-        double positionSalary = grossTotal + dictionaryService.findDoubleValue(SectionCategory.TAXABLE_CONTRIBUTORY.name());
-        dictionaryService.setVariable(POSITION_SALARY, positionSalary);
-        if (dto.isShowIntermediate()) {
-            elements.addAll(getTotalElementByCategory(dto.getElements(), POSITION_SALARY));
-        }
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.CHARGE));
-        double charges = dictionaryService.findDoubleValue(SectionCategory.CHARGE.name());
-        dictionaryService.setVariable(SOCIAL_CHARGE, charges);
-        if (dto.isShowIntermediate()) {
-            elements.addAll(getTotalElementByCategory(dto.getElements(), SOCIAL_CHARGE));
-        }
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.TAXABLE_NOT_CONTRIBUTORY));
-        double taxableSalary = positionSalary + charges + dictionaryService.findDoubleValue(SectionCategory.TAXABLE_NOT_CONTRIBUTORY.name());
-        dictionaryService.setVariable(TAXABLE_SALARY, taxableSalary);
-        if (dto.isShowIntermediate()) {
-            elements.addAll(getTotalElementByCategory(dto.getElements(), TAXABLE_SALARY));
-        }
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.TAXATION));
-        double netSalary = taxableSalary  + charges + dictionaryService.findDoubleValue(SectionCategory.TAXATION.name());
-        dictionaryService.setVariable(NET_SALARY, netSalary);
-        if (dto.isShowIntermediate()) {
-            elements.addAll(getTotalElementByCategory(dto.getElements(), NET_SALARY));
-        }
-        elements.addAll(calculateSectionsByCategory(dto.getElements(), SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY));
-        double primes = dictionaryService.findDoubleValue(SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY.name());
-        dictionaryService.setVariable(PRIMES, primes);
-        if (dto.isShowIntermediate()) {
-            elements.addAll(getTotalElementByCategory(dto.getElements(), PRIMES));
-        }
-
-         */
-
         return   perRequestElements.getCalculatedElements();
     }
 
@@ -346,7 +339,7 @@ public class PayslipService {
     }
 
     private void calculateFormulaVariables(String formula) {
-        Pattern pattern = Pattern.compile("[A-Z][A-Z0-9_]{2,}", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile(CODE_REGEX, Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
         while (m.find()) {

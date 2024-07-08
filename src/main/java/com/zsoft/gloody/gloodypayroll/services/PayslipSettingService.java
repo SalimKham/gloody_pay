@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,12 +28,12 @@ public class PayslipSettingService extends CompanySupportService {
 
     public Optional<PayslipSettingDto> markAsDefault(Long templateId) {
         payslipSettingRepository.markAsDefault(templateId);
-        return findById(templateId, null);
+        return findById(templateId, null, null);
     }
 
-    public Optional<PayslipSettingDto> findDefaultTemplate(Long employeeId) {
+    public Optional<PayslipSettingDto> findDefaultTemplate(Long employeeId, LocalDate date) {
         if (employeeId != null) {
-            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, LocalDate.now());
+            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, date);
             if (payslipSettingDto.isPresent()) {
                 return payslipSettingDto;
             }
@@ -45,13 +46,16 @@ public class PayslipSettingService extends CompanySupportService {
     }
 
     public Optional<PayslipSettingDto> findByEmployeeIdAndCurrentMonth(Long employeeId, LocalDate currentMonth) {
+        if (currentMonth == null) {
+            return Optional.empty();
+        }
         return this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId, currentMonth).map(this.payslipSettingMapper::toDto);
     }
 
 
-    public Optional<PayslipSettingDto> findById(Long id, Long employeeId) {
+    public Optional<PayslipSettingDto> findById(Long id, Long employeeId, LocalDate date) {
         if (employeeId != null) {
-            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, LocalDate.now());
+            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, date);
             if (payslipSettingDto.isPresent()) {
                 return payslipSettingDto;
             }
@@ -65,13 +69,17 @@ public class PayslipSettingService extends CompanySupportService {
                 .map(this.payslipSettingMapper::toDto);
     }
 
+    public List<PayslipSettingDto> findAllTemplates() {
+        return this.payslipSettingRepository.findAll()
+                .stream()
+                .map(this.payslipSettingMapper::toDto).toList();
+    }
+
     @Transactional
     public PayslipSettingDto save(PayslipSettingDto dto) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
         if (dto.isTemplate()) {
             payslipSetting.setPaymentDate(null);
-        } else {
-            payslipSetting.setPaymentDate(LocalDate.now());
         }
         if (payslipSetting.getEmployee() != null) {
            Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee(), dto.getPaymentDate()).map(PayslipSetting::getId).orElse(null);

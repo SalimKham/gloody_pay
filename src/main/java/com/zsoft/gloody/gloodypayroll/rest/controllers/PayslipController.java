@@ -6,6 +6,8 @@ import com.zsoft.gloody.gloodypayroll.services.PayslipService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,5 +30,12 @@ public class PayslipController {
     ) {
         TreeSet<PayslipElementDto> result = payslipService.calculate(dto);
         return ResponseEntity.ok().body(result);
+    }
+
+    @PostMapping("/close")
+    public ResponseEntity<List<Long>> calculate(
+            @RequestBody List<PayslipSettingDto> dtos
+    ) {
+        return ResponseEntity.ok().body( payslipService.closePayslips(dtos));
     }
 }

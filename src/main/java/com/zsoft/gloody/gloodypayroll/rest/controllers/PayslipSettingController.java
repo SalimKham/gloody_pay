@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -17,8 +18,8 @@ public class PayslipSettingController {
     private final PayslipSettingService payslipSettingService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PayslipSettingDto> findById(@PathVariable("id") Long id, @RequestParam(name = "employee_id", required = false) Long employeeId) {
-        return payslipSettingService.findById(id, employeeId)
+    public ResponseEntity<PayslipSettingDto> findById(@PathVariable("id") Long id, @RequestParam(name = "employee_id", required = false) Long employeeId,  @RequestParam(name = "month", required = false) LocalDate date) {
+        return payslipSettingService.findById(id, employeeId, date)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -37,8 +38,8 @@ public class PayslipSettingController {
     }
 
     @GetMapping("templates/default_template")
-    public ResponseEntity<PayslipSettingDto> findDefaultTemplate(@RequestParam(name = "employee_id", required = false) Long employeeId) {
-        return payslipSettingService.findDefaultTemplate(employeeId)
+    public ResponseEntity<PayslipSettingDto> findDefaultTemplate(@RequestParam(name = "employee_id", required = false) Long employeeId , @RequestParam(name = "month", required = false) LocalDate date) {
+        return payslipSettingService.findDefaultTemplate(employeeId, date)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -53,6 +54,12 @@ public class PayslipSettingController {
     @GetMapping("/templates")
     public ResponseEntity<Page<PayslipSettingDto>> findTemplates( @RequestParam(name = "query", required = false) String query,  Pageable pageable) {
         Page<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(query, pageable);
+        return  ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/templates/all")
+    public ResponseEntity<List<PayslipSettingDto>> findTemplates() {
+        List<PayslipSettingDto> result =  payslipSettingService.findAllTemplates();
         return  ResponseEntity.ok().body(result);
     }
 

@@ -45,6 +45,9 @@ public class PayslipSetting extends CompanySupport {
     @Column(name = "closed")
     private boolean closed;
 
+    @Column(name = "approved")
+    private boolean approved;
+
     @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_setting_id", nullable = false)
     @ToString.Exclude
