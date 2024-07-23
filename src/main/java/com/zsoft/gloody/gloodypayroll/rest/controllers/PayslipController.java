@@ -4,14 +4,16 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/payslip")
 public class PayslipController {
@@ -28,7 +30,7 @@ public class PayslipController {
     public ResponseEntity<Set<PayslipElementDto>> calculate(
             @RequestBody PayslipSettingDto dto
     ) {
-        TreeSet<PayslipElementDto> result = payslipService.calculate(dto);
+        TreeSet<PayslipElementDto> result = payslipService.calculate(dto, Collections.singletonList(dto.getEmployee().getId()));
         return ResponseEntity.ok().body(result);
     }
 

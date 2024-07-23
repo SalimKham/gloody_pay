@@ -13,7 +13,7 @@ public interface VariableMapper {
 
     @AfterMapping
      default void afterMapping(@MappingTarget VariableSetting variable) {
-        if (variable != null && variable.getCompany() == null)  {
+        if (variable != null)  {
             variable.setCompany(SecurityUtils.getCurrentCompanyId());
         }
     }
