@@ -434,7 +434,7 @@ public class PayslipService {
     }
 
     private boolean isFunction(String value) {
-        return value.matches(FUNCTION_REGEX);
+        return !value.toLowerCase().contains("irg") && value.matches(FUNCTION_REGEX);
     }
 
     private void  calculateFormulaVariables(String formula) {
@@ -448,7 +448,7 @@ public class PayslipService {
             if (!dictionaryService.hasVariable(code)) {
                 if (isFunction(code)) {
                    calculateFunction(code);
-                } else {
+                } else if (!code.matches(FUNCTION_REGEX)){
                     calculateSection(code, null, null, null, null);
                 }
             }
@@ -471,7 +471,9 @@ public class PayslipService {
             Pattern pattern = Pattern.compile(FUNCTION_REGEX);
             Matcher matcher = pattern.matcher(formula);
             while (matcher.find()) {
-                formula = formula.replace(matcher.group(), String.valueOf(dictionaryService.findDoubleValue(matcher.group())));
+                if (!matcher.group().toLowerCase().contains("irg")) {
+                    formula = formula.replace(matcher.group(), String.valueOf(dictionaryService.findDoubleValue(matcher.group())));
+                }
             }
             engine.setBindings(context, ScriptContext.GLOBAL_SCOPE);
             Object result = engine.eval(formula);
