@@ -288,7 +288,7 @@ public class PayslipService {
 
     private PayslipElementDto calculateSection(PayslipSettingElementDto element) {
         try {
-            PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> e.getCode().contains(element.getSection())).findFirst().orElse(null);
+            PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> Objects.equals(e.getCode(), element.getSection())).findFirst().orElse(null);
             if (alreadyExistsElement != null) {
                 return alreadyExistsElement;
             }
@@ -434,7 +434,7 @@ public class PayslipService {
     }
 
     private boolean isFunction(String value) {
-        return !value.toLowerCase().contains("irg") && value.matches(FUNCTION_REGEX);
+        return !value.toLowerCase().contains("irg(base)") && value.matches(FUNCTION_REGEX);
     }
 
     private void  calculateFormulaVariables(String formula) {
@@ -471,7 +471,7 @@ public class PayslipService {
             Pattern pattern = Pattern.compile(FUNCTION_REGEX);
             Matcher matcher = pattern.matcher(formula);
             while (matcher.find()) {
-                if (!matcher.group().toLowerCase().contains("irg")) {
+                if (!matcher.group().toLowerCase().contains("irg(base)")) {
                     formula = formula.replace(matcher.group(), String.valueOf(dictionaryService.findDoubleValue(matcher.group())));
                 }
             }

@@ -1,0 +1,13 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="update_section_label_keys_separator." author="SALIM KHAM">
+    <sql>
+        update section s set s.label_keys = REPLACE(s.label_keys, '%%', '##UNIQUE_LIST_SEPARATOR##') where s.label_keys is not null
+    </sql>
+    </changeSet>
+</databaseChangeLog>
