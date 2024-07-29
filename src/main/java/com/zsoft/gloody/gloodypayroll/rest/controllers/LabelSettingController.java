@@ -17,21 +17,21 @@ public class LabelSettingController {
     private final LabelService labelService;
 
     @GetMapping
-    public ResponseEntity<Page<LabelSettingDto>> findAll(Pageable pageable) {
-        Page<LabelSettingDto> result = labelService.findAll(pageable);
+    public ResponseEntity<Page<LabelSettingDto>> findAll(Pageable pageable,  @RequestParam(value = "query", required = false) String query) {
+        Page<LabelSettingDto> result = labelService.findAll(pageable, query);
         return ResponseEntity.ok().body(result);
     }
 
     @PostMapping("bulk")
-    public ResponseEntity<Page<LabelSettingDto>> saveBulk(@RequestBody List<LabelSettingDto> variables, Pageable pageable) {
-        Page<LabelSettingDto> result = labelService.save(variables, pageable);
+    public ResponseEntity<Page<LabelSettingDto>> saveBulk(@RequestBody List<LabelSettingDto> variables, Pageable pageable, @RequestParam(value = "query", required = false) String query) {
+        Page<LabelSettingDto> result = labelService.save(variables, pageable, query);
         return ResponseEntity.ok().body(result);
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Page<LabelSettingDto>> deleteById(@PathVariable(name = "id") Long variableId, Pageable pageable) {
-        Page<LabelSettingDto> result = labelService.delete(variableId, pageable);
+    public ResponseEntity<Page<LabelSettingDto>> deleteById(@PathVariable(name = "id") Long variableId, Pageable pageable, @RequestParam(value = "query", required = false) String query) {
+        Page<LabelSettingDto> result = labelService.delete(variableId, pageable, query);
         return ResponseEntity.ok().body(result);
     }
 

@@ -17,18 +17,20 @@ public class VariableService extends CompanySupportService {
     private final VariableSettingRepository variableRepository;
     private final VariableMapper variableMapper;
 
-    public Page<VariableSettingDto> findAll(Pageable pageable) {
-        return variableRepository.findAll(pageable).map(variableMapper::toDto);
+    public Page<VariableSettingDto> findAll(Pageable pageable, String query) {
+        query = query != null ? query : "";
+        query = "%"+ query + "%";
+        return variableRepository.findAllByLabelLikeOrKeyLike(query, query ,pageable).map(variableMapper::toDto);
     }
 
-    public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable) {
+    public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
         variableRepository.saveAll(variables.stream().map(variableMapper::toEntity).toList());
-        return findAll(pageable);
+        return findAll(pageable, query);
     }
 
-    public Page<VariableSettingDto> delete(Long variableId, Pageable pageable) {
+    public Page<VariableSettingDto> delete(Long variableId,  Pageable pageable, String query) {
         variableRepository.deleteById(variableId);
-        return findAll(pageable);
+        return findAll(pageable, query);
     }
 
     public void delete(String source) {

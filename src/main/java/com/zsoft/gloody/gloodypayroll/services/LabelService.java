@@ -18,17 +18,19 @@ public class LabelService extends CompanySupportService {
     private final LabelSettingRepository labelSettingRepository;
     private final LabelMapper labelMapper;
 
-    public Page<LabelSettingDto> findAll(Pageable pageable) {
-        return labelSettingRepository.findAll(pageable).map(labelMapper::toDto);
+    public Page<LabelSettingDto> findAll(Pageable pageable, String query) {
+        query = query != null ? query : "";
+        query = "%"+ query + "%";
+        return labelSettingRepository.findAllByLabelLikeOrKeyLike(query, query ,  pageable).map(labelMapper::toDto);
     }
 
-    public Page<LabelSettingDto> save(List<LabelSettingDto> variables, Pageable pageable) {
+    public Page<LabelSettingDto> save(List<LabelSettingDto> variables, Pageable pageable,  String query) {
         labelSettingRepository.saveAll(variables.stream().map(labelMapper::toEntity).toList());
-        return findAll(pageable);
+        return findAll(pageable, query);
     }
 
-    public Page<LabelSettingDto> delete(Long labelId, Pageable pageable) {
+    public Page<LabelSettingDto> delete(Long labelId, Pageable pageable,  String query) {
         labelSettingRepository.deleteById(labelId);
-        return findAll(pageable);
+        return findAll(pageable,  query);
     }
 }
