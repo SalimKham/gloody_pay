@@ -222,6 +222,22 @@
             </activation>
         </profile>
         <profile>
+            <id>uat</id>
+            <properties>
+                <spring.profiles.active>uat</spring.profiles.active>
+                <packageApp>war</packageApp>
+                <nameAppWar>gloody-payroll-uat</nameAppWar>
+                <org.apache.maven.fork>false</org.apache.maven.fork>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>uat</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
             <id>production</id>
             <properties>
                 <spring.profiles.active>production</spring.profiles.active>
