@@ -405,7 +405,7 @@ public class PayslipService {
                 DoubleStream values =  perRequestElements.getFunctionElements()
                         .stream().filter(el -> el.getSection().getCode().equals(paramList[0]) &&
                                 el.getPayslipSetting().getPaymentDate().isBefore(endDate) &&
-                                el.getPayslipSetting().getPaymentDate().isAfter(startDate) &&
+                                !el.getPayslipSetting().getPaymentDate().isBefore(startDate.withDayOfMonth(1)) &&
                                 perRequestElements.getEmployeeId().equals(el.getPayslipSetting().getEmployee()))
                         .mapToDouble(PayslipSettingElement::getValue);
                 if (functionName.contains("AVRG")) {
