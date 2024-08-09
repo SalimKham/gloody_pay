@@ -4,6 +4,7 @@ import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
 import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
+import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSettingElement;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
@@ -62,7 +63,6 @@ public class PayslipService {
     public List<Long> closePayslips (List<PayslipSettingDto> dtos) {
         List<PayslipSettingDto>  result = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>();
-        long start = System.currentTimeMillis();
         perRequestElements.setFunctionElements(payslipElementSettingRepository.findAllByEmployeeIdInAndClosed(dtos.stream().map(payslipSettingDto -> payslipSettingDto.getEmployee().getId()).toList(), getInFunctionCodes() ));
         for (PayslipSettingDto payslipSetting: dtos) {
              try {
@@ -95,8 +95,6 @@ public class PayslipService {
                  failedIds.add(payslipSetting.getEmployee().getId());
              }
         }
-        long end = System.currentTimeMillis() - start;
-        System.out.println("in "+ (end));
         payslipSettingRepository.saveAll(result.stream().map(payslipSettingMapper::toEntity).toList());
         return failedIds;
 
@@ -409,7 +407,7 @@ public class PayslipService {
                                 el.getPayslipSetting().getPaymentDate().isBefore(endDate) &&
                                 el.getPayslipSetting().getPaymentDate().isAfter(startDate) &&
                                 perRequestElements.getEmployeeId().equals(el.getPayslipSetting().getEmployee()))
-                        .mapToDouble( el-> el.getValue());
+                        .mapToDouble(PayslipSettingElement::getValue);
                 if (functionName.contains("AVRG")) {
                     return  values.average().orElse(0.0);
                 } else if (functionName.contains("MAX")) {

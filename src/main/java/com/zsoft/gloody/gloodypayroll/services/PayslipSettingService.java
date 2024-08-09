@@ -78,6 +78,7 @@ public class PayslipSettingService extends CompanySupportService {
     @Transactional
     public PayslipSettingDto save(PayslipSettingDto dto) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
+        payslipSetting.setPayslipDetail(null);
         if (dto.isTemplate()) {
             payslipSetting.setPaymentDate(null);
         }
@@ -105,6 +106,7 @@ public class PayslipSettingService extends CompanySupportService {
                 .map(PayslipSettingDto::getId)
                 .ifPresent(dto::setId);
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
+        payslipSetting.setPayslipDetail(null);
         payslipSetting = this.payslipSettingRepository.save(payslipSetting);
         return this.payslipSettingMapper.toDto(payslipSetting);
     }

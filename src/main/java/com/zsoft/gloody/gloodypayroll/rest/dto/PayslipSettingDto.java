@@ -31,5 +31,6 @@ public class PayslipSettingDto {
     private boolean closed;
     private boolean approved;
     private boolean byDefault;
+    private PayslipDetailDto payslipDetail;
     private Collection<VariableSettingDto> variables = Collections.emptyList();
 }

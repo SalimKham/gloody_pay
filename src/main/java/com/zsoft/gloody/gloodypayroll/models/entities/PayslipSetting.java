@@ -1,9 +1,11 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipDetailDto;
+import com.zsoft.gloody.gloodypayroll.support.PayslipDetailConverter;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -47,6 +49,10 @@ public class PayslipSetting extends CompanySupport {
 
     @Column(name = "approved")
     private boolean approved;
+
+    @Convert(converter = PayslipDetailConverter.class)
+    @Column(name="payslip_detail")
+    private PayslipDetailDto payslipDetail;
 
     @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_setting_id", nullable = false)
