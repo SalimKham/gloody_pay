@@ -16,4 +16,5 @@
     <include file="0.0.1/update_payslip_settings_table_add_approved.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/update_section_label_keys_separator.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/insert_meal_voucher_variable.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/insert_resource_mutual_variable_variable.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
