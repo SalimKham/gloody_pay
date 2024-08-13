@@ -4,10 +4,7 @@ import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
 import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
-import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSettingElement;
-import com.zsoft.gloody.gloodypayroll.models.entities.Period;
-import com.zsoft.gloody.gloodypayroll.models.entities.Section;
-import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
+import com.zsoft.gloody.gloodypayroll.models.entities.*;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
@@ -63,6 +60,7 @@ public class PayslipService {
     public List<Long> closePayslips (List<PayslipSettingDto> dtos) {
         List<PayslipSettingDto>  result = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>();
+        Long start = System.currentTimeMillis();
         perRequestElements.setFunctionElements(payslipElementSettingRepository.findAllByEmployeeIdInAndClosed(dtos.stream().map(payslipSettingDto -> payslipSettingDto.getEmployee().getId()).toList(), getInFunctionCodes() ));
         for (PayslipSettingDto payslipSetting: dtos) {
              try {
@@ -95,6 +93,7 @@ public class PayslipService {
                  failedIds.add(payslipSetting.getEmployee().getId());
              }
         }
+        long end = System.currentTimeMillis() - start;
         payslipSettingRepository.saveAll(result.stream().map(payslipSettingMapper::toEntity).toList());
         return failedIds;
 

@@ -24,7 +24,7 @@ public class SectionCategory extends CompanySupport{
     private String code;
     @Column(name = "name")
     private String name;
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @OrderBy("code asc")
     @ToString.Exclude
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

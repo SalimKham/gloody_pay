@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -38,18 +39,18 @@ public class PayslipSettingService extends CompanySupportService {
                 return payslipSettingDto;
             }
         }
-        return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this.payslipSettingMapper::toDto);
+        return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this::toDto);
     }
 
     public Optional<PayslipSettingDto> findByEmployeeId(Long id) {
-        return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this.payslipSettingMapper::toDto);
+        return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this::toDto);
     }
 
     public Optional<PayslipSettingDto> findByEmployeeIdAndCurrentMonth(Long employeeId, LocalDate currentMonth) {
         if (currentMonth == null) {
             return Optional.empty();
         }
-        return this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId, currentMonth).map(this.payslipSettingMapper::toDto);
+        return this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId, currentMonth).map(this::toDto);
     }
 
 
@@ -60,19 +61,31 @@ public class PayslipSettingService extends CompanySupportService {
                 return payslipSettingDto;
             }
         }
-        return this.payslipSettingRepository.findById(id).map(this.payslipSettingMapper::toDto);
+        return this.payslipSettingRepository.findById(id).map(this::toDto);
     }
 
     public Page<PayslipSettingDto> findAllTemplates(String query, Pageable pageable) {
         query = query == null ? "%%" : "%" + query + "%";
         return this.payslipSettingRepository.findAllByNameLikeAndTemplateIsTrue( query, pageable)
-                .map(this.payslipSettingMapper::toDto);
+                .map(this::toDto);
     }
 
-    public List<PayslipSettingDto> findAllTemplates() {
-        return this.payslipSettingRepository.findAll()
-                .stream()
-                .map(this.payslipSettingMapper::toDto).toList();
+    private PayslipSettingDto toDto(PayslipSetting payslipSetting) {
+        PayslipSettingDto  payslipSettingDto = payslipSettingMapper.toDto(payslipSetting);
+        if (payslipSettingDto != null && Objects.nonNull(payslipSettingDto.getElements())) {
+            payslipSettingDto.getElements().forEach(payslipSettingElementDto -> {
+                entityManager.detach(payslipSetting);
+                payslipSettingElementDto.setPayslipSettingId(payslipSettingDto.getId());
+            });
+        }
+        return payslipSettingDto;
+    }
+
+    public List<PayslipSettingDto> findAllTemplates(LocalDate month) {
+        List<PayslipSetting> result =  this.payslipSettingRepository.findAllByMonth(month);
+        List<PayslipSettingDto>  resuultDTOs =       result.stream()
+                .map(this::toDto).toList();
+        return  resuultDTOs;
     }
 
     @Transactional

@@ -17,6 +17,8 @@ import java.util.List;
 @ToString
 @Entity
 @Table(name = "payslip_setting")
+@NamedEntityGraph(name = "PayslipSetting.elements",
+        attributeNodes = @NamedAttributeNode("elements"))
 public class PayslipSetting extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,7 +56,7 @@ public class PayslipSetting extends CompanySupport {
     @Column(name="payslip_detail")
     private PayslipDetailDto payslipDetail;
 
-    @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_setting_id", nullable = false)
     @ToString.Exclude
     @OrderBy("elementOrder asc")

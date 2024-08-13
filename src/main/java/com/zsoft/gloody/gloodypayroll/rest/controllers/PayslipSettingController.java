@@ -58,8 +58,8 @@ public class PayslipSettingController {
     }
 
     @GetMapping("/templates/all")
-    public ResponseEntity<List<PayslipSettingDto>> findTemplates() {
-        List<PayslipSettingDto> result =  payslipSettingService.findAllTemplates();
+    public ResponseEntity<List<PayslipSettingDto>> findTemplates(@RequestParam(name = "month", required = false) LocalDate date) {
+        List<PayslipSettingDto> result =  payslipSettingService.findAllTemplates(date);
         return  ResponseEntity.ok().body(result);
     }
 

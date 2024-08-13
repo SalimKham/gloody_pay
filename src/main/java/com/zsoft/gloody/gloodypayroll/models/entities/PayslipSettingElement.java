@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -22,10 +23,12 @@ public class PayslipSettingElement extends CompanySupport {
     @JoinColumn(name = "payslip_setting_id", nullable = false, insertable = false, updatable = false)
     @ToString.Exclude
     private PayslipSetting payslipSetting;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "section", referencedColumnName = "id")
-    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section")
     private Section section;
+
+    @Formula("(SELECT s.code from section s where s.id = section )")
+    private String sectionCode;
     @Column(name = "value")
     private Double value;
     @Column(name = "base_value")
