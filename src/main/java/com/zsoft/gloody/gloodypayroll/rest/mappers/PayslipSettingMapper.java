@@ -20,7 +20,7 @@ public abstract class PayslipSettingMapper {
     public abstract PayslipSetting toEntity(PayslipSettingDto settingDto);
 
     @Mapping(target = "payslipSettingId", ignore = true)
-    @Mapping(target = "section", source = "sectionCode")
+    @Mapping(target = "section", source = "section.code")
     public abstract PayslipSettingElementDto toDto(PayslipSettingElement setting);
 
     @Mapping(target = "section", source = "section")

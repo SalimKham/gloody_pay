@@ -22,6 +22,10 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @Query("SELECT ps FROM PayslipSetting ps where not ps.closed  and (ps.byDefault OR ( ps.template = false AND ps.paymentDate is null) OR  (MONTH(ps.paymentDate) = MONTH(:current_month ) AND YEAR(ps.paymentDate) = YEAR (:current_month ))) ")
     List<PayslipSetting> findAllByMonth( @Param("current_month") LocalDate currentMonth);
 
+    @EntityGraph(value = "PayslipSetting.elements")
+    List<PayslipSetting> findAll( );
+
+
     @Override
     @EntityGraph(value = "PayslipSetting.elements")
     Optional<PayslipSetting> findById(Long aLong);

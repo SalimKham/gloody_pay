@@ -1,10 +1,8 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.persistence.*;
-import org.hibernate.annotations.Formula;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -26,9 +24,6 @@ public class PayslipSettingElement extends CompanySupport {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section")
     private Section section;
-
-    @Formula("(SELECT s.code from section s where s.id = section )")
-    private String sectionCode;
     @Column(name = "value")
     private Double value;
     @Column(name = "base_value")

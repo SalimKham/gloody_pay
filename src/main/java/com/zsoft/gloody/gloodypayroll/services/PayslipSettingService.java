@@ -82,10 +82,11 @@ public class PayslipSettingService extends CompanySupportService {
     }
 
     public List<PayslipSettingDto> findAllTemplates(LocalDate month) {
-        List<PayslipSetting> result =  this.payslipSettingRepository.findAllByMonth(month);
-        List<PayslipSettingDto>  resuultDTOs =       result.stream()
+        List<PayslipSetting> result =  this.payslipSettingRepository.findAll();
+        List<PayslipSettingDto>  resultDTOs =  result.stream()
                 .map(this::toDto).toList();
-        return  resuultDTOs;
+        return  resultDTOs;
+
     }
 
     @Transactional

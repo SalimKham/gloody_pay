@@ -25,4 +25,5 @@ public class SectionDto {
     private SectionCategoryDto category;
     private List<String> labelKeys = Collections.emptyList();
     private Long company;
+    private Boolean referenced;
 }

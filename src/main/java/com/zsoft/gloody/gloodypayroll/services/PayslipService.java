@@ -60,7 +60,6 @@ public class PayslipService {
     public List<Long> closePayslips (List<PayslipSettingDto> dtos) {
         List<PayslipSettingDto>  result = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>();
-        Long start = System.currentTimeMillis();
         perRequestElements.setFunctionElements(payslipElementSettingRepository.findAllByEmployeeIdInAndClosed(dtos.stream().map(payslipSettingDto -> payslipSettingDto.getEmployee().getId()).toList(), getInFunctionCodes() ));
         for (PayslipSettingDto payslipSetting: dtos) {
              try {
@@ -75,14 +74,15 @@ public class PayslipService {
                          e.setValue(0.0);
                          e.setBaseValue(0.0);
                          e.setRateValue(0.0);
+                     } else {
+                         e.setValue(element.getGain() != null
+                                 ? element.getGain().doubleValue()
+                                 : element.getDeduction() != null
+                                 ? element.getDeduction().doubleValue()
+                                 : 0);
+                         e.setBaseValue(element.getBase() != null ? element.getBase().doubleValue() : 0.0);
+                         e.setRateValue(element.getRate() != null ? element.getRate().doubleValue() : 0.0);
                      }
-                     e.setValue(element.getGain() != null
-                             ? element.getGain().doubleValue()
-                             : element.getDeduction() != null
-                             ? element.getDeduction().doubleValue()
-                             : 0);
-                     e.setBaseValue(element.getBase() != null ? element.getBase().doubleValue() : 0.0);
-                     e.setRateValue(element.getRate() != null ? element.getRate().doubleValue() : 0.0);
                      e.setPayslipSettingId(payslipSetting.isByDefault() ? null : payslipSetting.getId());
                      e.setId(payslipSetting.isByDefault() ? null : e.getId());
                      return e;
@@ -93,10 +93,8 @@ public class PayslipService {
                  failedIds.add(payslipSetting.getEmployee().getId());
              }
         }
-        long end = System.currentTimeMillis() - start;
         payslipSettingRepository.saveAll(result.stream().map(payslipSettingMapper::toEntity).toList());
         return failedIds;
-
     }
 
     public String print(PayslipSettingDto dto) {

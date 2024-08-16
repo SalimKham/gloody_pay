@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 
 import java.util.List;
 
@@ -56,15 +57,29 @@ public class Section extends CompanySupport {
     private SectionNature nature;
 
     @Convert(converter = StringListConverter.class)
-    @Column(name="label_keys")
+    @Column(name = "label_keys")
     private List<String> labelKeys;
+
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "parental_id")
     @ToString.Exclude
     private Section parental;
 
-   public boolean isSalary() {
+    @Basic(fetch = FetchType.LAZY)
+    @Formula("""
+          (
+            SELECT EXISTS(SELECT 1   FROM section s LEFT JOIN label_setting lb ON s.id = id AND (s.label_keys LIKE lb.key OR s.label_keys LIKE concat('%##UNIQUE_LIST_SEPARATOR##',lb.key, '%' )
+              OR  s.label_keys LIKE CONCAT('%',lb.key, '##UNIQUE_LIST_SEPARATOR##%' ))
+                        WHERE    (EXISTS(SELECT 1 FROM payslip_setting_element e where e.section = id) OR
+                                  EXISTS(WITH cte AS ( SELECT REGEXP_REPLACE(CONCAT(' ', s2.base_formula, ' ', s2.value_formula, ' ', s2.rate_formula), '[+*()/-]', ' ') AS  combinedFormula FROM section s2
+                                  ) SELECT cte.combinedFormula FROM cte WHERE cte.combinedFormula  RLIKE CONCAT(' ', code, ' ') OR cte.combinedFormula RLIKE CONCAT(' LBL_', lb.key, ' ')
+                                  )))
+)
+            """)
+    private Boolean referenced;
+
+    public boolean isSalary() {
         return type != null && type.equals(SectionType.SALARY);
     }
 

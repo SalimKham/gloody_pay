@@ -18,7 +18,11 @@ import java.util.List;
 @Entity
 @Table(name = "payslip_setting")
 @NamedEntityGraph(name = "PayslipSetting.elements",
-        attributeNodes = @NamedAttributeNode("elements"))
+        attributeNodes = @NamedAttributeNode(value = "elements", subgraph = "PayslipSetting.elements.section"), subgraphs = {
+        @NamedSubgraph(name = "PayslipSetting.elements.section", attributeNodes = {
+                @NamedAttributeNode(value = "section")
+        })
+})
 public class PayslipSetting extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +35,7 @@ public class PayslipSetting extends CompanySupport {
     @Column(name = "show_intermediate")
     private boolean showIntermediate;
 
-    @Column(name="show_zero")
+    @Column(name = "show_zero")
     private boolean showZero;
 
     @Column(name = "template")
@@ -53,7 +57,7 @@ public class PayslipSetting extends CompanySupport {
     private boolean approved;
 
     @Convert(converter = PayslipDetailConverter.class)
-    @Column(name="payslip_detail")
+    @Column(name = "payslip_detail")
     private PayslipDetailDto payslipDetail;
 
     @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
