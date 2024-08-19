@@ -68,11 +68,11 @@ public class Section extends CompanySupport {
 
     @Basic(fetch = FetchType.LAZY)
     @Formula("""
-          (
+       (
             SELECT EXISTS(SELECT 1   FROM section s LEFT JOIN label_setting lb ON s.id = id AND (s.label_keys LIKE lb.key OR s.label_keys LIKE concat('%##UNIQUE_LIST_SEPARATOR##',lb.key, '%' )
               OR  s.label_keys LIKE CONCAT('%',lb.key, '##UNIQUE_LIST_SEPARATOR##%' ))
                         WHERE    (EXISTS(SELECT 1 FROM payslip_setting_element e where e.section = id) OR
-                                  EXISTS(WITH cte AS ( SELECT REGEXP_REPLACE(CONCAT(' ', s2.base_formula, ' ', s2.value_formula, ' ', s2.rate_formula), '[+*()/-]', ' ') AS  combinedFormula FROM section s2
+                                  EXISTS(WITH cte AS ( SELECT REGEXP_REPLACE(CONCAT(' ', COALESCE(s2.base_formula, ''), ' ', COALESCE(s2.value_formula, ''), ' ', COALESCE(s2.rate_formula, '')), '[+*()/-]', ' ') AS  combinedFormula FROM section s2
                                   ) SELECT cte.combinedFormula FROM cte WHERE cte.combinedFormula  RLIKE CONCAT(' ', code, ' ') OR cte.combinedFormula RLIKE CONCAT(' LBL_', lb.key, ' ')
                                   )))
 )
