@@ -121,9 +121,11 @@ public class PayslipService {
         if (!dto.isClosed()) {
             dictionaryService.setVariables(dto, period);
             dictionaryService.getInitialVariables().putAll(dictionaryService.getAllVariables());
+            engine.setBindings(new SimpleBindings(dictionaryService.getAllVariables()), ScriptContext.GLOBAL_SCOPE);
+        } else {
+            engine.setBindings(new SimpleBindings(), ScriptContext.GLOBAL_SCOPE);
         }
         dictionaryService.setAddElements(true);
-        engine.setBindings(new SimpleBindings(), ScriptContext.GLOBAL_SCOPE);
         TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2)));
         perRequestElements.setCalculatedElements(calculatedElements);
         perRequestElements.setSettingsElements(dto.getElements());
@@ -309,7 +311,7 @@ public class PayslipService {
                 elementDto.get().setDescription(section.getDescription());
                 elementDto.get().setTotal(section.isIntermediate());
                 elementDto.get().setRatePercent(section.isRatePercent());
-                Bindings context = new SimpleBindings(dictionaryService.getAllVariables());
+                Bindings context = new SimpleBindings();
                 BigDecimal sectionValue;
                     BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context, section.getNature());
                     context.put(BASE, base.doubleValue());
@@ -471,7 +473,7 @@ public class PayslipService {
                     formula = formula.replace(matcher.group(), String.valueOf(dictionaryService.findDoubleValue(matcher.group())));
                 }
             }
-            engine.setBindings(context, ScriptContext.GLOBAL_SCOPE);
+            engine.getBindings(ScriptContext.GLOBAL_SCOPE).putAll(context);
             Object result = engine.eval(formula);
             if (result instanceof String) {
                 return new BigDecimal(String.valueOf(result));
