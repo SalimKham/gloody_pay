@@ -1,6 +1,7 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
+import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipAbsenceDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
@@ -93,10 +95,10 @@ public class SectionDictionaryService extends CompanySupportService {
         setVariable(PAYMENT_END, DateUtils.endOfMonth(period.getEnd()));
         setVariable(IRG_YEAR, period.getStart().getYear());
         // todo check this need
-     /*   if (dto.getRate() != null) {
+      if (dto.getRate() != null) {
             setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY));
             setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY));
-        }*/
+        }
         double countWorkingDays = findDoubleValue(DAYS_NBR) - dto.getAbsences().getAbsenceDays();
         double hoursByDay = findDoubleValue(HOURS_BY_WEEK) / findDoubleValue(DAYS_BY_WEEK);
         setVariable(WORKING_DAYS_NBR, countWorkingDays- findDoubleValue(CONTRACT_OFF_DAYS));
