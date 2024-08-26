@@ -5,12 +5,13 @@ import com.zsoft.gloody.gloodypayroll.models.entities.SectionCategory;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionCategoryDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.mappers.accounting.AccountingSettingAccountMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper
+@Mapper(uses = AccountingSettingAccountMapper.class)
 public abstract class SectionMapper {
     @Autowired
     private SectionRepository sectionRepository;

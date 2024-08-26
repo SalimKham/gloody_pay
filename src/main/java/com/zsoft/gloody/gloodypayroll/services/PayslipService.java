@@ -116,10 +116,13 @@ public class PayslipService {
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
         if (dictionaryService.getAllVariables()  != null) {
             dictionaryService.getAllVariables().clear();
+            dictionaryService.getInitialVariables().clear();
         }
         if (!dto.isClosed()) {
             dictionaryService.setVariables(dto, period);
+            dictionaryService.getInitialVariables().putAll(dictionaryService.getAllVariables());
         }
+        dictionaryService.setAddElements(true);
         engine.setBindings(new SimpleBindings(), ScriptContext.GLOBAL_SCOPE);
         TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2)));
         perRequestElements.setCalculatedElements(calculatedElements);
@@ -222,38 +225,6 @@ public class PayslipService {
         updateTotal(prefix, label, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-
-    private List<PayslipElementDto> getTotalElementByCategory(List<PayslipSettingElementDto> elements, String category) {
-        if (category == null) {
-            return Collections.emptyList();
-        }
-        String code = defaultSectionSettings.findByKey(category).map(SectionSetting::getCode).orElse(null);
-        if (code != null) {
-            boolean alreadyInElements = elements.stream().anyMatch(element -> element.getSection().equals(code));
-            if (alreadyInElements) {
-                return Collections.emptyList();
-            }
-            double value = dictionaryService.findDoubleValue(category);
-            if (value != 0) {
-                return companySections.findByCode(code)
-                        .map(section -> {
-                            PayslipElementDto elementDto = new PayslipElementDto();
-                            elementDto.setLabel(section.getLabel());
-                            elementDto.setDescription(section.getDescription());
-                            elementDto.setTotal(section.isIntermediate());
-                            if (value < 0) {
-                                elementDto.setDeduction(BigDecimal.valueOf(-value));
-                            } else {
-                                elementDto.setGain(BigDecimal.valueOf(value));
-                            }
-                            return Collections.singletonList(elementDto);
-                        })
-                        .orElse(Collections.emptyList());
-            }
-        }
-        return Collections.emptyList();
-    }
-
     private void updateTotal(String prefix, String label, BigDecimal gain, BigDecimal deduction) {
         String key = String.format(prefix + "%s",label);
         BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService.findDoubleValue(key));
@@ -283,9 +254,11 @@ public class PayslipService {
 
     private PayslipElementDto calculateSection(PayslipSettingElementDto element) {
         try {
-            PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> Objects.equals(e.getCode(), element.getSection())).findFirst().orElse(null);
-            if (alreadyExistsElement != null) {
-                return alreadyExistsElement;
+            if (dictionaryService.getAddElements()) {
+                PayslipElementDto alreadyExistsElement = perRequestElements.getCalculatedElements().stream().filter(e -> Objects.equals(e.getCode(), element.getSection())).findFirst().orElse(null);
+                if (alreadyExistsElement != null) {
+                    return alreadyExistsElement;
+                }
             }
             return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
         }catch (Exception e)  {
@@ -326,7 +299,9 @@ public class PayslipService {
                 if (section.isTotal()) {
                     elementDto.set(getTotalElement(label == null ? section.getLabel() : label));
                     elementDto.get().setCode(code);
-                    addCalculatedElement(elementDto.get());
+                    if (dictionaryService.getAddElements()) {
+                        addCalculatedElement(elementDto.get());
+                    }
                     return;
                 }
                 elementDto.get().setCode(code);
@@ -367,7 +342,9 @@ public class PayslipService {
                 }
                 elementDto.get().setGain(gain);
                 elementDto.get().setDeduction(deduction);
-                addCalculatedElement(elementDto.get());
+                if (dictionaryService.getAddElements()) {
+                    addCalculatedElement(elementDto.get());
+                }
             });
         }
 
@@ -391,6 +368,30 @@ public class PayslipService {
     }
 
     private Double calculateFunctionByName(String functionName, String[] paramList) {
+        if (Objects.equals(functionName, "WHEN")) {
+            String section = paramList[0];
+             String variableName = paramList[1];
+             String value = paramList[2];
+             if (Objects.nonNull(variableName) && Objects.nonNull(value) && Objects.nonNull(section)) {
+                     LinkedHashMap<String, Object> currentVariables  = new LinkedHashMap<>(dictionaryService.getAllVariables());
+                     boolean currentAddElement = dictionaryService.getAddElements();
+                     dictionaryService.setAddElements(false);
+                     dictionaryService.getAllVariables().clear();
+                     dictionaryService.getInitialVariables().put(variableName, Double.valueOf(value));
+                     dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
+                     calculateSection(section, null, null, null, null);
+                     Double result = dictionaryService.findDoubleValue(section);
+                     dictionaryService.getAllVariables().clear();
+                     dictionaryService.getInitialVariables().remove(variableName);
+                     dictionaryService.getAllVariables().putAll(currentVariables);
+                     dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
+                     dictionaryService.setAddElements(currentAddElement);
+                     return result;
+
+             }
+            return 0.0;
+
+        }
         if (Objects.equals(functionName, "EOFMONTH")) {
             return perRequestElements.getCurrentDate().isEqual(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())) ? 1.0 : 0.0;
         } else {

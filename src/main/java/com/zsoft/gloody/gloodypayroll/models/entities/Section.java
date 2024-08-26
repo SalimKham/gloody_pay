@@ -1,12 +1,12 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import com.zsoft.gloody.gloodypayroll.models.entities.accounting.AccountingSettingAccount;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import com.zsoft.gloody.gloodypayroll.support.StringListConverter;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.persistence.*;
 import org.hibernate.annotations.Formula;
 
 import java.util.List;
@@ -55,6 +55,9 @@ public class Section extends CompanySupport {
     @Enumerated(EnumType.STRING)
     @Column(name = "nature")
     private SectionNature nature;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    private AccountingSettingAccount accounting;
 
     @Convert(converter = StringListConverter.class)
     @Column(name = "label_keys")

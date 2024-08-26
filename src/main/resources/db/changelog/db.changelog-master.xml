@@ -18,4 +18,6 @@
     <include file="0.0.1/insert_meal_voucher_variable.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/insert_resource_mutual_variable_variable.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/add_column_payslip_detail_to_payslip_setting.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_accounting_setting.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_column_accounting_code_to_section.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
