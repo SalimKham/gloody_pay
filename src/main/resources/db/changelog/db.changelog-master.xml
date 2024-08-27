@@ -20,4 +20,6 @@
     <include file="0.0.1/add_column_payslip_detail_to_payslip_setting.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/add_accounting_setting.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/add_column_accounting_code_to_section.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/insert_holidays_variable.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_setting_add_rate.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

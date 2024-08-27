@@ -1,0 +1,13 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="update_payslip_settings_table_add_rate_column" author="SALIM KHAM">
+        <addColumn tableName="payslip_setting">
+            <column name="payslip_rate" type="VARCHAR(50)" afterColumn="show_zero"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>
