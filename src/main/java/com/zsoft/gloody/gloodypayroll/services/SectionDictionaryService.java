@@ -102,7 +102,7 @@ public class SectionDictionaryService extends CompanySupportService {
         double hoursByDay = findDoubleValue(HOURS_BY_WEEK) / findDoubleValue(DAYS_BY_WEEK);
         setVariable(WORKING_DAYS_NBR, countWorkingDays- findDoubleValue(CONTRACT_OFF_DAYS));
         setVariable(WORKING_HOURS_NBR, (countWorkingDays * hoursByDay) - findDoubleValue(ABSENCES));
-        if ((boolean) findValue(IS_DAILY_RATE)) {
+        if ( Objects.equals(dto.getRate(), PayslipRate.DAILY) ) {
             setVariable(ABSENCES, countAbsences(dto.getAbsences()));
         } else {
             setVariable(ABSENCES, countAbsences(dto.getAbsences()) * hoursByDay);
