@@ -95,8 +95,8 @@ public class SectionDictionaryService extends CompanySupportService {
         setVariable(PAYMENT_END, DateUtils.endOfMonth(period.getEnd()));
         setVariable(IRG_YEAR, period.getStart().getYear());
       if (dto.getRate() != null) {
-            setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY));
-            setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY));
+            setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY) ? 0 : 1);
+            setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY) ? 0 : 1);
         }
         double countWorkingDays = findDoubleValue(DAYS_NBR) - dto.getAbsences().getAbsenceDays();
         double hoursByDay = findDoubleValue(HOURS_BY_WEEK) / findDoubleValue(DAYS_BY_WEEK);
