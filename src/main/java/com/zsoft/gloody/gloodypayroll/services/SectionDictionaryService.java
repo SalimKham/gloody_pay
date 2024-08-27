@@ -94,7 +94,6 @@ public class SectionDictionaryService extends CompanySupportService {
         setVariable(PAYMENT_START, DateUtils.startOfMonth(period.getStart()));
         setVariable(PAYMENT_END, DateUtils.endOfMonth(period.getEnd()));
         setVariable(IRG_YEAR, period.getStart().getYear());
-        // todo check this need
       if (dto.getRate() != null) {
             setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY));
             setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY));

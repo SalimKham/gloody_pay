@@ -74,11 +74,11 @@
     },
     {
       "key": "IS_DAILY_RATE",
-      "formula": "true"
+      "formula": "0"
     },
     {
       "key": "IS_HOURLY_RATE",
-      "formula": "false"
+      "formula": "0"
     },
     {
       "key": "DAYS_BY_WEEK",
@@ -91,6 +91,13 @@
       "label": "Heures par semaine",
       "description": "Heures par semaine",
       "formula": "40"
+    },
+    {
+      "key": "HLD",
+      "label": "Les Jours fériés",
+      "description": "Les Jours fériés",
+      "source": "HOLIDAYS",
+      "formula": "0"
     }
   ],
   "default-categories": [
