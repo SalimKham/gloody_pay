@@ -375,16 +375,19 @@ public class PayslipService {
              String variableName = paramList[1];
              String value = paramList[2];
              if (Objects.nonNull(variableName) && Objects.nonNull(value) && Objects.nonNull(section)) {
-                     LinkedHashMap<String, Object> currentVariables  = new LinkedHashMap<>(dictionaryService.getAllVariables());
+                     // here we recalculate the function by setting the variableName value to 'value'
+                     LinkedHashMap<String, Object> currentVariables  = new LinkedHashMap<>(dictionaryService.getAllVariables()); // first we need to save the current variables state
                      boolean currentAddElement = dictionaryService.getAddElements();
+                     String currentVariableValue = String.valueOf(dictionaryService.getInitialVariables().getOrDefault(variableName, "0"));
                      dictionaryService.setAddElements(false);
                      dictionaryService.getAllVariables().clear();
                      dictionaryService.getInitialVariables().put(variableName, Double.valueOf(value));
                      dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
                      calculateSection(section, null, null, null, null);
                      Double result = dictionaryService.findDoubleValue(section);
+                     // now we need to restore the previous variables state
                      dictionaryService.getAllVariables().clear();
-                     dictionaryService.getInitialVariables().remove(variableName);
+                     dictionaryService.getInitialVariables().put(variableName, currentVariableValue);
                      dictionaryService.getAllVariables().putAll(currentVariables);
                      dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
                      dictionaryService.setAddElements(currentAddElement);
