@@ -28,4 +28,5 @@ public class SectionDto {
     private Long company;
     private Boolean referenced;
     private AccountingSettingAccountDTO accounting;
+    private List<SectionVariableDto> variables;
 }

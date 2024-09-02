@@ -287,6 +287,49 @@ public class PayslipService {
         }
     }
 
+    private PayslipElementDto evaluateSectionFormulas (Section section, String label,  Double baseValue, Double rateValue, Double value) {
+        AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
+        elementDto.get().setCode(section.getCode());
+        elementDto.get().setLabel(label == null ? section.getLabel() : label);
+        elementDto.get().setDescription(section.getDescription());
+        elementDto.get().setTotal(section.isIntermediate());
+        elementDto.get().setRatePercent(section.isRatePercent());
+        Bindings context = new SimpleBindings();
+        BigDecimal sectionValue;
+        BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context, section.getNature());
+        context.put(BASE, base.doubleValue());
+        elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
+        BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context, section.getNature());
+        context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
+        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
+        if (value == null) {
+            sectionValue = calculateSectionValue(section.getValueFormula(), value, context, section.getNature());
+        } else {
+            sectionValue = BigDecimal.valueOf(value);
+        }
+        if (sectionValue == null) {
+            return elementDto.get();
+        }
+
+        dictionaryService.setVariable(section.getCode(), sectionValue.doubleValue());
+        BigDecimal gain = null;
+        BigDecimal deduction = null;
+        if (section.isGain() || section.isSalary()) {
+            gain = sectionValue.setScale(2, RoundingMode.HALF_UP);
+        } else if (section.isDeduction()) {
+            deduction = sectionValue.setScale(2, RoundingMode.HALF_UP);
+        } else if (section.isIntermediate()) {
+            if (sectionValue.doubleValue() < 0) {
+                deduction = BigDecimal.valueOf(-sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+            } else {
+                gain = BigDecimal.valueOf(sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+            }
+        }
+        elementDto.get().setGain(gain);
+        elementDto.get().setDeduction(deduction);
+        return elementDto.get();
+    }
+
 
     private PayslipElementDto calculateSection(String code, String label,  Double baseValue, Double rateValue, Double value) {
         AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
@@ -300,50 +343,35 @@ public class PayslipService {
             companySections.findByCode(code).ifPresent(section -> {
                 if (section.isTotal()) {
                     elementDto.set(getTotalElement(label == null ? section.getLabel() : label));
-                    elementDto.get().setCode(code);
+                    elementDto.get().setCode(section.getCode());
                     if (dictionaryService.getAddElements()) {
                         addCalculatedElement(elementDto.get());
                     }
                     return;
                 }
-                elementDto.get().setCode(code);
-                elementDto.get().setLabel(label == null ? section.getLabel() : label);
-                elementDto.get().setDescription(section.getDescription());
-                elementDto.get().setTotal(section.isIntermediate());
-                elementDto.get().setRatePercent(section.isRatePercent());
-                Bindings context = new SimpleBindings();
-                BigDecimal sectionValue;
-                    BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context, section.getNature());
-                    context.put(BASE, base.doubleValue());
-                    elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
-                    BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context, section.getNature());
-                    context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
-                    elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
-                if (value == null) {
-                    sectionValue = calculateSectionValue(section.getValueFormula(), value, context, section.getNature());
-                } else {
-                    sectionValue = BigDecimal.valueOf(value);
-                }
-                if (sectionValue == null) {
-                    return;
-                }
+                boolean hasOwnVariables = section.getVariables() != null && !section.getVariables().isEmpty();
+                if (hasOwnVariables) {
 
-                dictionaryService.setVariable(code, sectionValue.doubleValue());
-                BigDecimal gain = null;
-                BigDecimal deduction = null;
-                if (section.isGain() || section.isSalary()) {
-                    gain = sectionValue.setScale(2, RoundingMode.HALF_UP);
-                } else if (section.isDeduction()) {
-                    deduction = sectionValue.setScale(2, RoundingMode.HALF_UP);
-                } else if (section.isIntermediate()) {
-                    if (sectionValue.doubleValue() < 0) {
-                        deduction = BigDecimal.valueOf(-sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
-                    } else {
-                        gain = BigDecimal.valueOf(sectionValue.doubleValue()).setScale(2, RoundingMode.HALF_UP);
-                    }
+                    LinkedHashMap<String, Object> currentVariables  = new LinkedHashMap<>(dictionaryService.getAllVariables()); // first we need to save the current variables state
+                    boolean currentAddElement = dictionaryService.getAddElements();
+                    LinkedHashMap<String, String>   currentVariableValues = new LinkedHashMap<>(10);
+                    section.getVariables().forEach(sectionVariable -> {
+                        currentVariableValues.put(sectionVariable.getVariableKey(), String.valueOf(dictionaryService.getInitialVariables().getOrDefault(sectionVariable.getVariableKey(), "0")));
+                    });
+                    dictionaryService.setAddElements(false);
+                    dictionaryService.getAllVariables().clear();
+                    section.getVariables().forEach(sectionVariable -> dictionaryService.getInitialVariables().put(sectionVariable.getVariableKey(), Double.valueOf(sectionVariable.getValue())));
+                    dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
+                    elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
+                    //reset variables state
+                    dictionaryService.getAllVariables().clear();
+                    section.getVariables().forEach(sectionVariable -> dictionaryService.getInitialVariables().put(sectionVariable.getVariableKey(), currentVariableValues.getOrDefault(sectionVariable.getVariableKey(), "0")));
+                    dictionaryService.getAllVariables().putAll(currentVariables);
+                    dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
+                    dictionaryService.setAddElements(currentAddElement);
+                } else {
+                    elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
                 }
-                elementDto.get().setGain(gain);
-                elementDto.get().setDeduction(deduction);
                 if (dictionaryService.getAddElements()) {
                     addCalculatedElement(elementDto.get());
                 }
@@ -370,6 +398,7 @@ public class PayslipService {
     }
 
     private Double calculateFunctionByName(String functionName, String[] paramList) {
+        // todo remove 'when' function if it is not needed
         if (Objects.equals(functionName, "WHEN")) {
             String section = paramList[0];
              String variableName = paramList[1];

@@ -22,4 +22,5 @@
     <include file="0.0.1/add_column_accounting_code_to_section.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/insert_holidays_variable.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/update_payslip_setting_add_rate.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_section_variables.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
