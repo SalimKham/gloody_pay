@@ -1,5 +1,7 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
 import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -20,7 +22,9 @@ public class PayslipSettingDto {
     private EmployeeDto employee;
     private List<PayslipSettingElementDto> elements;
     private PayslipAbsenceDto absences;
+
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     private PayslipRate rate = PayslipRate.DAILY;
     @Builder.Default
     private boolean showIntermediate = false;

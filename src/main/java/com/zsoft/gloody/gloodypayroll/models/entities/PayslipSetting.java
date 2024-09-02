@@ -59,6 +59,7 @@ public class PayslipSetting extends CompanySupport {
     private boolean approved;
 
     @Column(name="payslip_rate")
+    @Enumerated(EnumType.STRING)
     private PayslipRate payslipRate;
 
     @Enumerated(EnumType.STRING)

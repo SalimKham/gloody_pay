@@ -17,6 +17,7 @@ public abstract class PayslipSettingMapper {
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(source = "employee.id", target = "employee")
+    @Mapping(source = "rate", target = "payslipRate")
     public abstract PayslipSetting toEntity(PayslipSettingDto settingDto);
 
     @Mapping(target = "payslipSettingId", ignore = true)
