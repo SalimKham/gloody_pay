@@ -69,6 +69,11 @@ public class Section extends CompanySupport {
     @ToString.Exclude
     private Section parental;
 
+    @OneToMany(targetEntity = SectionVariable.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "payslip_section_id", nullable = false)
+    @ToString.Exclude
+    private List<SectionVariable> variables;
+
     @Basic(fetch = FetchType.LAZY)
     @Formula("""
        (

@@ -97,7 +97,8 @@ public class SectionService extends CompanySupportService {
         return !this.sectionRepository.existsByCode(code);
     }
 
-    private SectionDto save(SectionDto dto) {
+    @Transactional
+    public SectionDto save(SectionDto dto) {
      /*   if (engineService.isInvalid(dto.getBaseFormula())) {
             throw new ApiRuntimeException("error.section.base.formula-invalid");
         }
