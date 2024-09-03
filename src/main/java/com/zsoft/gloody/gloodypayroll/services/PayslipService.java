@@ -363,11 +363,13 @@ public class PayslipService {
                     section.getVariables().forEach(sectionVariable -> dictionaryService.getInitialVariables().put(sectionVariable.getVariableKey(), Double.valueOf(sectionVariable.getValue())));
                     dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
                     elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
+                    Double calculatedValue = dictionaryService.findDoubleValue(section.getCode());
                     //reset variables state
                     dictionaryService.getAllVariables().clear();
                     section.getVariables().forEach(sectionVariable -> dictionaryService.getInitialVariables().put(sectionVariable.getVariableKey(), currentVariableValues.getOrDefault(sectionVariable.getVariableKey(), "0")));
                     dictionaryService.getAllVariables().putAll(currentVariables);
                     dictionaryService.getAllVariables().putAll(dictionaryService.getInitialVariables());
+                    dictionaryService.setVariable(section.getCode(), Objects.requireNonNullElse(calculatedValue, 0.0));
                     dictionaryService.setAddElements(currentAddElement);
                 } else {
                     elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
