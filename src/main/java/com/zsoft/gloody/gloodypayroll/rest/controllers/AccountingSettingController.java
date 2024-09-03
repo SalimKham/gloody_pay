@@ -1,9 +1,11 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
+import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingExportFilterDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingDTO;
 import com.zsoft.gloody.gloodypayroll.services.AccountingSettingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,15 @@ public class AccountingSettingController {
     public ResponseEntity<AccountingSettingDTO> getAccountingMonthlyTotals( @RequestParam(name = "month") LocalDate date) {
         Optional<AccountingSettingDTO> accountingSettingDTO = accountingSettingService.getAccountingMonthlyTotals(date);
         return accountingSettingDTO.map(response -> ResponseEntity.ok().body(response)).orElse(null);
+    }
+
+    @PostMapping("/monthly-logs/export")
+    public ResponseEntity<byte[]> exportAccountingData(@RequestBody  AccountingExportFilterDto filter) {
+        byte[] result  = accountingSettingService.exportAccountingData(filter);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=\"" +  filter.getFileName() + "\"");
+        headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        return ResponseEntity.ok().headers(headers).body(result);
     }
 
     @DeleteMapping("/{id}")
