@@ -415,8 +415,9 @@
   ],
 "default-templates": [
   {
-  "name": "Modèle par défaut",
-  "elements": [
+    "name": "Modèle par défaut",
+    "isDefault": true,
+    "elements": [
     {
       "sectionCode": "R001"
     },
