@@ -47,8 +47,10 @@ public class PayslipService {
     private final PerRequestElements perRequestElements;
     private final PayslipSettingRepository payslipSettingRepository;
     private final PayslipSettingMapper payslipSettingMapper;
+    private static final List<String> defaultFunctionCodes = List.of("irg(base)","int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
+
         {
             put(SectionNature.NOT_TAXABLE_CONTRIBUTORY, "NTC");
             put(SectionNature.NOT_TAXABLE_NOT_CONTRIBUTORY, "NTNC");
@@ -466,7 +468,7 @@ public class PayslipService {
     }
 
     private boolean isFunction(String value) {
-        return !value.toLowerCase().contains("irg(base)") && value.matches(FUNCTION_REGEX);
+        return defaultFunctionCodes.stream().noneMatch((func) -> value.toLowerCase().contains(func)) && value.matches(FUNCTION_REGEX);
     }
 
     private void  calculateFormulaVariables(String formula) {
@@ -497,16 +499,16 @@ public class PayslipService {
         if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
             return ZERO;
         }
-
          calculateFormulaVariables(formula);
         try {
             Pattern pattern = Pattern.compile(FUNCTION_REGEX);
             Matcher matcher = pattern.matcher(formula);
             while (matcher.find()) {
-                if (!matcher.group().toLowerCase().contains("irg(base)")) {
+                if (isFunction(matcher.group())) {
                     formula = formula.replace(matcher.group(), String.valueOf(dictionaryService.findDoubleValue(matcher.group())));
                 }
             }
+            formula = formula.replace("INT(BASE)", "parseInt(BASE)");
             engine.getBindings(ScriptContext.GLOBAL_SCOPE).putAll(context);
             Object result = engine.eval(formula);
             if (result instanceof String) {
