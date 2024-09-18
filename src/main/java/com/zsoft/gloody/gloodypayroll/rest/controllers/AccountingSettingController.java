@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -24,10 +26,10 @@ public class AccountingSettingController {
         return accountingSettingDTO.map(response -> ResponseEntity.ok().body(response)).orElse(null);
     }
 
-    @GetMapping("/monthly-logs")
-    public ResponseEntity<AccountingSettingDTO> getAccountingMonthlyTotals( @RequestParam(name = "month") LocalDate date) {
-        Optional<AccountingSettingDTO> accountingSettingDTO = accountingSettingService.getAccountingMonthlyTotals(date);
-        return accountingSettingDTO.map(response -> ResponseEntity.ok().body(response)).orElse(null);
+    @PostMapping("/monthly-logs")
+    public ResponseEntity<AccountingSettingDTO> getAccountingMonthlyTotals( @RequestBody  AccountingExportFilterDto filter) {
+        List<AccountingSettingDTO> result = accountingSettingService.getAccountingMonthlyTotals(filter);
+        return ResponseEntity.ok().body(result != null && !result.isEmpty() ? result.get(0) : null);
     }
 
     @PostMapping("/monthly-logs/export")
@@ -35,6 +37,17 @@ public class AccountingSettingController {
         byte[] result  = accountingSettingService.exportAccountingData(filter);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=\"" +  filter.getFileName() + "\"");
+        headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        return ResponseEntity.ok().headers(headers).body(result);
+    }
+
+    @GetMapping("/monthly-logs/export-plan")
+    public ResponseEntity<byte[]> exportAccountingSetting() {
+        DateTimeFormatter formatter =  DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String fileName = String.format("Accounting-Plan-%s", LocalDate.now().format(formatter));
+        byte[] result  = accountingSettingService.exportAccountingSetting(fileName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=\"" +  fileName + "\"");
         headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         return ResponseEntity.ok().headers(headers).body(result);
     }

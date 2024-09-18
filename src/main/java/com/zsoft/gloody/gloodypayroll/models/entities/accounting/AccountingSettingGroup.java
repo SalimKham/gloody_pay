@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Builder
 @NoArgsConstructor
@@ -29,7 +27,7 @@ public class AccountingSettingGroup {
     @JoinColumn(name = "accounting_setting_group_id", nullable = false)
     @ToString.Exclude
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Set<AccountingSettingAccount> accounts = new HashSet<>();
+    private List<AccountingSettingAccount> accounts = Collections.emptyList();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "accounting_setting_id", nullable = false, insertable = false, updatable = false)

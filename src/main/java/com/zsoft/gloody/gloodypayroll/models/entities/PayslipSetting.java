@@ -34,6 +34,9 @@ public class PayslipSetting extends CompanySupport {
     @Column(name = "employee_id")
     private Long employee;
 
+    @Column(name="contract_id")
+    private Long contract;
+
     @Column(name = "show_intermediate")
     private boolean showIntermediate;
 
@@ -71,10 +74,13 @@ public class PayslipSetting extends CompanySupport {
     private PayslipDetailDto payslipDetail;
 
 
-    @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_setting_id", nullable = false)
     @ToString.Exclude
     @OrderBy("elementOrder asc")
     private List<PayslipSettingElement> elements;
+
+    @Column(name = "draft")
+    private Boolean draft;
 
 }

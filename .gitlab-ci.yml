@@ -6,7 +6,7 @@ build_staging:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17-alpine
   script:
-    - mvn clean install -Dmaven.test.skip=false -Denv=develop
+    - mvn clean install -Dmaven.test.skip=false -Denv=develop hibernate-enhance:enhance
   only:
     - staging
   artifacts:
@@ -35,7 +35,7 @@ build_uat:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17-alpine
   script:
-    - mvn clean install -Dmaven.test.skip=false -Denv=uat
+    - mvn clean install -Dmaven.test.skip=false -Denv=uat hibernate-enhance:enhance
   only:
     - uat
   artifacts:

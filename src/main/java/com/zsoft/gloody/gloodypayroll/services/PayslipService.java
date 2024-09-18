@@ -4,7 +4,9 @@ import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
 import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
-import com.zsoft.gloody.gloodypayroll.models.entities.*;
+import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSettingElement;
+import com.zsoft.gloody.gloodypayroll.models.entities.Period;
+import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
@@ -12,12 +14,15 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.*;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import javax.script.*;
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.SimpleBindings;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -26,12 +31,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PayslipService {
     public static final String ATTRIBUTE_PREFIX = "LBL_";
     public static final String NATURE_PREFIX = "NTR_";
@@ -43,12 +49,13 @@ public class PayslipService {
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
     private final PayslipElementSettingRepository payslipElementSettingRepository;
-    private ScriptEngine engine;
+    private final ScriptEngine engine;
     private final PerRequestElements perRequestElements;
     private final PayslipSettingRepository payslipSettingRepository;
     private final PayslipSettingMapper payslipSettingMapper;
     private static final List<String> defaultFunctionCodes = List.of("irg(base)","int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
+    private final PayslipSettingService payslipSettingService;
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
 
         {
@@ -62,30 +69,41 @@ public class PayslipService {
     public List<Long> closePayslips (List<PayslipSettingDto> dtos) {
         List<PayslipSettingDto>  result = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>();
+        if (dtos.isEmpty()) {
+            return failedIds;
+        }
+        LocalDate date = dtos.stream().findFirst().get().getPaymentDate();
         perRequestElements.setFunctionElements(payslipElementSettingRepository.findAllByEmployeeIdInAndClosed(dtos.stream().map(payslipSettingDto -> payslipSettingDto.getEmployee().getId()).toList(), getInFunctionCodes() ));
+        List<Long> templateIds = dtos.stream().filter(pt -> Objects.nonNull(pt.getId())).map(PayslipSettingDto::getId).toList();
+        List<PayslipSettingDto> templates =  payslipSettingService.findMonthlyTemplates(date, templateIds);
+        Map<Long, PayslipSettingDto> temmplatesMap = templates.stream().collect(Collectors.toMap(PayslipSettingDto::getId, payslipSetting -> payslipSetting));
+        PayslipSettingDto defaultTemplate = templates.stream().filter(PayslipSettingDto::isByDefault).findFirst().orElse(null);
+        Map<Long, List<PayslipSettingDto>> ByMonthAndResourceTemplate = templates.stream().filter(t -> t.getEmployee() != null && t.getPaymentDate() != null &&
+                                                                                                       date.getMonthValue() == t.getPaymentDate().getMonthValue() &&
+                                                                                                       date.getYear() == t.getPaymentDate().getYear())
+
+                .collect(Collectors.groupingBy(payslipSetting -> payslipSetting.getContract().getId() != -1 ? payslipSetting.getContract().getId() : payslipSetting.getEmployee().getId()));
         for (PayslipSettingDto payslipSetting: dtos) {
+            PayslipSettingDto dto =
+                    ByMonthAndResourceTemplate.containsKey(payslipSetting.getContract().getId()) || (ByMonthAndResourceTemplate.containsKey(payslipSetting.getEmployee().getId()) ) ?
+                            ByMonthAndResourceTemplate.getOrDefault(payslipSetting.getContract().getId(), ByMonthAndResourceTemplate.get(payslipSetting.getEmployee().getId())).get(0) : payslipSetting.getId() != null ?  temmplatesMap.get(payslipSetting.getId()): defaultTemplate;
              try {
-                 TreeSet<PayslipElementDto> elements = calculate(payslipSetting, null);
+                 PayslipSettingDto clonedDto = (PayslipSettingDto) dto.clone();
+                 payslipSetting.setElements(clonedDto.getElements());
+                 payslipSetting.setByDefault(dto.isByDefault() ||  (Objects.equals(payslipSetting.getId(), dto.getId()) && payslipSetting.isByDefault() ));
+                 payslipSetting.setRate(dto.getRate());
+                 TreeSet<PayslipElementDto> elements = calculate(payslipSetting, null, false);
                  payslipSetting.setClosed(true);
+                 payslipSetting.setShowIntermediate(true);
+                 payslipSetting.setShowZero(dto.isShowZero());
                  payslipSetting.setTemplate(false);
-                 payslipSetting.setId(payslipSetting.isByDefault() ? null : payslipSetting.getId());
+                 payslipSetting.setDraft(false);
+                 payslipSetting.setId(payslipSetting.isByDefault() ? null : dto.getId());
                  payslipSetting.setName(String.format("%s-%s", payslipSetting.getEmployee().getId() ,payslipSetting.getPaymentDate()));
                  payslipSetting.setElements(payslipSetting.getElements().stream().map(e -> {
                      PayslipElementDto element =  elements.stream().filter(el -> el.getCode().equals(e.getSection())).findFirst().orElse(null);
-                     if (element == null) {
-                         e.setValue(0.0);
-                         e.setBaseValue(0.0);
-                         e.setRateValue(0.0);
-                     } else {
-                         e.setValue(element.getGain() != null
-                                 ? element.getGain().doubleValue()
-                                 : element.getDeduction() != null
-                                 ? element.getDeduction().doubleValue()
-                                 : 0);
-                         e.setBaseValue(element.getBase() != null ? element.getBase().doubleValue() : 0.0);
-                         e.setRateValue(element.getRate() != null ? element.getRate().doubleValue() : 0.0);
-                     }
-                     e.setPayslipSettingId(payslipSetting.isByDefault() ? null : payslipSetting.getId());
+                     payslipElementToPayslipSettingElement(e, element);
+                     e.setPayslipSettingId(payslipSetting.isByDefault() ? null : dto.getId());
                      e.setId(payslipSetting.isByDefault() ? null : e.getId());
                      return e;
                  }).toList());
@@ -99,12 +117,28 @@ public class PayslipService {
         return failedIds;
     }
 
+    public static void payslipElementToPayslipSettingElement(PayslipSettingElementDto e, PayslipElementDto element) {
+        if (element == null) {
+            e.setValue(0.0);
+            e.setBaseValue(0.0);
+            e.setRateValue(0.0);
+        } else {
+            e.setValue(element.getGain() != null
+                    ? element.getGain().doubleValue()
+                    : element.getDeduction() != null
+                    ? element.getDeduction().doubleValue()
+                    : 0);
+            e.setBaseValue(element.getBase() != null ? element.getBase().doubleValue() : 0.0);
+            e.setRateValue(element.getRate() != null ? element.getRate().doubleValue() : 0.0);
+        }
+    }
+
     public String print(PayslipSettingDto dto) {
         EmployeeDto employeeDto = dto.getEmployee();
         if (employeeDto == null) {
             throw new ApiRuntimeException("error.employee.required");
         }
-        Set<PayslipElementDto> elements = calculate(dto, Collections.singletonList(employeeDto.getId()));
+        Set<PayslipElementDto> elements = calculate(dto, Collections.singletonList(employeeDto.getId()), false);
         Locale locale = Locale.getDefault();
         Context context = new Context(locale);
         context.setVariable("locale", locale);
@@ -113,7 +147,7 @@ public class PayslipService {
         return templateEngine.process("payslip/template", context);
     }
 
-    public TreeSet<PayslipElementDto> calculate(PayslipSettingDto dto, List<Long> employeeIds) {
+    public TreeSet<PayslipElementDto> calculate(PayslipSettingDto dto, List<Long> employeeIds, boolean saveDraft) {
 
         Period period = DateUtils.getPayslipPeriod(dto.getPaymentDate());
         if (dictionaryService.getAllVariables()  != null) {
@@ -148,6 +182,9 @@ public class PayslipService {
         for(PayslipSettingElementDto elementDto: dto.getElements()) {
                calculateSection( elementDto);
         }
+        if (saveDraft) {
+            saveAsDraft(dto);
+        }
         return   perRequestElements.getCalculatedElements();
     }
 
@@ -158,7 +195,7 @@ public class PayslipService {
 
     private PayslipElementDto calculateBaseSalary(List<PayslipSettingElementDto> elements) {
         for (PayslipSettingElementDto element : elements) {
-            Section section = companySections.findByCode(element.getSection()).orElse(null);
+            SectionDto section = companySections.findByCode(element.getSection()).orElse(null);
             if (section != null && section.isSalary()) {
                 return calculateSection(element);
             }
@@ -211,7 +248,7 @@ public class PayslipService {
             return;
         }
         for (PayslipSettingElementDto element :   perRequestElements.getSettingsElements()) {
-            Section section = companySections.findByCode(element.getSection()).orElse(null);
+            SectionDto section = companySections.findByCode(element.getSection()).orElse(null);
             if (section == null) {
                 continue;
             }
@@ -289,7 +326,7 @@ public class PayslipService {
         }
     }
 
-    private PayslipElementDto evaluateSectionFormulas (Section section, String label,  Double baseValue, Double rateValue, Double value) {
+    private PayslipElementDto evaluateSectionFormulas (SectionDto section, String label,  Double baseValue, Double rateValue, Double value) {
         AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
         elementDto.get().setCode(section.getCode());
         elementDto.get().setLabel(label == null ? section.getLabel() : label);
@@ -357,9 +394,7 @@ public class PayslipService {
                     LinkedHashMap<String, Object> currentVariables  = new LinkedHashMap<>(dictionaryService.getAllVariables()); // first we need to save the current variables state
                     boolean currentAddElement = dictionaryService.getAddElements();
                     LinkedHashMap<String, String>   currentVariableValues = new LinkedHashMap<>(10);
-                    section.getVariables().forEach(sectionVariable -> {
-                        currentVariableValues.put(sectionVariable.getVariableKey(), String.valueOf(dictionaryService.getInitialVariables().getOrDefault(sectionVariable.getVariableKey(), "0")));
-                    });
+                    section.getVariables().forEach(sectionVariable -> currentVariableValues.put(sectionVariable.getVariableKey(), String.valueOf(dictionaryService.getInitialVariables().getOrDefault(sectionVariable.getVariableKey(), "0"))));
                     dictionaryService.setAddElements(false);
                     dictionaryService.getAllVariables().clear();
                     section.getVariables().forEach(sectionVariable -> dictionaryService.getInitialVariables().put(sectionVariable.getVariableKey(), Double.valueOf(sectionVariable.getValue())));
@@ -533,6 +568,66 @@ public class PayslipService {
         } catch (Exception e) {
             return ZERO;
         }
+    }
+
+    public void saveAsDraft( PayslipSettingDto settingDto) {
+        if (settingDto == null ||
+            settingDto.isClosed() ||
+            perRequestElements.getCalculatedElements() == null ||
+            perRequestElements.getCalculatedElements().isEmpty() ||
+            settingDto.getPaymentDate().withDayOfMonth(1).isBefore(LocalDate.now().withDayOfMonth(1))) {
+            return;
+        }
+        Map<String,PayslipElementDto> mappedElements =  perRequestElements.getCalculatedElements().stream().collect(Collectors.toMap(PayslipElementDto::getCode, elementDto -> elementDto));
+        settingDto.getElements().forEach(payslipSettingElementDto -> {
+            payslipSettingElementDto.setId(null);
+            PayslipElementDto calculatedEl = mappedElements.get(payslipSettingElementDto.getSection());
+            payslipElementToPayslipSettingElement(payslipSettingElementDto, calculatedEl);
+        });
+        settingDto.setDraft(true);
+        settingDto.setId(null);
+        settingDto.setTemplate(false);
+        settingDto.setPaymentDate(null);
+        payslipSettingService.save(settingDto);
+    }
+
+    public List<Long> saveAllAsDraft(List<PayslipSettingDto> dtos) {
+        List<Long> unsavedIds = new ArrayList<>(dtos.stream().map(dt -> dt.getEmployee().getId()).toList());
+        if (dtos.isEmpty()) {
+            return unsavedIds;
+        }
+        List<Long> saved = new ArrayList<>();
+        try {
+            LocalDate date = LocalDate.now();
+            List<Long> templateIds = dtos.stream().filter(pt -> Objects.nonNull(pt.getId())).map(PayslipSettingDto::getId).toList();
+            List<PayslipSettingDto> templates =  payslipSettingService.findMonthlyTemplates(date, templateIds);
+            Map<Long, PayslipSettingDto> temmplatesMap = templates.stream().collect(Collectors.toMap(PayslipSettingDto::getId, payslipSetting -> payslipSetting));
+            PayslipSettingDto defaultTemplate = templates.stream().filter(PayslipSettingDto::isByDefault).findFirst().orElse(null);
+            Map<Long, List<PayslipSettingDto>> ByMonthAndResourceTemplate = templates.stream().filter(t -> t.getEmployee() != null && t.getPaymentDate() != null &&
+                                                                                                           date.getMonthValue() == t.getPaymentDate().getMonthValue() &&
+                                                                                                           date.getYear() == t.getPaymentDate().getYear())
+
+                    .collect(Collectors.groupingBy(payslipSetting -> payslipSetting.getContract().getId() != -1 ? payslipSetting.getContract().getId() : payslipSetting.getEmployee().getId()));
+            for (PayslipSettingDto dto: dtos) {
+                PayslipSettingDto payslipSetting =
+                        ByMonthAndResourceTemplate.containsKey(dto.getContract().getId()) || (ByMonthAndResourceTemplate.containsKey(dto.getEmployee().getId()) ) ?
+                                ByMonthAndResourceTemplate.getOrDefault(dto.getContract().getId(), ByMonthAndResourceTemplate.get(dto.getEmployee().getId())).get(0) : dto.getId() != null ?  temmplatesMap.get(dto.getId()): defaultTemplate;
+                if (payslipSetting == null || payslipSetting.getElements() == null) {
+                    continue;
+                }
+                PayslipSettingDto clonedDto = (PayslipSettingDto) payslipSetting.clone();
+                dto.setClosed(payslipSetting.isClosed());
+                dto.setRate(payslipSetting.getRate());
+                dto.setElements(clonedDto.getElements());
+                if (!dto.isClosed()) {
+                    calculate(dto, Collections.singletonList(dto.getEmployee().getId()), true);
+                }
+                saved.add(dto.getContract().getId());
+            }
+        }catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return dtos.stream().filter(dt -> saved.stream().noneMatch(sdt -> Objects.equals(sdt, dt.getContract().getId()))).map(dt -> dt.getEmployee().getId()).toList();
     }
 
 }

@@ -17,6 +17,9 @@ public class PayslipDetailConverter implements AttributeConverter<PayslipDetailD
 
     @Override
     public String convertToDatabaseColumn(PayslipDetailDto detailDto) {
+        if (detailDto == null) {
+            return null;
+        }
         ObjectWriter ow = jacksonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL).writer().withDefaultPrettyPrinter();
         try {
             return ow.writeValueAsString(detailDto);
@@ -27,8 +30,10 @@ public class PayslipDetailConverter implements AttributeConverter<PayslipDetailD
 
     @Override
     public PayslipDetailDto convertToEntityAttribute(String jsonString) {
+        if (jsonString == null) {
+            return null;
+        }
         try {
-
             return jacksonObjectMapper.readValue(jsonString, PayslipDetailDto.class);
         } catch (Exception ignored) {
         }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,12 +30,12 @@ public class PayslipSettingService extends CompanySupportService {
 
     public Optional<PayslipSettingDto> markAsDefault(Long templateId) {
         payslipSettingRepository.markAsDefault(templateId);
-        return findById(templateId, null, null);
+        return findById(templateId, null, null, null);
     }
 
-    public Optional<PayslipSettingDto> findDefaultTemplate(Long employeeId, LocalDate date) {
+    public Optional<PayslipSettingDto> findDefaultTemplate(Long employeeId, LocalDate date, Long contractId) {
         if (employeeId != null) {
-            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, date);
+            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, date, contractId);
             if (payslipSettingDto.isPresent()) {
                 return payslipSettingDto;
             }
@@ -46,17 +47,21 @@ public class PayslipSettingService extends CompanySupportService {
         return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this::toDto);
     }
 
-    public Optional<PayslipSettingDto> findByEmployeeIdAndCurrentMonth(Long employeeId, LocalDate currentMonth) {
+    public Optional<PayslipSettingDto> findByEmployeeIdAndCurrentMonth(Long employeeId, LocalDate currentMonth, Long contractId) {
         if (currentMonth == null) {
             return Optional.empty();
         }
-        return this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId, currentMonth).map(this::toDto);
+        List<PayslipSetting> templates =  this.payslipSettingRepository.findByEmployeeAndCurrentMonth(employeeId, currentMonth);
+        return templates == null || templates.isEmpty()  ? Optional.empty() : Optional.ofNullable(payslipSettingMapper.toDto(templates.stream()
+                .filter(t -> Objects.equals(t.getContract(), contractId))
+                .findFirst()
+                .orElse(templates.stream().filter(t -> Objects.equals(t.getContract(), -1L)).findAny().orElse(null))));
     }
 
 
-    public Optional<PayslipSettingDto> findById(Long id, Long employeeId, LocalDate date) {
+    public Optional<PayslipSettingDto> findById(Long id, Long employeeId, LocalDate date, Long contractId) {
         if (employeeId != null) {
-            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, date);
+            Optional<PayslipSettingDto> payslipSettingDto = findByEmployeeIdAndCurrentMonth(employeeId, date, contractId );
             if (payslipSettingDto.isPresent()) {
                 return payslipSettingDto;
             }
@@ -81,24 +86,31 @@ public class PayslipSettingService extends CompanySupportService {
         return payslipSettingDto;
     }
 
-    public List<PayslipSettingDto> findAllTemplates(LocalDate month) {
-        List<PayslipSetting> result =  this.payslipSettingRepository.findAll();
+    public List<Long> findAllEmployeesWithTemplates(LocalDate month) {
+        return this.payslipSettingRepository.findAllEmployeesWithTemplates(month);
+    }
+
+    public List<PayslipSettingDto> findMonthlyTemplates(LocalDate month, List<Long> ids) {
+        List<PayslipSetting> result =  this.payslipSettingRepository.findAllByMonthAndIdIn(month, Objects.requireNonNullElse(ids, Collections.emptyList()));
         List<PayslipSettingDto>  resultDTOs =  result.stream()
                 .map(this::toDto).toList();
         return  resultDTOs;
-
     }
-
     @Transactional
     public PayslipSettingDto save(PayslipSettingDto dto) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
-        payslipSetting.setPayslipDetail(null);
+        if (!payslipSetting.getDraft()) {
+            payslipSetting.setPayslipDetail(null);
+        }
         if (dto.isTemplate()) {
             payslipSetting.setPaymentDate(null);
         }
-        if (payslipSetting.getEmployee() != null) {
-           Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee(), dto.getPaymentDate()).map(PayslipSetting::getId).orElse(null);
+        if (payslipSetting.getEmployee() != null && !payslipSetting.getDraft()) {
+           Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee(), dto.getPaymentDate()).stream().filter(t -> Objects.equals(dto.getContract().getId(), t.getContract())).findFirst().map(PayslipSetting::getId).orElse(null);
            payslipSetting.setId(id);
+        } else if (payslipSetting.getDraft()) {
+            Long id  = payslipSettingRepository.findFirstByDraftAndContract(true, payslipSetting.getContract()).map(PayslipSetting::getId).orElse(null);
+            payslipSetting.setId(id);
         }
         payslipSetting = this.payslipSettingRepository.save(payslipSetting);
         return this.payslipSettingMapper.toDto(payslipSetting);
@@ -128,5 +140,9 @@ public class PayslipSettingService extends CompanySupportService {
     public Page<PayslipSettingDto> deleteTemplate(Long templateId, Pageable pageable) {
         payslipSettingRepository.deleteById(templateId);
         return findAllTemplates("", pageable);
+    }
+
+    public List<Long> getDraftContracts() {
+        return payslipSettingRepository.findDraftContractIds();
     }
 }

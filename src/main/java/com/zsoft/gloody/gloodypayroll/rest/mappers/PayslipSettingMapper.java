@@ -12,11 +12,13 @@ import java.util.Objects;
 @Mapper(uses = {EmployeeMapper.class, SectionMapper.class})
 public abstract class PayslipSettingMapper {
     @Mapping(target = "employee.id", source = "employee")
+    @Mapping(target = "contract.id", source = "contract")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     public abstract PayslipSettingDto toDto(PayslipSetting setting);
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(source = "employee.id", target = "employee")
+    @Mapping(source = "contract.id", target = "contract")
     @Mapping(source = "rate", target = "payslipRate")
     public abstract PayslipSetting toEntity(PayslipSettingDto settingDto);
 
