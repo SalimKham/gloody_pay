@@ -227,6 +227,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <webResources>
+                    <resource>
+                        <directory>src/main/resources/.platform</directory>
+                        <targetPath>.platform</targetPath>
+                        <filtering>true</filtering>
+                    </resource>
+                </webResources>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
