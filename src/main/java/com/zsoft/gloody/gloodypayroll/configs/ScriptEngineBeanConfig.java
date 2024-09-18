@@ -2,11 +2,10 @@ package com.zsoft.gloody.gloodypayroll.configs;
 
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
 import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
-import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
 import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
-import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionSettingRepository;
 import com.zsoft.gloody.gloodypayroll.services.IrgCalculatorService;
+import com.zsoft.gloody.gloodypayroll.services.SectionService;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,26 +17,24 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.IRG_YEAR;
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.IS_HANDICAP;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Configuration
 @Slf4j
 public class ScriptEngineBeanConfig {
 
-    private final SectionRepository sectionRepository;
+    private final SectionService sectionService;
     private final SectionSettingRepository sectionSettingRepository;
 
 
     @Bean
     @RequestScope
     public CompanySections companySections() {
-        List<SectionMapEntry> sectionMap = sectionRepository.findAllByCompanyAsMap(SecurityUtils.getCurrentCompanyId());
-       return new CompanySections(sectionMap.stream().collect(Collectors.toMap(SectionMapEntry::getKey, SectionMapEntry::getValue)));
+        return new  CompanySections(sectionService.findAllAsMap());
     }
 
     @Bean

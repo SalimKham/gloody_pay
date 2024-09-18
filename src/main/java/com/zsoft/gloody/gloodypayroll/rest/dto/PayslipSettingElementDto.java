@@ -10,7 +10,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class PayslipSettingElementDto {
+public class PayslipSettingElementDto implements Cloneable{
     private Long id;
     private Long payslipSettingId;
     private String label;
@@ -32,4 +32,10 @@ public class PayslipSettingElementDto {
     public int hashCode() {
         return Objects.hashCode(getSection());
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
 }

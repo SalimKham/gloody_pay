@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -21,6 +22,7 @@ import java.util.TimeZone;
 @ComponentScan(basePackages = {"com.zsoft.gloody.gloodypayroll.*"})
 @EnableConfigurationProperties
 @EnableScheduling
+@EnableCaching
 public class GloodyPayrollApplication {
     private static void logApplicationStartup(Environment env) {
         String protocol = "http";

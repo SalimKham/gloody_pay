@@ -1,13 +1,16 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
+import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.SectionMapper;
 import com.zsoft.gloody.gloodypayroll.utils.FieldAccessorUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SectionListUtils;
+import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,6 +30,7 @@ import java.util.stream.Collectors;
 public class SectionService extends CompanySupportService {
     private final SectionRepository sectionRepository;
     private final SectionMapper sectionMapper;
+    private final CacheService cacheService;
 
     public Optional<SectionDto> findByCode(String code) {
         return this.sectionRepository.findByCode(code)
@@ -37,6 +42,15 @@ public class SectionService extends CompanySupportService {
                 .stream()
                 .map(this.sectionMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Cacheable(
+            cacheNames = "sectionMap",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
+    )
+    public Map<String, SectionDto> findAllAsMap() {
+        List<SectionMapEntry> sectionMap = sectionRepository.findAllByCompanyAsMap(SecurityUtils.getCurrentCompanyId());
+       return sectionMap.stream().collect(Collectors.toMap(SectionMapEntry::getKey, sectionMapEntry -> sectionMapper.toDto(sectionMapEntry.getValue())));
     }
 
     public Page<SectionDto> findAllByPage(Pageable pageable) {
@@ -53,6 +67,7 @@ public class SectionService extends CompanySupportService {
     public SectionDto create(SectionDto dto) {
         return this.save(dto);
     }
+
 
     @Transactional
     public SectionDto update(SectionDto dto) {
@@ -88,6 +103,7 @@ public class SectionService extends CompanySupportService {
     public boolean deleteById(String code) {
         if (this.sectionRepository.existsByCode(code)) {
             this.sectionRepository.deleteByCode(code);
+            cacheService.updateSectionMapCache();
             return true;
         }
         return false;
@@ -99,19 +115,10 @@ public class SectionService extends CompanySupportService {
 
     @Transactional
     public SectionDto save(SectionDto dto) {
-     /*   if (engineService.isInvalid(dto.getBaseFormula())) {
-            throw new ApiRuntimeException("error.section.base.formula-invalid");
-        }
-        if (engineService.isInvalid(dto.getRateFormula())) {
-            throw new ApiRuntimeException("error.section.rate.formula-invalid");
-        }
-        if (engineService.isInvalid(dto.getValueFormula())) {
-            throw new ApiRuntimeException("error.section.value.formula-invalid");
-        }*/
-        //TODO : ENABLE FORMULA VALIDATION LATER
         try {
             Section section = this.sectionMapper.toEntity(dto);
             section = this.sectionRepository.save(section);
+            cacheService.updateSectionMapCache();
             return this.sectionMapper.toDto(section);
         } catch (DataIntegrityViolationException e) {
             throw new ApiRuntimeException("error.section.code.already-exist");

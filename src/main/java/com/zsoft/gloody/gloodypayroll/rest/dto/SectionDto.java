@@ -1,6 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
+import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingAccountDTO;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
 import java.util.Collections;
@@ -17,7 +20,8 @@ public class SectionDto {
     private String code;
     private String label;
     private String description;
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private SectionType type;
     private String baseFormula;
     private boolean ratePercent;
     private String rateFormula;
@@ -29,4 +33,24 @@ public class SectionDto {
     private Boolean referenced;
     private AccountingSettingAccountDTO accounting;
     private List<SectionVariableDto> variables;
+
+    public boolean isSalary() {
+        return type != null && type.equals(SectionType.SALARY);
+    }
+
+    public boolean isTotal() {
+        return type != null && type.equals(SectionType.TOTAL);
+    }
+
+    public boolean isIntermediate() {
+        return type != null && type.equals(SectionType.INTERMEDIATE);
+    }
+
+    public boolean isGain() {
+        return type != null && type.equals(SectionType.GAIN);
+    }
+
+    public boolean isDeduction() {
+        return type != null && type.equals(SectionType.DEDUCTION);
+    }
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.Enumerated;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -15,11 +16,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class PayslipSettingDto {
+public class PayslipSettingDto implements Cloneable{
     private boolean template;
     private String name;
     private Long id;
     private EmployeeDto employee;
+    private contractDto contract;
     private List<PayslipSettingElementDto> elements;
     private PayslipAbsenceDto absences;
 
@@ -37,4 +39,19 @@ public class PayslipSettingDto {
     private boolean byDefault;
     private PayslipDetailDto payslipDetail;
     private Collection<VariableSettingDto> variables = Collections.emptyList();
+    @Builder.Default
+    private Boolean draft = false;
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PayslipSettingDto cloned = (PayslipSettingDto) super.clone();
+        if (this.elements != null) {
+            List<PayslipSettingElementDto> els = new ArrayList<>(this.elements.size());
+            for (PayslipSettingElementDto el: this.elements) {
+                els.add((PayslipSettingElementDto) el.clone());
+            }
+            cloned.setElements(els);
+        }
+        return cloned;
+    }
 }
