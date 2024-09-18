@@ -79,7 +79,7 @@ public class AccountingSettingService {
                             return;
                         }
                         AccountingSettingAccountDTO clonedAccount = (AccountingSettingAccountDTO)  accountingSettingAccountDTO.clone();
-                        Double sum = elements.stream().mapToDouble(el -> Objects.nonNull(el.getGain()) ? el.getGain().doubleValue() : - el.getDeduction().doubleValue()).sum();
+                        Double sum = elements.stream().mapToDouble(el -> Objects.nonNull(el.getGain()) ? el.getGain().doubleValue() :  el.getDeduction().doubleValue()).sum();
                         clonedAccount.setEmployee(employeeDto.getFullName());
                         clonedAccount.setMonthlyTotal(sum);
                         result.add(clonedAccount);
