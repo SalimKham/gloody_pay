@@ -35,7 +35,7 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     @Override
     @EntityGraph(value = "PayslipSetting.elements")
-    @Query("SELECT ps FROM PayslipSetting ps  WHERE ps.id = :id AND NOT ps.draft")
+    @Query("SELECT ps FROM PayslipSetting ps  WHERE ps.id = :id AND (ps.draft IS NULL OR NOT ps.draft)")
     Optional<PayslipSetting> findById(@Param("id") Long id);
 
     @Nonnull

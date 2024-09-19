@@ -99,16 +99,17 @@ public class PayslipSettingService extends CompanySupportService {
     @Transactional
     public PayslipSettingDto save(PayslipSettingDto dto) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
-        if (!payslipSetting.getDraft()) {
+        boolean isDraft =  Objects.equals(payslipSetting.getDraft(), true);
+        if (!isDraft) {
             payslipSetting.setPayslipDetail(null);
         }
         if (dto.isTemplate()) {
             payslipSetting.setPaymentDate(null);
         }
-        if (payslipSetting.getEmployee() != null && !payslipSetting.getDraft()) {
+        if (payslipSetting.getEmployee() != null && !isDraft) {
            Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee(), dto.getPaymentDate()).stream().filter(t -> Objects.equals(dto.getContract().getId(), t.getContract())).findFirst().map(PayslipSetting::getId).orElse(null);
            payslipSetting.setId(id);
-        } else if (payslipSetting.getDraft()) {
+        } else if (isDraft) {
             Long id  = payslipSettingRepository.findFirstByDraftAndContract(true, payslipSetting.getContract()).map(PayslipSetting::getId).orElse(null);
             payslipSetting.setId(id);
         }
