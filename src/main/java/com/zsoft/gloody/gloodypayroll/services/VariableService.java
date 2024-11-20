@@ -8,7 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -24,7 +26,14 @@ public class VariableService extends CompanySupportService {
     }
 
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
-        variableRepository.saveAll(variables.stream().map(variableMapper::toEntity).toList());
+        variableRepository.saveAll(variables.stream().filter(variableSettingDto -> {
+            boolean existsBySource = false;
+            if (Objects.nonNull(variableSettingDto.getSource())) {
+                existsBySource = variableRepository.existsBySourceAndCompany(variableSettingDto.getSource(), variableSettingDto.getCompany());
+            }
+            return !existsBySource && !variableRepository.existsByKeyAndSourceAndCompany(variableSettingDto.getKey(), variableSettingDto.getSource(),variableSettingDto.getCompany());
+        })
+                .map(variableMapper::toEntity).toList());
         return findAll(pageable, query);
     }
 

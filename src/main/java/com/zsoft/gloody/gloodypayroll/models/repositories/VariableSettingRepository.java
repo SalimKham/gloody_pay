@@ -12,7 +12,8 @@ import java.util.Optional;
 public interface VariableSettingRepository extends JpaRepository<VariableSetting, Long> {
     Optional<VariableSetting> findByKey(String key);
 
-    boolean existsByKey(String key);
+    boolean existsByKeyAndSourceAndCompany(String key, String source, Long company);
+    boolean existsBySourceAndCompany(String source, Long company);
     void deleteBySource(String key);
     Page<VariableSetting> findAllByLabelLikeOrKeyLike(String label, String key, Pageable pageable);
 }
