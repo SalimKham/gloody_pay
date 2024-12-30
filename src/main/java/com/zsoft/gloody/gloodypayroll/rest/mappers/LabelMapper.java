@@ -12,7 +12,7 @@ public interface LabelMapper {
     LabelSetting toEntity(LabelSettingDto labelSettingDto);
     @AfterMapping
     default void afterMapping(@MappingTarget LabelSetting labelSetting) {
-        if (labelSetting != null && labelSetting.getCompany() == null)  {
+        if (labelSetting != null)  {
             labelSetting.setCompany(SecurityUtils.getCurrentCompanyId());
         }
     }

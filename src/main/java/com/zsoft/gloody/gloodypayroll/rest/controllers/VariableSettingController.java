@@ -16,21 +16,21 @@ public class VariableSettingController {
     private final VariableService variableService;
 
     @GetMapping
-    public ResponseEntity<Page<VariableSettingDto>> findAll(Pageable pageable) {
-        Page<VariableSettingDto> result = variableService.findAll(pageable);
+    public ResponseEntity<Page<VariableSettingDto>> findAll(Pageable pageable, @RequestParam(value = "query", required = false) String query) {
+        Page<VariableSettingDto> result = variableService.findAll(pageable, query);
         return ResponseEntity.ok().body(result);
     }
 
     @PostMapping("bulk")
-    public ResponseEntity<Page<VariableSettingDto>> saveBulk(@RequestBody List<VariableSettingDto> variables, Pageable pageable) {
-        Page<VariableSettingDto> result = variableService.save(variables, pageable);
+    public ResponseEntity<Page<VariableSettingDto>> saveBulk(@RequestBody List<VariableSettingDto> variables, Pageable pageable,  @RequestParam(value = "query", required = false) String query) {
+        Page<VariableSettingDto> result = variableService.save(variables, pageable, query);
         return ResponseEntity.ok().body(result);
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Page<VariableSettingDto>> deleteById(@PathVariable(name = "id") Long variableId, Pageable pageable) {
-        Page<VariableSettingDto> result = variableService.delete(variableId, pageable);
+    public ResponseEntity<Page<VariableSettingDto>> deleteById(@PathVariable(name = "id") Long variableId, Pageable pageable,  @RequestParam(value = "query", required = false) String query) {
+        Page<VariableSettingDto> result = variableService.delete(variableId, pageable, query);
         return ResponseEntity.ok().body(result);
     }
 

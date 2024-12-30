@@ -145,6 +145,7 @@ public class CompanyDefaultConfigurationService {
             PayslipSetting payslipSetting = PayslipSetting.builder()
                     .name(obj.get("name").asText())
                     .template(true)
+                    .byDefault(obj.has("isDefault") && obj.get("isDefault").asBoolean())
                     .showIntermediate(true)
                     .company(companyId)
                     .build();

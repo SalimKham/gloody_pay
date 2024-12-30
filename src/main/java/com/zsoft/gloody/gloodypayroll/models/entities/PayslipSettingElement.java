@@ -1,9 +1,8 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.persistence.*;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -22,9 +21,8 @@ public class PayslipSettingElement extends CompanySupport {
     @JoinColumn(name = "payslip_setting_id", nullable = false, insertable = false, updatable = false)
     @ToString.Exclude
     private PayslipSetting payslipSetting;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "section", referencedColumnName = "id")
-    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section")
     private Section section;
     @Column(name = "value")
     private Double value;

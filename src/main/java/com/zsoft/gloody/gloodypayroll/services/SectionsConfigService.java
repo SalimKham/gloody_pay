@@ -36,7 +36,7 @@ public class SectionsConfigService extends CompanySupportService {
    }
 
     public Optional<List<SectionCategoryDto>> saveCategory(SectionCategoryDto category) {
-       SectionCategory sectionCategory = payslipConfigRepository.findByIdAndCompany(category.getId(), SecurityUtils.getCurrentCompanyId()).orElse(new SectionCategory());
+       SectionCategory sectionCategory = payslipConfigRepository.findByIdAndCompany(category.getId(), SecurityUtils.getCurrentCompanyId()).orElse(SectionCategory.builder().sections(null).build());
        sectionCategory.setId(category.getId());
        sectionCategory.setCompany(category.getCompany());
        sectionCategory.setCode(category.getCode());

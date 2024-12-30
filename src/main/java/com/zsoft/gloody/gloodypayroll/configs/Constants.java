@@ -18,6 +18,7 @@ public class Constants {
     public static final String HOURS_BY_WEEK = "HOURS_BY_WEEK";
     public static final String DAYS_NBR = "DAYS_NBR";
     public static final String WORKING_DAYS_NBR = "WORKING_DAYS_NBR";
+    public static final String CONTRACT_OFF_DAYS = "CONTRACT_OFF_DAYS"; // if contract start in the middle of the month
     public static final String HOURS_NBR = "HOURS_NBR";
     public static final String WORKING_HOURS_NBR = "WORKING_HOURS_NBR";
     public static final String PAYMENT_START = "PAYMENT_START";

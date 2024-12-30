@@ -5,6 +5,8 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import org.mapstruct.*;
 
+import java.util.Objects;
+
 @Mapper
 public interface VariableMapper {
     VariableSettingDto toDto(VariableSetting variableSetting);
@@ -13,7 +15,7 @@ public interface VariableMapper {
 
     @AfterMapping
      default void afterMapping(@MappingTarget VariableSetting variable) {
-        if (variable != null && variable.getCompany() == null)  {
+        if (variable != null && Objects.isNull(variable.getCompany()))  {
             variable.setCompany(SecurityUtils.getCurrentCompanyId());
         }
     }

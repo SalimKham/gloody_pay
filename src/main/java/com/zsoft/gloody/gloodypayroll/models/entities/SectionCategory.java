@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 @SuperBuilder
@@ -24,9 +24,16 @@ public class SectionCategory extends CompanySupport{
     private String code;
     @Column(name = "name")
     private String name;
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @OrderBy("code asc")
     @ToString.Exclude
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Set<Section> sections = new HashSet<>();
+    private Set<Section> sections;
+
+    public Set<Section> getSections() {
+        if (sections == null) {
+            return Collections.emptySet();
+        }
+        return sections;
+    }
 }

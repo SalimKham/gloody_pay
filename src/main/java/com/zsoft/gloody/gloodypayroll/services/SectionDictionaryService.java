@@ -6,11 +6,12 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipAbsenceDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
-import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
@@ -18,6 +19,20 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 @RequiredArgsConstructor
 public class SectionDictionaryService extends CompanySupportService {
     private LinkedHashMap<String, Object> variables;
+    private LinkedHashMap<String, Object> initialVariables = new LinkedHashMap<>();
+    private boolean addElements = true;
+
+    public boolean getAddElements() {
+        return addElements;
+    }
+
+    public void setAddElements(boolean addElements) {
+        this.addElements = addElements;
+    }
+
+    public LinkedHashMap<String, Object> getInitialVariables() {
+        return initialVariables;
+    }
 
     @PostConstruct
     private void initVariables() {
@@ -64,21 +79,30 @@ public class SectionDictionaryService extends CompanySupportService {
                 .stream()
                 .collect(Collectors.
                         toMap(VariableSettingDto::getKey,
-                                variableSettingDto -> variableSettingDto.getFormula() != null ? variableSettingDto.getFormula() : "0")
+                                variableSettingDto -> {
+                                     Double value = 0.0;
+                                    if (variableSettingDto.getFormula() != null) {
+                                        try {
+                                            value =  Double.parseDouble(variableSettingDto.getFormula());
+                                    } catch (Exception ignored) {
+                                        }
+                                    }
+                                    return value;
+                                })
                 )
         );
         setVariable(PAYMENT_START, DateUtils.startOfMonth(period.getStart()));
         setVariable(PAYMENT_END, DateUtils.endOfMonth(period.getEnd()));
         setVariable(IRG_YEAR, period.getStart().getYear());
-        if (dto.getRate() != null) {
-            setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY));
-            setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY));
+      if (dto.getRate() != null) {
+            setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY) ? 1 : 0);
+            setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY) ? 1 : 0);
         }
         double countWorkingDays = findDoubleValue(DAYS_NBR) - dto.getAbsences().getAbsenceDays();
         double hoursByDay = findDoubleValue(HOURS_BY_WEEK) / findDoubleValue(DAYS_BY_WEEK);
-        setVariable(WORKING_DAYS_NBR, countWorkingDays);
+        setVariable(WORKING_DAYS_NBR, countWorkingDays- findDoubleValue(CONTRACT_OFF_DAYS));
         setVariable(WORKING_HOURS_NBR, (countWorkingDays * hoursByDay) - findDoubleValue(ABSENCES));
-        if ((boolean) findValue(IS_DAILY_RATE)) {
+        if ( Objects.equals(dto.getRate(), PayslipRate.DAILY) ) {
             setVariable(ABSENCES, countAbsences(dto.getAbsences()));
         } else {
             setVariable(ABSENCES, countAbsences(dto.getAbsences()) * hoursByDay);

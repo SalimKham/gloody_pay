@@ -100,28 +100,61 @@
         </dependency>
 
         <!-- NASHORN SCRIPT MANAGER -->
-        <dependency>
+       <dependency>
             <groupId>org.openjdk.nashorn</groupId>
             <artifactId>nashorn-core</artifactId>
             <version>15.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
+        <!-- graal js -->
+     <!--   <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>24.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>js</artifactId>
+            <version>24.0.2</version>
+            <type>pom</type>
+        </dependency>-->
 
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2023.0.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.hibernate.orm.tooling</groupId>
+                <artifactId>hibernate-enhance-maven-plugin</artifactId>
+                <version>6.4.4.Final</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <enableLazyInitialization>true</enableLazyInitialization>
+                        </configuration>
+                        <goals>
+                            <goal>enhance</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -194,6 +227,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <webResources>
+                    <resource>
+                        <directory>src/main/resources/.platform</directory>
+                        <targetPath>.platform</targetPath>
+                        <filtering>true</filtering>
+                    </resource>
+                </webResources>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -218,6 +264,22 @@
                 <property>
                     <name>env</name>
                     <value>develop</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
+            <id>uat</id>
+            <properties>
+                <spring.profiles.active>uat</spring.profiles.active>
+                <packageApp>war</packageApp>
+                <nameAppWar>gloody-payroll-uat</nameAppWar>
+                <org.apache.maven.fork>false</org.apache.maven.fork>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>uat</value>
                 </property>
             </activation>
         </profile>

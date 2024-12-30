@@ -1,11 +1,14 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
+
 import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -38,4 +41,23 @@ public class EmployeeDto {
     private String remunerationType;
     @NotNull
     private CompanyDto company;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        EmployeeDto employeeDto = (EmployeeDto) o;
+        if (employeeDto.getId() == null || getId() == null) {
+            return false;
+        }
+        return Objects.equals(getId(), employeeDto.getId());
+    }
+
+    public String getFullName() {
+        return String.format("%s%s", Objects.nonNull(firstName) ? StringUtils.capitalize(firstName) : "",  Objects.nonNull(lastName) ? StringUtils.capitalize(lastName) :"");
+    }
 }
