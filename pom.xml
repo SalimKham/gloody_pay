@@ -252,18 +252,34 @@
 
     <profiles>
         <profile>
-            <id>develop</id>
+            <id>dev</id>
             <properties>
-                <spring.profiles.active>develop</spring.profiles.active>
+                <spring.profiles.active>dev</spring.profiles.active>
                 <packageApp>war</packageApp>
-                <nameAppWar>gloody-payroll-develop</nameAppWar>
+                <nameAppWar>gloody-payroll-dev</nameAppWar>
                 <org.apache.maven.fork>false</org.apache.maven.fork>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
                     <name>env</name>
-                    <value>develop</value>
+                    <value>dev</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
+            <id>staging</id>
+            <properties>
+                <spring.profiles.active>staging</spring.profiles.active>
+                <packageApp>war</packageApp>
+                <nameAppWar>gloody-payroll-staging</nameAppWar>
+                <org.apache.maven.fork>false</org.apache.maven.fork>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>staging</value>
                 </property>
             </activation>
         </profile>
@@ -284,18 +300,18 @@
             </activation>
         </profile>
         <profile>
-            <id>production</id>
+            <id>prod</id>
             <properties>
-                <spring.profiles.active>production</spring.profiles.active>
+                <spring.profiles.active>prod</spring.profiles.active>
                 <packageApp>war</packageApp>
-                <nameAppWar>gloody-payroll-production</nameAppWar>
+                <nameAppWar>gloody-payroll-prod</nameAppWar>
                 <org.apache.maven.fork>false</org.apache.maven.fork>
             </properties>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
                     <name>env</name>
-                    <value>production</value>
+                    <value>prod</value>
                 </property>
             </activation>
         </profile>
