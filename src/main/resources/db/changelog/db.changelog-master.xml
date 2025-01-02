@@ -1,0 +1,28 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <include file="db.changelog-0.0.1.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_variable_table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_section_table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/create_label_table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_table_add_show_zero.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_table_add_closed.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_clear_payment_date_when_is_template.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_settings_table_add_approved.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_section_label_keys_separator.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/insert_meal_voucher_variable.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/insert_resource_mutual_variable_variable.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_column_payslip_detail_to_payslip_setting.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_accounting_setting.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_column_accounting_code_to_section.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/insert_holidays_variable.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_setting_add_rate.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_section_variables.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_contract_id_to_payslip_setting.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/update_payslip_setting_add_draft_column.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

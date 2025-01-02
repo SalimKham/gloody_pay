@@ -1,0 +1,26 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add-label-description-columns-to-variable-setting" author="SALIM KHAM">
+        <addUniqueConstraint tableName="variable_setting" columnNames="key,company_id"/>
+        <addColumn tableName="variable_setting">
+            <column name="label" type="VARCHAR(200)" afterColumn="key"/>
+            <column name="description" type="VARCHAR(300)" afterColumn="key"/>
+            <column name="source" type="VARCHAR(50)" afterColumn="key"/>
+        </addColumn>
+    <sql>
+        UPDATE variable_setting vs set vs.label = 'Salaire de base', vs.description = 'Salaire de base' WHERE vs.key = 'BASE_SALARY';
+        UPDATE variable_setting vs set vs.label = 'Nombre de jours', vs.description = 'Nombre de jours' WHERE vs.key = 'DAYS_NBR';
+        UPDATE variable_setting vs set vs.label = 'Nombre de jours ouvrables', vs.description = 'Nombre de jours ouvrables' WHERE vs.key = 'WORKING_DAYS_NBR';
+        UPDATE variable_setting vs set vs.label = "Nombre d'heures'Nombre d'heure", vs.description = "Nombre d'heures" WHERE vs.key = 'HOURS_NBR';
+        UPDATE variable_setting vs set vs.label = 'Jours par semaine', vs.description = 'Jours par semaine' WHERE vs.key = 'DAYS_BY_WEEK';
+        UPDATE variable_setting vs set vs.label = 'Heures par semaine', vs.description = 'Heures par semaine' WHERE vs.key = 'HOURS_BY_WEEK';
+        INSERT INTO `variable_setting` (`key`, `label`, `description`, `company_id`)
+        SELECT distinct 'IRG(BASE)','Retenue IRG', 'Retenue IRG', `company_id` FROM `section_category`;
+    </sql>
+    </changeSet>
+</databaseChangeLog>

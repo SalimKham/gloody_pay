@@ -1,0 +1,34 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="create_label_table" author="SALIM KHAM">
+        <createTable tableName="label_setting">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="label" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(300)"/>
+            <column name="key" type="VARCHAR(20)"/>
+            <column name="color" type="VARCHAR(20)"/>
+            <column name="company_id" type="bigint"/>
+            <column name="parent_id" type="bigint"/>
+            <column name="created_by" type="bigint"/>
+            <column name="created_at" type="datetime" defaultValueDate="now()"/>
+            <column name="updated_by" type="bigint"/>
+            <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
+        </createTable>
+        <addColumn tableName="section">
+            <column name="label_keys" type="mediumtext"/>
+        </addColumn>
+        <addUniqueConstraint tableName="label_setting" columnNames="key, company_id" constraintName="label_setting_unique_constraint"/>
+        <addForeignKeyConstraint baseTableName="label_setting" baseColumnNames="parent_id" constraintName="fk_label_setting_parent_id"
+                                 referencedTableName="label_setting"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

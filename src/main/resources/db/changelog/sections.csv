@@ -1,0 +1,32 @@
+id,code,label,description,category,type,base_formula,rate_formula,rate_percent,value_formula,parental_id,created_by,created_at,updated_by,updated_at,company_id
+1,R001,Salaire de base,"",C001,SALARY,IS_HOURLY_RATE ? BASE_SALARY / HOURS_NBR : BASE_SALARY / DAYS_NBR,IS_HOURLY_RATE ? HOURS_NBR : DAYS_NBR,false,BASE * RATE,,,,,,1
+2,R041,Heures Supplémentaires (25%),"",C001,GAIN,(BASE_SALARY / HOURS_NBR) * 0.25,"",false,BASE * RATE,,,,,,1
+3,R042,Heures Supplémentaires (50%),"",C001,GAIN,(BASE_SALARY / HOURS_NBR) * 0.5,"",false,BASE * RATE,,,,,,1
+4,R043,Heures Supplémentaires (75%),"",C001,GAIN,(BASE_SALARY / HOURS_NBR) * 0.75,"",false,BASE * RATE,,,,,,1
+5,R044,Heures Supplémentaires (100%),"",C001,GAIN,(BASE_SALARY / HOURS_NBR),"",false,BASE * RATE,,,,,,1
+6,R100,Total brut,"",C999,INTERMEDIATE,,,false,BASE_SALARY+CAT_C006,,,,,,1
+7,R101,Salaire du poste,"",C999,INTERMEDIATE,,,false,R100+CAT_C001,,,,,,1
+8,R102,Charges à payer aux comptes sociaux,"",C999,INTERMEDIATE,,,false,CAT_C005,,,,,,1
+9,R103,Salaire Imposable,"",C999,INTERMEDIATE,,,false,R101 + CAT_C005 + CAT_C002,,,,,,1
+10,R104,Salaire net,"",C999,INTERMEDIATE,,,false,R103  + CAT_C007 ,,,,,,1
+11,R105,Charges et primes,"",C999,INTERMEDIATE,C999,,false,CAT_C004,,,,,,1
+15,R280,Nuisance,"",C001,GAIN,R100,0.10,false,BASE * RATE,,,,,,1
+18,R510,Retenue Securité Sociale,"",C005,DEDUCTION,R101,0.09,false,BASE * RATE,,,,,,1
+20,R523,Prime,"",C004,GAIN,,1,false,BASE_SALARY * RATE,,,,,,1
+21,R522,Prime de panier,"",C002,GAIN,150,WORKING_DAYS_NBR,false,BASE * RATE,,,,,,1
+22,R532,Prime de transport,"",C002,GAIN,,"",false,1200,,,,,,1
+23,R540,Retenue Cacobath,"",C005,DEDUCTION,R101,0.375,false,BASE * RATE,,,,,,1
+24,R541,Notes de frais,"",C004,GAIN,,,false,,,,,,,1
+25,R542,Prêts,"",C004,DEDUCTION,,,false,,,,,,,1
+26,R660,Retenue IRG,"",C007,DEDUCTION,IS_HOURLY_RATE ? R103 * HOURS_NBR / WORKING_HOURS_NBR : R103 * DAYS_NBR / WORKING_DAYS_NBR,,false,IS_HOURLY_RATE ? IRG(BASE) * WORKING_HOURS_NBR / HOURS_NBR : IRG(BASE) * WORKING_DAYS_NBR / DAYS_NBR,,,,,,1
+27,R713,Frais déplacement,"",C004,GAIN,,,false,,,,,,,1
+28,R714,Salaire unique,"",C004,GAIN,,,false,,,,,,,1
+29,R790,Conge,"",C001,GAIN,,,false,,,,,,,1
+30,R822,Absence,"",C006,DEDUCTION,IS_HOURLY_RATE ? BASE_SALARY / HOURS_NBR : BASE_SALARY / DAYS_NBR,ABSENCES,false,BASE * RATE,,,,,,1
+31,R998,Total,"",C999,TOTAL,,,false,,,,,,,1
+32,R999,NET à payer,"",C999,INTERMEDIATE,,,false,R104+105,,,,,,1
+12,R261,I.E.P.,Indemnité d'expérience professionnel,C001,GAIN,R100,0.15,false,BASE * RATE,,,,,,1
+13,R262,I.F.S.P.,Indemnité forfaitaire du service permanent,C001,GAIN,R100,0.3,false,BASE * RATE,,,,,,1
+14,R263,I.F.R.I.,Indemnité forfaitaire région isolée,C002,GAIN,R100,0.02,false,BASE * RATE,,,,,,1
+17,R282,P.R.C.,Prime de rendement collectif,C001,GAIN,R100,0.2,false,BASE * RATE,,,,,,1
+16,R281,P.R.I.,Prime de rendement individuel,C001,GAIN,R100,0.1,false,BASE * RATE,,,,,,1

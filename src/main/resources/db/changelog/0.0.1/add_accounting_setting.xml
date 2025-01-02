@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+        <changeSet id="add_accounting_setting" author="Salim kham">
+         <createTable tableName="accounting_setting">
+             <column name="id" type="bigint" autoIncrement="true">
+                 <constraints nullable="false" primaryKey="true"/>
+             </column>
+             <column name="created_by" type="bigint"/>
+             <column name="created_at" type="datetime" defaultValueDate="now()"/>
+             <column name="updated_by" type="bigint"/>
+             <column name="updated_at" type="datetime" defaultValueComputed="NULL"/>
+             <column name="company_id" type="bigint" >
+                 <constraints nullable="false"/>
+             </column>
+         </createTable>
+            <createTable tableName="accounting_setting_group">
+                <column name="id" type="bigint" autoIncrement="true">
+                    <constraints nullable="false" primaryKey="true"/>
+                </column>
+                <column name="name" type="varchar(300)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="accounting_setting_id" type="bigint" >
+                    <constraints nullable="false"/>
+                </column>
+            </createTable>
+            <createTable tableName="accounting_setting_account">
+                <column name="id" type="bigint" autoIncrement="true">
+                    <constraints nullable="false" primaryKey="true"/>
+                </column>
+                <column name="code" type="varchar(200)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="title" type="varchar(200)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="type" type="varchar(200)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="detailed_by_employee" type="boolean" defaultValueBoolean="false"/>
+                <column name="accounting_setting_group_id" type="bigint" >
+                    <constraints nullable="false"/>
+                </column>
+            </createTable>
+
+           <!-- ADDING CONSTRAINTS-->
+            <addForeignKeyConstraint baseTableName="accounting_setting_group" baseColumnNames="accounting_setting_id" constraintName="fk_account_setting_group_to_account_setting"
+                                     referencedTableName="accounting_setting"
+                                     referencedColumnNames="id"
+                                     onDelete="CASCADE"
+                                     onUpdate="CASCADE"
+            />
+            <addForeignKeyConstraint baseTableName="accounting_setting_account" baseColumnNames="accounting_setting_group_id" constraintName="fk_account_setting_account_to_account_setting_group"
+                                     referencedTableName="accounting_setting_group"
+                                     referencedColumnNames="id"
+                                     onDelete="CASCADE"
+                                     onUpdate="CASCADE"
+            />
+        </changeSet>
+</databaseChangeLog>

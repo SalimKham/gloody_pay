@@ -1,0 +1,13 @@
+package com.zsoft.gloody.gloodypayroll.rest.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Builder
+@Setter
+@Getter
+public class CompanyDto {
+    private String name;
+    private AddressDto address;
+}
