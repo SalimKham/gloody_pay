@@ -68,7 +68,7 @@ build_prod:
   script:
     - mvn clean install -Dmaven.test.skip=false -Denv=prod hibernate-enhance:enhance
   only:
-    - master
+    - main
   artifacts:
     name: "gloody-pay--prod-$CI_COMMIT_REF_NAME"
     paths:
@@ -89,5 +89,5 @@ deploy_prod:
     - aws elasticbeanstalk create-application-version --application-name "$AWS_EBS_APP" --version-label gloody-payroll-prod-$CI_PIPELINE_ID --source-bundle S3Bucket=ssii-back,S3Key=pay/Prod/Versions/gloody-payroll-prod-$CI_PIPELINE_ID.war
     - aws elasticbeanstalk update-environment --application-name "$AWS_EBS_APP" --environment-name "$AWS_EBS_ENV_PROD" --version-label gloody-payroll-prod-$CI_PIPELINE_ID
   only:
-    - master
+    - main
   when: manual
