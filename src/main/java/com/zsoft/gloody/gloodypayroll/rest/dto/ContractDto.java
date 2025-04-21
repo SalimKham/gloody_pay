@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class contractDto {
+public class ContractDto {
     private String title;
     private Long id;
 }

@@ -1,22 +1,24 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
+import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
+import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.Month;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -25,8 +27,7 @@ public class PayslipSettingService extends CompanySupportService {
     private final PayslipSettingRepository payslipSettingRepository;
     private final PayslipSettingMapper payslipSettingMapper;
     private final EmployeeService employeeService;
-
-
+    private final HRDataRepository hrDataRepository;
 
     public Optional<PayslipSettingDto> markAsDefault(Long templateId) {
         payslipSettingRepository.markAsDefault(templateId);
@@ -40,6 +41,14 @@ public class PayslipSettingService extends CompanySupportService {
                 return payslipSettingDto;
             }
         }
+        return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this::toDto);
+    }
+
+    @Cacheable(
+            cacheNames = "company_default_template",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
+    )
+    public Optional<PayslipSettingDto> findDefaultTemplate() {
         return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this::toDto);
     }
 
@@ -69,6 +78,19 @@ public class PayslipSettingService extends CompanySupportService {
         return this.payslipSettingRepository.findById(id).map(this::toDto);
     }
 
+    @Cacheable(
+            cacheNames = "company_template_by_id",
+            key = "#id"
+    )
+    public Optional<PayslipSettingDto> findById(Long id) {
+        return this.payslipSettingRepository.findById(id).map(this::toDto);
+    }
+
+    public Optional<PayslipSettingDto> findDraftById(Long id) {
+        System.out.println("GETTING DRAFT TEMPLATE "+ id);
+        return this.payslipSettingRepository.findDraftPayslip(id).map(this::toDto);
+    }
+
     public Page<PayslipSettingDto> findAllTemplates(String query, Pageable pageable) {
         query = query == null ? "%%" : "%" + query + "%";
         return this.payslipSettingRepository.findAllByNameLikeAndTemplateIsTrue( query, pageable)
@@ -86,35 +108,32 @@ public class PayslipSettingService extends CompanySupportService {
         return payslipSettingDto;
     }
 
-    public List<Long> findAllEmployeesWithTemplates(LocalDate month) {
-        return this.payslipSettingRepository.findAllEmployeesWithTemplates(month);
-    }
-
-    public List<PayslipSettingDto> findMonthlyTemplates(LocalDate month, List<Long> ids) {
-        List<PayslipSetting> result =  this.payslipSettingRepository.findAllByMonthAndIdIn(month, Objects.requireNonNullElse(ids, Collections.emptyList()));
-        List<PayslipSettingDto>  resultDTOs =  result.stream()
-                .map(this::toDto).toList();
-        return  resultDTOs;
-    }
     @Transactional
-    public PayslipSettingDto save(PayslipSettingDto dto) {
+    public PayslipSettingDto save(PayslipSettingDto dto, Long resourceId) {
         PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
-        boolean isDraft =  Objects.equals(payslipSetting.getDraft(), true);
-        if (!isDraft) {
-            payslipSetting.setPayslipDetail(null);
-        }
+        boolean updateEmployeeMonthlyTemplate = false;
         if (dto.isTemplate()) {
             payslipSetting.setPaymentDate(null);
         }
-        if (payslipSetting.getEmployee() != null && !isDraft) {
-           Long id =  payslipSettingRepository.findByEmployeeAndCurrentMonth(payslipSetting.getEmployee(), dto.getPaymentDate()).stream().filter(t -> Objects.equals(dto.getContract().getId(), t.getContract())).findFirst().map(PayslipSetting::getId).orElse(null);
-           payslipSetting.setId(id);
-        } else if (isDraft) {
-            Long id  = payslipSettingRepository.findFirstByDraftAndContract(true, payslipSetting.getContract()).map(PayslipSetting::getId).orElse(null);
-            payslipSetting.setId(id);
+        if (resourceId != null && Objects.nonNull(dto.getPaymentDate()) && Objects.nonNull(dto.getContract())) {
+          payslipSettingRepository.deleteByContractAndPaymentDate(dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1));
+           payslipSetting.setId(null);
+           payslipSetting.setEmployee(resourceId);
+           payslipSetting.setPayslipDetail(null);
+           updateEmployeeMonthlyTemplate = true;
         }
         payslipSetting = this.payslipSettingRepository.save(payslipSetting);
+        if (updateEmployeeMonthlyTemplate) {
+            updateHrTemplate(resourceId, dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1), payslipSetting.getId());
+        }
         return this.payslipSettingMapper.toDto(payslipSetting);
+    }
+
+    private void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
+        Long variableId = hrDataRepository
+                .findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month)
+                .map(HRMonthlyData::getId).orElse(null);
+        hrDataRepository.save(new HRMonthlyData(variableId, resourceId, contractId, month, "TEMPLATE", templateId));
     }
 
     @Transactional
@@ -143,7 +162,9 @@ public class PayslipSettingService extends CompanySupportService {
         return findAllTemplates("", pageable);
     }
 
-    public List<Long> getDraftContracts() {
-        return payslipSettingRepository.findDraftContractIds();
+
+    public Map<Long, PayslipSettingDto> loadPayslipSettingsMap() {
+        return payslipSettingRepository.findAll().stream().map(this::toDto).collect(Collectors.toMap(PayslipSettingDto::getId, payslipSettingDto -> payslipSettingDto));
     }
+
 }

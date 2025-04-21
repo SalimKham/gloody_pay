@@ -12,6 +12,6 @@ import java.util.List;
 @Repository
 public interface PayslipElementSettingRepository extends JpaRepository<PayslipSettingElement, Long> {
     @Query("SELECT pse from PayslipSettingElement  pse WHERE pse.section.code in :codes " +
-            "AND pse.payslipSetting.employee IN :employee_ids and pse.payslipSetting.closed")
-    List<PayslipSettingElement> findAllByEmployeeIdInAndClosed(@Param("employee_ids") List<Long> employeeIds,  @Param("codes") List<String> codes);
+            "AND pse.payslipSetting.contract = :contract_id and pse.payslipSetting.closed")
+    List<PayslipSettingElement> findAllByEmployeeIdAndClosed(@Param("contract_id") Long contractId,  @Param("codes") List<String> codes);
 }

@@ -25,4 +25,5 @@
     <include file="0.0.1/add_section_variables.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/add_contract_id_to_payslip_setting.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/update_payslip_setting_add_draft_column.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.2/hr_monthly_summary.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

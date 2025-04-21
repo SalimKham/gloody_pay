@@ -19,5 +19,4 @@ public class AccountingExportFilterDto {
     private LocalDate endMonth;
     private String format;
     private boolean detailedByEmployee;
-    private Map<String, List<PayslipSettingDto>> hrData;
 }

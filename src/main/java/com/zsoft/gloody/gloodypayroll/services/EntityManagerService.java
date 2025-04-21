@@ -1,6 +1,7 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
+import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -54,5 +55,14 @@ public class EntityManagerService {
             }
         }
         return null;
+    }
+
+    public void applyFilter(Long companyId) {
+        Session session = getSession();
+        if (session != null && companyId != null) {
+            org.hibernate.Filter filter = session.enableFilter("companyFilter");
+            filter.setParameter("companyId", companyId);
+            filter.validate();
+        }
     }
 }
