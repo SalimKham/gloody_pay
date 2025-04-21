@@ -1,11 +1,8 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto.accounting;
 
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 @Builder
 @NoArgsConstructor

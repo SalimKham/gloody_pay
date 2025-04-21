@@ -1,8 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
-import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
-import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;

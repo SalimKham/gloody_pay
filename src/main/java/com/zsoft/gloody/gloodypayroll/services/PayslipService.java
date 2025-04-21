@@ -2,9 +2,6 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
-import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
-import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
-import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.entities.*;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
@@ -18,8 +15,6 @@ import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

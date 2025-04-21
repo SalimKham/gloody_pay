@@ -1,7 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
-import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -9,9 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import java.io.Serializable;
 
 @Service

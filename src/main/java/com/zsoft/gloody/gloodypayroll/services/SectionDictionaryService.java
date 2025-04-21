@@ -3,19 +3,15 @@ package com.zsoft.gloody.gloodypayroll.services;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipAbsenceDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 

@@ -1,13 +1,11 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
 import com.zsoft.gloody.gloodypayroll.models.enums.*;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.persistence.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Filter;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;

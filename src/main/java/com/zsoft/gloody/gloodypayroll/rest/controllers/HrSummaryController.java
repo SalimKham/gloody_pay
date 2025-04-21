@@ -1,15 +1,10 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
-import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.HRAsyncService;
 import com.zsoft.gloody.gloodypayroll.services.HRMonthlyDataService;
-import com.zsoft.gloody.gloodypayroll.services.VariableService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

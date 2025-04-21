@@ -2,15 +2,12 @@ package com.zsoft.gloody.gloodypayroll.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.Executor;
-
-import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.initRequestContext;
 
 @Configuration
 @EnableAsync

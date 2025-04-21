@@ -1,26 +1,17 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
-import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.EmployeeController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
-import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
-import com.zsoft.gloody.gloodypayroll.utils.EmployeeListUtils;
 import com.zsoft.gloody.gloodypayroll.utils.FieldAccessorUtils;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 

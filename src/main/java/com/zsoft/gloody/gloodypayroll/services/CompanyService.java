@@ -1,13 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.Company;
-import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.repositories.CompanyRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.CompanyDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
-import com.zsoft.gloody.gloodypayroll.rest.mappers.HRSummaryMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
