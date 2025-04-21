@@ -48,7 +48,6 @@ public class EmployeeService extends CompanySupportService {
         return dto;
     }
 
-    // todo optimize this
     public void updateFields(List<EmployeeController.UpdateEmployeeFieldPayload> payload) {
         if(payload == null || payload.isEmpty()) {
             return;
