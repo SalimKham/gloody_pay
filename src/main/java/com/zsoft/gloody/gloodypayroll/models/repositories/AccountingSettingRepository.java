@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface AccountingSettingRepository extends JpaRepository<AccountingSetting, Long> {
@@ -39,6 +40,6 @@ public interface AccountingSettingRepository extends JpaRepository<AccountingSet
                    "LEFT join accounting_setting_account acc On s.accounting_id = acc.id " +
                    "WHERE ps.draft AND  s.accounting_id IS  NOT NULL " +
                    "AND  MONTH(ps.updated_at) = MONTH(:current_month) " +
-                   "AND YEAR(ps.updated_at) = YEAR (:current_month) AND ps.employee_id in :ids group by acc.id, ps.id", nativeQuery = true)
-    List<Object[]> getAccountingSectionsMonthlyTotalByDraftEmployee(@Param("current_month") LocalDate month, @Param("ids") List<Long> employeeIds);
+                   "AND YEAR(ps.updated_at) = YEAR (:current_month) AND ps.employee_id in :contract_ids group by acc.id, ps.id", nativeQuery = true)
+    List<Object[]> getAccountingSectionsMonthlyTotalByContracts(@Param("current_month") LocalDate month, @Param("contract_ids") Set<Long> contractIds);
 }

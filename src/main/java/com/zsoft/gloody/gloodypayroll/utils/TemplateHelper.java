@@ -1,10 +1,10 @@
 package com.zsoft.gloody.gloodypayroll.utils;
+
 import com.zsoft.gloody.gloodypayroll.rest.dto.AddressDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.CompanyDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipDetailDto;
 import com.zsoft.gloody.gloodypayroll.services.EntityManagerService;
-import com.zsoft.gloody.gloodypayroll.services.SectionDictionaryService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
@@ -17,11 +17,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
+import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.dictionaryService;
 
 @AllArgsConstructor
 @Component
 public class TemplateHelper extends EntityManagerService {
-    private final SectionDictionaryService dictionaryService;
     private final Map<String, ResourceBundleMessageSource> messageSources = new HashMap<>();
 
     private ResourceBundleMessageSource getMessageSource(String file) {
@@ -34,22 +34,48 @@ public class TemplateHelper extends EntityManagerService {
         return messageSources.get(file);
     }
 
-    public Map<String, Object> getPayrollData(PayslipSettingDto dto, Locale locale) {
+    public Map<String, Object> getPayrollData(PayslipDetailDto payslipDetail, EmployeeDto employee, Locale locale) {
         Map<String, Object> data = new HashMap<>();
-        data.put("payroll_start", dictionaryService.findValue(PAYMENT_START));
-        data.put("payroll_end", dictionaryService.findValue(PAYMENT_END));
+        data.put("payroll_start", dictionaryService().findValue(PAYMENT_START));
+        data.put("payroll_end", dictionaryService().findValue(PAYMENT_END));
 
         data.put("show_employer_col", false);
         data.put("currency", getLocaleCurrency(locale));
-        double hoursNbr = dictionaryService.findDoubleValue(HOURS_NBR);
-        double baseSalary = dictionaryService.findDoubleValue(BASE_SALARY);
+        double hoursNbr = dictionaryService().findDoubleValue(HOURS_NBR);
+        double baseSalary = dictionaryService().findDoubleValue(BASE_SALARY);
         data.put("emp_base_salary", baseSalary);
         data.put("monthly_duration", hoursNbr);
         data.put("hourly_rate", hoursNbr > 0 ? baseSalary / hoursNbr : 0);
 
-        data.putAll(getEmployeeData(dto.getEmployee(), locale));
+        if (payslipDetail == null) {
+            data.putAll(getEmployeeData(employee, locale));
+        } else {
+            data.putAll(getEmployeeDataFromPayslipDetails(employee, payslipDetail, locale));
+        }
+
         return data;
     }
+
+    // todo save missing fields to payslipDetails
+    public Map<String, Object> getEmployeeDataFromPayslipDetails(EmployeeDto employee, PayslipDetailDto payslipDetailDto, Locale locale) {
+        Map<String, Object> data = new HashMap<>();
+
+        if (payslipDetailDto != null) {
+            data.put("emp_full_name", payslipDetailDto.getFullName());
+            data.put("emp_address", getFormattedAddress(employee.getAddress(), locale));
+            data.put("emp_social_security_number", payslipDetailDto.getSocialSecurity());
+            data.put("contract_start", payslipDetailDto.getContractDate());
+            data.put("contract_end", null);
+            data.put("emp_job_classification", payslipDetailDto);
+            data.put("emp_job_category", employee.getJobCategory());
+            data.put("emp_job_title", payslipDetailDto.getJobTitle());
+            data.put("emp_department", payslipDetailDto.getDepartmentName());
+
+            data.putAll(getCompanyData(employee.getCompany(), locale));
+        }
+        return data;
+    }
+
 
     public Map<String, Object> getEmployeeData(EmployeeDto employee, Locale locale) {
         Map<String, Object> data = new HashMap<>();

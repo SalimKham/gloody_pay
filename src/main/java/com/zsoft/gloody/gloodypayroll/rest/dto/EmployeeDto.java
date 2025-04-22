@@ -18,6 +18,7 @@ import java.util.Objects;
 @ToString
 public class EmployeeDto {
     private Long id;
+    private Long originId;
     private String identification;
     private String lastName;
     private String firstName;

@@ -1,11 +1,16 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
 import com.zsoft.gloody.gloodypayroll.models.enums.*;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.Filter;
+import org.springframework.data.annotation.CreatedDate;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -15,9 +20,9 @@ import java.time.LocalDate;
 @ToString
 @Entity
 @Table(name = "employee")
+@Filter(name = "companyFilter", condition = "company_id = :companyId")
 public class Employee {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
     @Column(name = "origin_id", nullable = false, unique = true)
@@ -37,10 +42,12 @@ public class Employee {
     private MaritalStatus maritalStatus;
     @Column(name = "number_of_children")
     private Integer numberOfChildren;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     @ToString.Exclude
     private Address address;
+
     @Column(name = "social_security_number")
     private String socialSecurity;
 
@@ -68,4 +75,16 @@ public class Employee {
     @Column(name = "salary_profile")
     @Enumerated(EnumType.STRING)
     private SalaryProfile remunerationType;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "company_id", updatable = false)
+    @Builder.Default
+    private Long company = 1L;
+
+    public String getFullName() {
+        return StringUtils.capitalize(Objects.requireNonNullElse(firstName, "")).concat(" ").concat(StringUtils.capitalize(Objects.requireNonNullElse(lastName, "")));
+    }
 }

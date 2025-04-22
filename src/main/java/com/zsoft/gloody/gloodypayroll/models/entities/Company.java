@@ -13,15 +13,15 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @Entity
 @Table(name = "company")
-public class Company extends CompanySupport {
+public class Company  {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(name = "name")
     private String name;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     @ToString.Exclude
     private Address address;
