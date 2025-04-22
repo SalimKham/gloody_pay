@@ -4,6 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingReposit
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.VariableMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,23 @@ public class VariableService extends CompanySupportService {
     private final VariableSettingRepository variableRepository;
     private final VariableMapper variableMapper;
 
+    @Cacheable(
+            cacheNames = "companyVariables",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
+    )
     public Page<VariableSettingDto> findAll(Pageable pageable, String query) {
         query = query != null ? query : "";
         query = "%"+ query + "%";
         return variableRepository.findAllByLabelLikeOrKeyLike(query, query ,pageable).map(variableMapper::toDto);
+    }
+
+
+    @Cacheable(
+            cacheNames = "company_variables",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
+    )
+    public List<VariableSettingDto> findAllUnsourcedVariables() {
+        return variableRepository.findAll().stream().map(variableMapper::toDto).toList();
     }
 
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {

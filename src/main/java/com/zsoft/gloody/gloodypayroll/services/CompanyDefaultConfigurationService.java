@@ -25,7 +25,7 @@ public class CompanyDefaultConfigurationService {
     private final PayslipSettingRepository payslipSettingRepository;
     private final VariableSettingRepository variableSettingRepository;
     private final SectionSettingRepository sectionSettingRepository;
-    //@Async
+
     @Transactional
     public void initCompanyConfiguration(Long companyId) {
         JsonNode data  = getDefaultData();

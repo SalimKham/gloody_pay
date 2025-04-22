@@ -49,8 +49,8 @@ public class DateUtils {
     }
 
     public static boolean isInPeriod(LocalDate date, Period period) {
-        return (date.isEqual(period.getStart()) || date.isAfter(period.getStart()))
-                && (date.isEqual(period.getEnd()) || date.isBefore(period.getEnd()));
+        return (date.isEqual(period.start()) || date.isAfter(period.start()))
+                && (date.isEqual(period.end()) || date.isBefore(period.end()));
     }
 
     public static boolean isWeekend(LocalDate date) {

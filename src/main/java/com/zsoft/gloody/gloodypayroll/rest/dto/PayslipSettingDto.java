@@ -6,8 +6,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -21,9 +19,8 @@ public class PayslipSettingDto implements Cloneable{
     private String name;
     private Long id;
     private EmployeeDto employee;
-    private contractDto contract;
+    private ContractDto contract;
     private List<PayslipSettingElementDto> elements;
-    private PayslipAbsenceDto absences;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -38,7 +35,6 @@ public class PayslipSettingDto implements Cloneable{
     private boolean approved;
     private boolean byDefault;
     private PayslipDetailDto payslipDetail;
-    private Collection<VariableSettingDto> variables = Collections.emptyList();
     @Builder.Default
     private Boolean draft = false;
 
@@ -54,4 +50,5 @@ public class PayslipSettingDto implements Cloneable{
         }
         return cloned;
     }
+
 }
