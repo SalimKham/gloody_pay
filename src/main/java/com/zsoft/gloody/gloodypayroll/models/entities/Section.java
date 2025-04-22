@@ -56,7 +56,7 @@ public class Section extends CompanySupport {
     @Column(name = "nature")
     private SectionNature nature;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     private AccountingSettingAccount accounting;
 
     @Convert(converter = StringListConverter.class)
@@ -69,7 +69,7 @@ public class Section extends CompanySupport {
     @ToString.Exclude
     private Section parental;
 
-    @OneToMany(targetEntity = SectionVariable.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = SectionVariable.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_section_id", nullable = false)
     @ToString.Exclude
     private List<SectionVariable> variables;

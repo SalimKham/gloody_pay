@@ -1,0 +1,16 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="create_table_hr_summary_data" author="Salim Kham">
+
+
+
+        <createIndex tableName="hr_monthly_data" indexName="idx_hr_monthly_data_pay_month">
+            <column name="pay_month"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

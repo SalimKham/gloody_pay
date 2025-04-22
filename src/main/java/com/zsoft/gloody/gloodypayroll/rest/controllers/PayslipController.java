@@ -1,19 +1,16 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipDetailDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipService;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,32 +19,57 @@ public class PayslipController {
     private final PayslipService payslipService;
 
     @PostMapping("/print")
-    public ResponseEntity<String> print(@RequestBody PayslipSettingDto dto) {
-        String result = payslipService.print(dto);
+    public ResponseEntity<String> print( @RequestBody PayslipCalculatePayload payload) {
+        String result = payslipService.print(payload);
         return ResponseEntity.ok().body(result);
     }
 
 
     @PostMapping("/calculate")
-    public ResponseEntity<Set<PayslipElementDto>> calculate(
-            @RequestBody PayslipSettingDto dto
+    public ResponseEntity<CalculatedPayslip> calculate(
+            @RequestBody PayslipCalculatePayload payload
     ) {
-        TreeSet<PayslipElementDto> result = payslipService.calculate(dto, Collections.singletonList(dto.getEmployee().getId()), true);
+        try {
+            CalculatedPayslip result = payslipService.calculate(payload, null, true, true);
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+       return null;
+
+    }
+
+    @PostMapping("/payslip_details")
+    public ResponseEntity<PayslipDetailDto> getPayslipDetails(
+            @RequestBody PayslipCalculatePayload payload
+    ) {
+        PayslipDetailDto result = payslipService.getPayslipDetails(payload);
         return ResponseEntity.ok().body(result);
     }
 
-    @PostMapping("/save-as-draft")
-    public ResponseEntity<List<Long>> saveAsDraft(
-            @RequestBody List<PayslipSettingDto> dtos
-    ) {
-        List<Long> unSavedIds = payslipService.saveAllAsDraft(dtos);
-        return ResponseEntity.ok().body(unSavedIds);
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PayslipCalculatePayload{
+        private Long resourceId;
+        private Long contractId; LocalDate month;
+        private double holidaysCount;
+        private PayslipSettingDto tempTemplate;
+        public void setValues(Long resourceId, Long contractId, LocalDate month) {
+            this.resourceId = resourceId;
+            this.contractId = contractId;
+            this.month = month;
+        }
     }
 
-    @PostMapping("/close")
+    public record CalculatedPayslip(PayslipSettingDto template, Set<PayslipElementDto> calculatedElements){}
+
+    @PostMapping("/close/{month}")
     public ResponseEntity<List<Long>> calculate(
-            @RequestBody List<PayslipSettingDto> dtos
+            @RequestBody Set<Long> resourceIds,
+            @PathVariable LocalDate month
     ) {
-        return ResponseEntity.ok().body( payslipService.closePayslips(dtos));
+        return ResponseEntity.ok().body( payslipService.closePayslips(resourceIds, month ));
     }
 }

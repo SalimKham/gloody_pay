@@ -1,0 +1,74 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="create_table_hr_summary_data" author="Salim Kham">
+        <createTable tableName="hr_monthly_data">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="resource_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+            <column name="contract_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+            <column name="pay_month" type="date">
+                <constraints nullable="true"/>
+            </column>
+            <column name="hr_variable" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hr_value" type="double precision">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <dropColumn tableName="employee" columnName="id"/>
+        <dropColumn tableName="company" columnName="id"/>
+        <dropColumn tableName="company" columnName="company_id"/>
+        <addColumn tableName="employee">
+            <column name="id" type="bigint" afterColumn="origin_id">
+                <constraints  primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <dropColumn tableName="employee" columnName="origin_id"/>
+        <addColumn tableName="employee">
+            <column name="origin_id" type="bigint" afterColumn="id"/>
+        </addColumn>
+        <addColumn tableName="company">
+            <column name="id" type="bigint" afterColumn="name">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </addColumn>
+        <dropColumn tableName="company" columnName="name"/>
+        <addColumn tableName="company">
+            <column name="name" type="varchar(255)" afterColumn="id">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="company" columnName="created_by"/>
+        <dropColumn tableName="company" columnName="updated_by"/>
+        <dropColumn tableName="company" columnName="updated_at"/>
+        <dropColumn tableName="employee" columnName="created_by"/>
+        <dropColumn tableName="employee" columnName="updated_at"/>
+        <dropColumn tableName="employee" columnName="updated_by"/>
+        <createIndex tableName="hr_monthly_data" indexName="idx_hr_monthly_data_resource_id">
+            <column name="resource_id"/>
+        </createIndex>
+
+        <createIndex tableName="hr_monthly_data" indexName="idx_hr_monthly_data_contract_id">
+            <column name="contract_id"/>
+        </createIndex>
+
+        <createIndex tableName="hr_monthly_data" indexName="idx_hr_monthly_data_pay_month">
+            <column name="pay_month"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
