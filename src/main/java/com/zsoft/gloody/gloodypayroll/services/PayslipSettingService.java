@@ -166,7 +166,7 @@ public class PayslipSettingService extends CompanySupportService {
 
 
     public Map<Long, PayslipSettingDto> loadPayslipSettingsMap() {
-        return payslipSettingRepository.findAll().stream().map(this::toDto).collect(Collectors.toMap(PayslipSettingDto::getId, payslipSettingDto -> payslipSettingDto));
+        return payslipSettingRepository.findAllByDraftIsFalseAndClosedIsFalse().stream().map(this::toDto).collect(Collectors.toMap(PayslipSettingDto::getId, payslipSettingDto -> payslipSettingDto));
     }
 
 }

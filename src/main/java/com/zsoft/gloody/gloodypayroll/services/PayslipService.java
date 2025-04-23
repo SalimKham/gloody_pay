@@ -49,6 +49,7 @@ public class PayslipService {
     public static final String FUNCTION_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)";
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
+    //TODO FIX THIS
     private final PayslipElementSettingRepository payslipElementSettingRepository;
     private final ScriptEngine engine;
     private final PayslipSettingRepository payslipSettingRepository;
@@ -88,6 +89,8 @@ public class PayslipService {
         Set<Long> closedContractIds = new HashSet<>();
         Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
         PayslipController.PayslipCalculatePayload payload = new PayslipController.PayslipCalculatePayload();
+        Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
+        resourceIds.removeAll(closedIds);
         for (Long resourceId : resourceIds) {
             try {
                 if (contracts.containsKey(resourceId)) {
@@ -573,14 +576,14 @@ public class PayslipService {
 
     private LocalDate getFunctionStartDate(String functionName, String param) {
         if (functionName.contains("FROM")) {
-            Integer n = Integer.valueOf(param);
+            int n = Integer.parseInt(param);
             if (n >=  perRequestElements().getCurrentDate().getMonthValue()) {
                 return  perRequestElements().getCurrentDate().withMonth(n).withYear( perRequestElements().getCurrentDate().getYear() - 1).withDayOfMonth(1);
             } else {
                 return  perRequestElements().getCurrentDate().withMonth(n).withDayOfMonth(1);
             }
         } else if (functionName.contains("BK")) {
-            Integer n = Integer.valueOf(param);
+            int n = Integer.parseInt(param);
             return  perRequestElements().getCurrentDate().minusMonths(n).withDayOfMonth(1);
         } else {
             return LocalDate.parse(param);
@@ -740,12 +743,12 @@ public class PayslipService {
     private PayslipSettingDto getTemplate(Long id, boolean draft, boolean isDefault) {
         if (!draft) {
             if(isDefault) {
-                return RequestContext.defaultTemplate() != null ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
+                return RequestContext.defaultTemplate() != null  ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
             } else {
-                return RequestContext.templates() != null ? RequestContext.templates().get(id) : payslipSettingService.findById(id).orElse(null);
+                return RequestContext.templates() != null && RequestContext.templates().containsKey(id) ? RequestContext.templates().get(id) : payslipSettingService.findById(id).orElse(null);
             }
         } else {
-            return RequestContext.templates() != null ? RequestContext.templates().get(id) : payslipSettingService.findDraftById(id).orElse(null);
+             return payslipSettingService.findDraftById(id).orElse(null);
         }
     }
 
