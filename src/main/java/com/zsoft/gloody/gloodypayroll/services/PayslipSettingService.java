@@ -32,7 +32,7 @@ public class PayslipSettingService extends CompanySupportService {
     @Caching(evict = {
             @CacheEvict(
                     cacheNames = "company_template_by_id",
-                    key = "#id"
+                    key = "#result.id"
             ),
             @CacheEvict(
                     cacheNames = "company_default_template",

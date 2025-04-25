@@ -49,7 +49,7 @@ public class PayslipSettingController {
     @PostMapping
     public ResponseEntity<PayslipSettingDto> create(
             @RequestBody PayslipSettingDto dto,
-            @RequestParam(name = "resource_id") Long resourceId
+            @RequestParam(name = "resource_id", required = false) Long resourceId
     ) {
         PayslipSettingDto result = payslipSettingService.save(dto, resourceId);
         return ResponseEntity.ok().body(result);

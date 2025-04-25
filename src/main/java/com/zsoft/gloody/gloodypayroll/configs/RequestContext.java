@@ -5,6 +5,8 @@ import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
 import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipFunctionElement;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipSettingReadOnlyService;
 import com.zsoft.gloody.gloodypayroll.services.SectionDictionaryService;
@@ -25,7 +27,7 @@ public class RequestContext {
     private static final ThreadLocal<Map<Long, PayslipSettingDto>> templates = new InheritableThreadLocal<>();
     private static final ThreadLocal<PayslipSettingDto> defaultTemplate = new InheritableThreadLocal<>();
     private static final ThreadLocal<Map<Long, Map<String, Double>>> monthlyValues = new InheritableThreadLocal<>();
-
+    private static final ThreadLocal<Map<Long, List<PayslipFunctionElement>>> functionElements = new InheritableThreadLocal<>();
 
     public static void setDictionaryService(SectionDictionaryService ds) {
       dictionaryService.set(ds);
@@ -123,6 +125,8 @@ public class RequestContext {
         monthlyValues.set(mv);
     }
 
+
+
     public static void initMonthlyValues(Set<Long> resourceIds) {
         List<Tuple> tuples = SpringContextHolder.getBean(HRDataRepository.class).getMonthlyValues(LocalDate.now().withDayOfMonth(1), resourceIds);
         Map<Long, Map<String, Double>> result = tuples.stream()
@@ -142,6 +146,23 @@ public class RequestContext {
     }
 
 
+    public static void setFunctionElements(Map<Long, List<PayslipFunctionElement>> fe) {
+        functionElements.set(fe);
+    }
+
+
+
+    public static void initFunctionElements(Set<Long> resourceIds, List<String> codes) {
+        List<PayslipFunctionElement> elements = SpringContextHolder.getBean(PayslipElementSettingRepository.class).findAllByEmployeeIdAndClosed(resourceIds, codes);
+        Map<Long, List<PayslipFunctionElement>> result = elements.stream().collect(Collectors.groupingBy(PayslipFunctionElement::resourceId));
+        setFunctionElements(result);
+    }
+
+    public static Map<Long, List<PayslipFunctionElement>> functionElements() {
+        return functionElements.get();
+    }
+
+
     public static void clear() {
         dictionaryService.remove();
         defaultSectionSettings.remove();
@@ -150,5 +171,6 @@ public class RequestContext {
         monthlyValues.remove();
         templates.remove();
         companySections.remove();
+        functionElements.remove();
     }
 }

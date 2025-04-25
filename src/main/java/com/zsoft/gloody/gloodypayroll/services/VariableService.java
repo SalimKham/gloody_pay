@@ -43,11 +43,12 @@ public class VariableService extends CompanySupportService {
     )
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
         variableRepository.saveAll(variables.stream().filter(variableSettingDto -> {
+
             boolean existsBySource = false;
             if (Objects.nonNull(variableSettingDto.getSource())) {
-                existsBySource = variableRepository.existsBySourceAndCompany(variableSettingDto.getSource(), variableSettingDto.getCompany());
+                existsBySource = variableRepository.existsBySourceAndCompanyAndIdNot(variableSettingDto.getSource(), variableSettingDto.getCompany(), variableSettingDto.getId());
             }
-            return !existsBySource && !variableRepository.existsByKeyAndSourceAndCompany(variableSettingDto.getKey(), variableSettingDto.getSource(),variableSettingDto.getCompany());
+            return !existsBySource && !variableRepository.existsByKeyAndCompanyAndIdNot(variableSettingDto.getKey(),variableSettingDto.getCompany(), variableSettingDto.getId());
         })
                 .map(variableMapper::toEntity).toList());
         return findAll(pageable, query);

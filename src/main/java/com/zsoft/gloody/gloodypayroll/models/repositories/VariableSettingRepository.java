@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @Transactional
 public interface VariableSettingRepository extends JpaRepository<VariableSetting, Long> {
-    boolean existsByKeyAndSourceAndCompany(String key, String source, Long company);
-    boolean existsBySourceAndCompany(String source, Long company);
+    boolean existsByKeyAndCompanyAndIdNot(String key, Long company, Long id);
+    boolean existsBySourceAndCompanyAndIdNot(String source, Long company, Long id);
     void deleteBySource(String key);
     void deleteAllBySourceIsNotNullAndCompany(Long company);
     Page<VariableSetting> findAllByLabelLikeOrKeyLike(String label, String key, Pageable pageable);
