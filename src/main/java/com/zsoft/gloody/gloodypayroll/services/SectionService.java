@@ -13,6 +13,7 @@ import com.zsoft.gloody.gloodypayroll.utils.FieldAccessorUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SectionListUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -118,6 +119,8 @@ public class SectionService extends CompanySupportService {
     }
 
     @Transactional
+    @CacheEvict( cacheNames = "sectionMap",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()")
     public SectionDto save(SectionDto dto) {
         try {
             Section section = this.sectionMapper.toEntity(dto);
