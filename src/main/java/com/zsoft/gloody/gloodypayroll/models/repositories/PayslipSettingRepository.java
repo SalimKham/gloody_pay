@@ -61,5 +61,6 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     Boolean isClosedPayslip(@Param("month") LocalDate month,@Param("contract_id") Long contractId);
 
     @Modifying
-    void deleteAllByContractInAndPaymentDateAndDraftIsTrue(Collection<Long> contractIds, LocalDate paymentDate);
+    @Query(value = "DELETE FROM payslip_setting  WHERE contract_id in :contract_ids AND payment_date = :payment_date", nativeQuery = true)
+    void deleteAllByContractInAndPaymentDateAndDraftIsTrue(@Param("contract_ids") Collection<Long> contractIds,@Param("payment_date") LocalDate paymentDate);
 }

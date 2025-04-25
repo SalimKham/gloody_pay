@@ -51,4 +51,15 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
             """, nativeQuery = true)
     void bulkInsertClosedTemplateIds(@Param("month") LocalDate month, @Param("payslip_ids") List<Long> payslipIds);
 
+    @Query("SELECT hr.resourceId FROM HRMonthlyData hr WHERE hr.month = :current_month AND hr.variable = 'TEMPLATE' AND hr.value = :template_id")
+    Set<Long> findAllResourcesByTemplateId(@Param("current_month") LocalDate month, @Param("template_id") Long templateId);
+
+    @Query("""
+            SELECT DISTINCT hr.resourceId FROM HRMonthlyData hr
+            WHERE (hr.month = :current_month AND hr.variable = 'TEMPLATE' AND hr.value = -1)
+            OR (NOT EXISTS (SELECT 1 FROM HRMonthlyData hr2   WHERE hr2.resourceId = hr.resourceId
+            AND hr2.month = :current_month  AND hr2.variable = 'TEMPLATE'))
+            """)
+    Set<Long> findAllResourcesByDefaultTemplate(@Param("current_month") LocalDate month);
+
 }

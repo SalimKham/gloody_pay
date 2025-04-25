@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @AllArgsConstructor
@@ -37,6 +38,13 @@ public class VariableSettingController {
     @DeleteMapping("/source/{source}")
     public ResponseEntity<Void> deleteBySource(@PathVariable String source) {
         variableService.delete(source);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @DeleteMapping("/delete_sourced/{company_id}")
+    public ResponseEntity<Void> deleteAllSourcedVariables(@PathVariable(name = "company_id") Long companyId) {
+        variableService.deleteAllSourcedForCompany(companyId);
         return ResponseEntity.ok().build();
     }
 }

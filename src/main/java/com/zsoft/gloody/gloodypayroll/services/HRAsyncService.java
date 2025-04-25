@@ -51,6 +51,7 @@ public class HRAsyncService extends EntityManagerService {
             RequestContext.initDefault();
             RequestContext.initTemplates();
             Map<Long, Long> resourceContracts = hrDataRepository.getContractIdsByMonthAndResourceIdIn(month, resourceIds).stream().collect(Collectors.toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Long.class), (existing, replacement) -> existing));
+            payslipDraftService.deleteAllDraftedByContractAndMonth(new HashSet<>(resourceContracts.values()), month);
             List<Set<Long>> resourcesSplit = splitSet(resourceIds, PAGE_SIZE);
             for (Set<Long> resources : resourcesSplit) {
                 saveDraftsForEmployees(month, resources, resourceContracts);
@@ -92,7 +93,7 @@ public class HRAsyncService extends EntityManagerService {
             payload.setContractId(contractId);
             payload.setResourceId(resourceId);
             PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(payload, employeeMap.get(resourceId), false /*This must be false*/, false);
-            PayslipSetting payslipSetting = payslipDraftService.prepareDraft(calculatedPayslip.template(), calculatedPayslip.calculatedElements(), contractId, resourceId, employeeMap.get(resourceId), finalMonth, true);
+            PayslipSetting payslipSetting = payslipDraftService.prepareDraft(calculatedPayslip.template(), calculatedPayslip.calculatedElements(), contractId, resourceId, employeeMap.get(resourceId), finalMonth);
             payslipSettings.add(payslipSetting);
             i.getAndIncrement();
         });

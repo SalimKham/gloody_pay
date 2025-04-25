@@ -56,7 +56,7 @@ public class PayslipService {
     private final PayslipSettingMapper payslipSettingMapper;
     private static final List<String> defaultFunctionCodes = List.of("irg(base)", "int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
-    private final PayslipSettingService payslipSettingService;
+    private final PayslipSettingReadOnlyService payslipSettingService;
     private final HRDataRepository hrDataRepository;
     private final VariableService variableService;
     private final EmployeeMapper employeeMapper;
@@ -232,7 +232,7 @@ public class PayslipService {
                 return null;
             }
             Long draftId = monthlyValues.get("DRAFT_ID").longValue();
-            PayslipSettingDto template = getTemplate(draftId, false, false);
+            PayslipSettingDto template = getTemplate(draftId, true, false);
             if (template == null) {
                 return null;
             }
@@ -243,25 +243,33 @@ public class PayslipService {
     }
 
     private Map<String, Double> getMonthlyValues(Long contractId, LocalDate month, double holidayCounts) {
-
         Map<String, Double> monthlyValues = RequestContext.monthlyValues() != null && RequestContext.monthlyValues().containsKey(contractId) ?  RequestContext.monthlyValues().get(contractId)
-                : hrDataRepository.findAllByContractIdAndMonth(contractId, month).stream().collect(Collectors.toMap(HRMonthlyData::getVariable, HRMonthlyData::getValue));
+                : hrDataRepository.findAllByContractIdAndMonth(contractId, month).stream()
+                .collect(Collectors.toMap(HRMonthlyData::getVariable, HRMonthlyData::getValue,  (existing, replacement) -> existing));
         if (monthlyValues.isEmpty()) {
             return Collections.emptyMap();
         }
 
+        Map<String, Double> variables = new HashMap<>();
         variableService.findAllUnsourcedVariables().forEach(variable -> {
             try {
-                if (!monthlyValues.containsKey(variable.getKey())) {
-                    monthlyValues.put(variable.getKey(), Double.valueOf(variable.getFormula()));
+                if (!variables.containsKey(variable.getKey())) {
+                    if (variable.getSource() != null) {
+                        variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), 0d));
+                        if (monthlyValues.containsKey(variable.getSource())) {
+                            monthlyValues.remove(variable.getSource());
+                        }
+                    } else {
+                        variables.put(variable.getKey(), Double.valueOf(variable.getFormula()));
+                    }
                 }
             } catch (Exception e) {
-                monthlyValues.put(variable.getKey(), 0.0);
+                variables.put(variable.getKey(), 0.0);
             }
-
         });
-        monthlyValues.put("HOLIDAYS", holidayCounts);
-        return monthlyValues;
+        variables.put("HOLIDAYS", holidayCounts);
+        variables.putAll(monthlyValues);
+        return variables;
     }
 
     private void initPerRequestElements(PayslipSettingDto template, Long contractId) {
@@ -304,16 +312,16 @@ public class PayslipService {
             LinkedHashSet<PayslipElementDto> calculatedElements = loadDraftedIfPresent(payload, monthlyValues , template);
             initDictionaryService();
             Period period = DateUtils.getPayslipPeriod(payload.getMonth());
-            dictionaryService().clearAllVariables();
-            dictionaryService().setVariables(employee, template, monthlyValues, period);
-            if (calculatedElements != null) {
-                return new PayslipController.CalculatedPayslip(template, calculatedElements);
-            }
             if (employee == null) {
                 employee = employeeRepository.findById(payload.getResourceId()).orElse(null);
             }
             if (employee == null) {
                 return null;
+            }
+            dictionaryService().clearAllVariables();
+            dictionaryService().setVariables(employee, template, monthlyValues, period);
+            if (calculatedElements != null) {
+                return new PayslipController.CalculatedPayslip(template, calculatedElements);
             }
             initRequestContext();
             template = mergeTempTemplate(template, payload.getTempTemplate());
