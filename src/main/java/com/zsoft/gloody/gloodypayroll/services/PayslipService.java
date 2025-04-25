@@ -49,13 +49,14 @@ public class PayslipService {
     public static final String FUNCTION_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)";
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
+    //TODO FIX THIS
     private final PayslipElementSettingRepository payslipElementSettingRepository;
     private final ScriptEngine engine;
     private final PayslipSettingRepository payslipSettingRepository;
     private final PayslipSettingMapper payslipSettingMapper;
     private static final List<String> defaultFunctionCodes = List.of("irg(base)", "int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
-    private final PayslipSettingService payslipSettingService;
+    private final PayslipSettingReadOnlyService payslipSettingService;
     private final HRDataRepository hrDataRepository;
     private final VariableService variableService;
     private final EmployeeMapper employeeMapper;
@@ -88,6 +89,8 @@ public class PayslipService {
         Set<Long> closedContractIds = new HashSet<>();
         Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
         PayslipController.PayslipCalculatePayload payload = new PayslipController.PayslipCalculatePayload();
+        Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
+        resourceIds.removeAll(closedIds);
         for (Long resourceId : resourceIds) {
             try {
                 if (contracts.containsKey(resourceId)) {
@@ -229,7 +232,7 @@ public class PayslipService {
                 return null;
             }
             Long draftId = monthlyValues.get("DRAFT_ID").longValue();
-            PayslipSettingDto template = getTemplate(draftId, false, false);
+            PayslipSettingDto template = getTemplate(draftId, true, false);
             if (template == null) {
                 return null;
             }
@@ -240,25 +243,33 @@ public class PayslipService {
     }
 
     private Map<String, Double> getMonthlyValues(Long contractId, LocalDate month, double holidayCounts) {
-
         Map<String, Double> monthlyValues = RequestContext.monthlyValues() != null && RequestContext.monthlyValues().containsKey(contractId) ?  RequestContext.monthlyValues().get(contractId)
-                : hrDataRepository.findAllByContractIdAndMonth(contractId, month).stream().collect(Collectors.toMap(HRMonthlyData::getVariable, HRMonthlyData::getValue));
+                : hrDataRepository.findAllByContractIdAndMonth(contractId, month).stream()
+                .collect(Collectors.toMap(HRMonthlyData::getVariable, HRMonthlyData::getValue,  (existing, replacement) -> existing));
         if (monthlyValues.isEmpty()) {
             return Collections.emptyMap();
         }
 
+        Map<String, Double> variables = new HashMap<>();
         variableService.findAllUnsourcedVariables().forEach(variable -> {
             try {
-                if (!monthlyValues.containsKey(variable.getKey())) {
-                    monthlyValues.put(variable.getKey(), Double.valueOf(variable.getFormula()));
+                if (!variables.containsKey(variable.getKey())) {
+                    if (variable.getSource() != null) {
+                        variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), 0d));
+                        if (monthlyValues.containsKey(variable.getSource())) {
+                            monthlyValues.remove(variable.getSource());
+                        }
+                    } else {
+                        variables.put(variable.getKey(), Double.valueOf(variable.getFormula()));
+                    }
                 }
             } catch (Exception e) {
-                monthlyValues.put(variable.getKey(), 0.0);
+                variables.put(variable.getKey(), 0.0);
             }
-
         });
-        monthlyValues.put("HOLIDAYS", holidayCounts);
-        return monthlyValues;
+        variables.put("HOLIDAYS", holidayCounts);
+        variables.putAll(monthlyValues);
+        return variables;
     }
 
     private void initPerRequestElements(PayslipSettingDto template, Long contractId) {
@@ -301,16 +312,16 @@ public class PayslipService {
             LinkedHashSet<PayslipElementDto> calculatedElements = loadDraftedIfPresent(payload, monthlyValues , template);
             initDictionaryService();
             Period period = DateUtils.getPayslipPeriod(payload.getMonth());
-            dictionaryService().clearAllVariables();
-            dictionaryService().setVariables(employee, template, monthlyValues, period);
-            if (calculatedElements != null) {
-                return new PayslipController.CalculatedPayslip(template, calculatedElements);
-            }
             if (employee == null) {
                 employee = employeeRepository.findById(payload.getResourceId()).orElse(null);
             }
             if (employee == null) {
                 return null;
+            }
+            dictionaryService().clearAllVariables();
+            dictionaryService().setVariables(employee, template, monthlyValues, period);
+            if (calculatedElements != null) {
+                return new PayslipController.CalculatedPayslip(template, calculatedElements);
             }
             initRequestContext();
             template = mergeTempTemplate(template, payload.getTempTemplate());
@@ -573,14 +584,14 @@ public class PayslipService {
 
     private LocalDate getFunctionStartDate(String functionName, String param) {
         if (functionName.contains("FROM")) {
-            Integer n = Integer.valueOf(param);
+            int n = Integer.parseInt(param);
             if (n >=  perRequestElements().getCurrentDate().getMonthValue()) {
                 return  perRequestElements().getCurrentDate().withMonth(n).withYear( perRequestElements().getCurrentDate().getYear() - 1).withDayOfMonth(1);
             } else {
                 return  perRequestElements().getCurrentDate().withMonth(n).withDayOfMonth(1);
             }
         } else if (functionName.contains("BK")) {
-            Integer n = Integer.valueOf(param);
+            int n = Integer.parseInt(param);
             return  perRequestElements().getCurrentDate().minusMonths(n).withDayOfMonth(1);
         } else {
             return LocalDate.parse(param);
@@ -740,12 +751,12 @@ public class PayslipService {
     private PayslipSettingDto getTemplate(Long id, boolean draft, boolean isDefault) {
         if (!draft) {
             if(isDefault) {
-                return RequestContext.defaultTemplate() != null ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
+                return RequestContext.defaultTemplate() != null  ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
             } else {
-                return RequestContext.templates() != null ? RequestContext.templates().get(id) : payslipSettingService.findById(id).orElse(null);
+                return RequestContext.templates() != null && RequestContext.templates().containsKey(id) ? RequestContext.templates().get(id) : payslipSettingService.findById(id).orElse(null);
             }
         } else {
-            return RequestContext.templates() != null ? RequestContext.templates().get(id) : payslipSettingService.findDraftById(id).orElse(null);
+             return payslipSettingService.findDraftById(id).orElse(null);
         }
     }
 

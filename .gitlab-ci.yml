@@ -51,17 +51,20 @@ build_uat:
 
 deploy_uat:
   stage: deploy
-  image: python:3.9.1
+  image: alpine:latest
   dependencies:
     - build_uat
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$LIGHTSAIL_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan $UAT_PAY_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
-    - pip install awscli
-    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-    - aws configure set region eu-west-3
-    - aws s3 cp ./target/gloody-payroll-uat.war s3://ssii-back/pay/Uat/Versions/gloody-payroll-uat-$CI_PIPELINE_ID.war
-    - aws elasticbeanstalk create-application-version --application-name "$AWS_EBS_APP" --version-label gloody-payroll-uat-$CI_PIPELINE_ID --source-bundle S3Bucket=ssii-back,S3Key=pay/Uat/Versions/gloody-payroll-uat-$CI_PIPELINE_ID.war
-    - aws elasticbeanstalk update-environment --application-name "$AWS_EBS_APP" --environment-name "$AWS_EBS_ENV_UAT" --version-label gloody-payroll-uat-$CI_PIPELINE_ID
+    - echo "Deploying gloody-payroll-uat.war to $UAT_PAY_HOST"
+    - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-uat.war ec2-user@$UAT_PAY_HOST:/opt/tomcat/webapps/
   only:
     - uat
 
@@ -72,7 +75,7 @@ build_prod:
   script:
     - mvn clean install -Dmaven.test.skip=false -Denv=prod hibernate-enhance:enhance
   only:
-    - master
+    - main
   artifacts:
     name: "gloody-pay--prod-$CI_COMMIT_REF_NAME"
     paths:
@@ -93,5 +96,5 @@ deploy_prod:
     - aws elasticbeanstalk create-application-version --application-name "$AWS_EBS_APP" --version-label gloody-payroll-prod-$CI_PIPELINE_ID --source-bundle S3Bucket=ssii-back,S3Key=pay/Prod/Versions/gloody-payroll-prod-$CI_PIPELINE_ID.war
     - aws elasticbeanstalk update-environment --application-name "$AWS_EBS_APP" --environment-name "$AWS_EBS_ENV_PROD" --version-label gloody-payroll-prod-$CI_PIPELINE_ID
   only:
-    - master
+    - main
   when: manual

@@ -4,6 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingReposit
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.VariableMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +21,6 @@ public class VariableService extends CompanySupportService {
     private final VariableSettingRepository variableRepository;
     private final VariableMapper variableMapper;
 
-    @Cacheable(
-            cacheNames = "companyVariables",
-            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
-    )
     public Page<VariableSettingDto> findAll(Pageable pageable, String query) {
         query = query != null ? query : "";
         query = "%"+ query + "%";
@@ -39,6 +36,11 @@ public class VariableService extends CompanySupportService {
         return variableRepository.findAll().stream().map(variableMapper::toDto).toList();
     }
 
+
+    @CacheEvict(
+            cacheNames = "company_variables",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
+    )
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
         variableRepository.saveAll(variables.stream().filter(variableSettingDto -> {
             boolean existsBySource = false;
@@ -58,5 +60,9 @@ public class VariableService extends CompanySupportService {
 
     public void delete(String source) {
         variableRepository.deleteBySource(source);
+    }
+
+    public void deleteAllSourcedForCompany(Long companyId) {
+        variableRepository.deleteAllBySourceIsNotNullAndCompany(companyId);
     }
 }

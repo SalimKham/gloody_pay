@@ -6,7 +6,7 @@ import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
-import com.zsoft.gloody.gloodypayroll.services.PayslipSettingService;
+import com.zsoft.gloody.gloodypayroll.services.PayslipSettingReadOnlyService;
 import com.zsoft.gloody.gloodypayroll.services.SectionDictionaryService;
 import com.zsoft.gloody.gloodypayroll.services.SectionService;
 import jakarta.persistence.Tuple;
@@ -68,7 +68,7 @@ public class RequestContext {
     }
 
     public static void initTemplates() {
-        setTemplates(SpringContextHolder.getBean(PayslipSettingService.class).loadPayslipSettingsMap());
+        setTemplates(SpringContextHolder.getBean(PayslipSettingReadOnlyService.class).loadPayslipSettingsMap());
     }
 
     public static Map<Long, PayslipSettingDto> templates() {
@@ -80,7 +80,7 @@ public class RequestContext {
     }
 
     public static void initDefault() {
-        setDefaultTemplate(SpringContextHolder.getBean(PayslipSettingService.class).findDefaultTemplate().orElse(null));
+        setDefaultTemplate(SpringContextHolder.getBean(PayslipSettingReadOnlyService.class).findDefaultTemplate().orElse(null));
     }
 
     public static PayslipSettingDto defaultTemplate() {
@@ -130,7 +130,8 @@ public class RequestContext {
                         tuple -> tuple.get(0, Long.class),
                         Collectors.toMap(
                                 tuple -> tuple.get(1, String.class),
-                                tuple -> tuple.get(2, Double.class)
+                                tuple -> tuple.get(2, Double.class),
+                                (existing, replacement) -> existing
                         )
                 ));
         setMonthlyValues(result);

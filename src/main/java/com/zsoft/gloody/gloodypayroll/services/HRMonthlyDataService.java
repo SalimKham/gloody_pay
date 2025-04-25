@@ -4,6 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.HRSummaryMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,14 +51,30 @@ public class HRMonthlyDataService extends CompanySupportService {
                         .toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Long.class),  (existing, replacement) -> existing));
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("DRAFT_ID", resourceContracts.values(), month);
         payslipSettingRepository.deleteAllByContractInAndPaymentDateAndDraftIsTrue(resourceContracts.values(), month);
-        System.out.println("DRAFT DELETED " + resourceIds.size());
     }
 
     public void saveDrafts(Set<Long> resourceIds, LocalDate month) {
         deleteDrafts(resourceIds, month);
-        System.out.println("REQUEST TO SAVE DRAFTS OF  " + resourceIds.size());
         asyncService.saveDrafts(resourceIds, month, SecurityContextHolder.getContext().getAuthentication());
     }
 
+    public void onTemplateChange(PayslipSettingDto template) {
+        Set<Long> resourceIds = null;
+        if (template.isTemplate() && template.getId() != null) {
+            resourceIds = template.isByDefault() ?  hrDataRepository.findAllResourcesByDefaultTemplate(LocalDate.now().withDayOfMonth(1)):
+                    hrDataRepository.findAllResourcesByTemplateId(LocalDate.now().withDayOfMonth(1), template.getId());
+        }
+        if (resourceIds != null && !resourceIds.isEmpty()) {
+              saveDrafts(resourceIds, LocalDate.now().withDayOfMonth(1));
+        }
+    }
+
+    public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
+        Long variableId = hrDataRepository
+                .findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month)
+                .map(HRMonthlyData::getId).orElse(null);
+        hrDataRepository.save(new HRMonthlyData(variableId, resourceId, contractId, month, "TEMPLATE", templateId));
+        saveDrafts(Set.of(resourceId), month);
+    }
 
 }

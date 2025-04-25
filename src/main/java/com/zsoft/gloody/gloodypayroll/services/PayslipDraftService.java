@@ -1,6 +1,5 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
-import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
@@ -13,6 +12,8 @@ import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ import static com.zsoft.gloody.gloodypayroll.services.PayslipService.calculatedE
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
 public class PayslipDraftService extends EntityManagerService{
     private final EmployeeMapper employeeMapper;
     private final PayslipSettingMapper payslipSettingMapper;
@@ -36,9 +37,9 @@ public class PayslipDraftService extends EntityManagerService{
     public void saveAsDraftAsync(Long companyId, PayslipSettingDto payslipDTO, TreeSet<PayslipElementDto> calculatedElements, Long contractId, Long resourceId, Employee employee, LocalDate month) {
         applyFilter(companyId);
         deleteAllDraftedByContractAndMonth(Set.of(contractId), month);
-        save(payslipDTO, calculatedElements, contractId, resourceId, employee, month, false);
+        save(payslipDTO, calculatedElements, contractId, resourceId, employee, month);
     }
-    public PayslipSetting prepareDraft (PayslipSettingDto payslipDTO, Set<PayslipElementDto> calculatedElements, Long contractId, Long resourceId, Employee employee, LocalDate month, boolean clearDrafted) {
+    public PayslipSetting prepareDraft (PayslipSettingDto payslipDTO, Set<PayslipElementDto> calculatedElements, Long contractId, Long resourceId, Employee employee, LocalDate month) {
         try {
             payslipDTO = (PayslipSettingDto) payslipDTO.clone();
         } catch (Exception e) {
@@ -46,9 +47,6 @@ public class PayslipDraftService extends EntityManagerService{
         }
 
         month = month.withDayOfMonth(1);
-        if (clearDrafted) {
-            deleteAllDraftedByContractAndMonth(Set.of(contractId), month);
-        }
         Map<String, PayslipElementDto> mappedElements = calculatedElements.stream().collect(Collectors.toMap(PayslipElementDto::getCode, elementDto -> elementDto));
         payslipDTO.getElements().forEach(payslipSettingElementDto -> {
             payslipSettingElementDto.setId(null);
@@ -66,17 +64,17 @@ public class PayslipDraftService extends EntityManagerService{
         return payslip;
     }
 
-    public void save(PayslipSettingDto payslipDTO, Set<PayslipElementDto> calculatedElements, Long contractId, Long resourceId, Employee employee, LocalDate month, boolean clearDrafted) {
-        PayslipSetting payslip = prepareDraft(payslipDTO, calculatedElements, contractId, resourceId, employee, month, clearDrafted);
+    public void save(PayslipSettingDto payslipDTO, Set<PayslipElementDto> calculatedElements, Long contractId, Long resourceId, Employee employee, LocalDate month) {
+        PayslipSetting payslip = prepareDraft(payslipDTO, calculatedElements, contractId, resourceId, employee, month);
         if (payslip == null) {
             return;
         }
-        payslipSettingRepository.save(payslip);
-        Long variableId = RequestContext.monthlyValues() != null ? null
-                :  hrDataRepository.findHrMonthlyDataByVariableAndContractIdAndMonth("DRAFT_ID", contractId, month)
-                .map(HRMonthlyData::getId).orElse(null);
-
-        hrDataRepository.save(new HRMonthlyData(variableId , resourceId, contractId, month, "DRAFT_ID", payslip.getId()));
+        try {
+           payslipSettingRepository.save(payslip);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        hrDataRepository.save(new HRMonthlyData(null , resourceId, contractId, month, "DRAFT_ID", payslip.getId()));
     }
 
     public void deleteAllDraftedByContractAndMonth(Set<Long> contractIds, LocalDate month) {
