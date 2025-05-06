@@ -30,8 +30,16 @@ deploy_staging:
     - ssh-keyscan $STAGING_PAY_HOST >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - echo "Deploying gloody-payroll-staging.war to $STAGING_PAY_HOST"
+    - echo "Stopping Tomcat using shutdown.sh..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST '/opt/tomcat/bin/shutdown.sh || true'
+    - echo "Cleaning up old deployment..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'rm -rf /opt/tomcat/webapps/gloody-payroll-staging*'
+    - echo "Copying new WAR file..."
     - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-staging.war ec2-user@$STAGING_PAY_HOST:/opt/tomcat/webapps/
+    - echo "Starting Tomcat using startup.sh..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST '/opt/tomcat/bin/startup.sh'
+    - echo "Tailing catalina.out logs..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'tail -n 50 /opt/tomcat/logs/catalina.out || true'
   only:
     - staging
   
