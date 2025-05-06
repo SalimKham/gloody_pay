@@ -31,17 +31,20 @@ deploy_staging:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - echo "Stopping Tomcat using shutdown.sh..."
-    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST '/opt/tomcat/bin/shutdown.sh || true'
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo /opt/tomcat/bin/shutdown.sh || true'
     - echo "Cleaning up old deployment..."
-    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'rm -rf /opt/tomcat/webapps/gloody-payroll-staging*'
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo rm -rf /opt/tomcat/webapps/gloody-payroll-staging*'
     - echo "Copying new WAR file..."
-    - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-staging.war ec2-user@$STAGING_PAY_HOST:/opt/tomcat/webapps/
+    - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-staging.war ec2-user@$STAGING_PAY_HOST:/tmp/
+    - echo "Moving WAR file with sudo..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo mv /tmp/gloody-payroll-staging.war /opt/tomcat/webapps/'
     - echo "Starting Tomcat using startup.sh..."
-    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST '/opt/tomcat/bin/startup.sh'
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo /opt/tomcat/bin/startup.sh'
     - echo "Tailing catalina.out logs..."
-    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'tail -n 50 /opt/tomcat/logs/catalina.out || true'
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo tail -n 50 /opt/tomcat/logs/catalina.out || true'
   only:
     - staging
+
   
 # UAT Environment
 build_uat:
