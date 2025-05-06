@@ -219,12 +219,12 @@ public class PayslipService {
                 ));
     }
 
-    public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipController.PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate) {
+    public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipController.PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate, boolean isTemporary) {
         LinkedHashSet<PayslipElementDto> calculatedElements = new LinkedHashSet<>();
         if (payslipTemplate.isClosed()) {
             payslipTemplate.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
         } else {
-            if (isTemp(payload)) {
+            if (isTemporary) {
                 return null;
             }
             if (!monthlyValues.containsKey("DRAFT_ID")) {
@@ -292,11 +292,18 @@ public class PayslipService {
         RequestContext.initFunctionElements(resourceIds, inFunctionsCodes);
     }
 
-    private boolean isTemp(PayslipController.PayslipCalculatePayload payload) {
+    private boolean isTemp(PayslipController.PayslipCalculatePayload payload, PayslipSettingDto template) {
         if (payload.getTempTemplate() == null) {
             return false;
         }
         if (payload.getTempTemplate().getId() != null) {
+            return true;
+        }
+        if (!Objects.equals(template.isShowZero(), payload.getTempTemplate().isShowZero())) {
+            return true;
+        }
+
+        if (!Objects.equals(template.getRate(), payload.getTempTemplate().getRate())) {
             return true;
         }
         return payload.getTempTemplate().getElements() != null && !payload.getTempTemplate().getElements().isEmpty();
@@ -315,7 +322,8 @@ public class PayslipService {
             if (template == null) {
                 return null;
             }
-            LinkedHashSet<PayslipElementDto> calculatedElements = loadDraftedIfPresent(payload, monthlyValues, template);
+            boolean isTemporary = isTemp(payload, template);
+            LinkedHashSet<PayslipElementDto> calculatedElements = loadDraftedIfPresent(payload, monthlyValues, template, isTemporary);
             initDictionaryService();
             Period period = DateUtils.getPayslipPeriod(payload.getMonth());
             if (employee == null) {
@@ -344,7 +352,7 @@ public class PayslipService {
             for (PayslipSettingElementDto elementDto : template.getElements()) {
                 calculateSection(elementDto);
             }
-            if (saveAsDraft && !isTemp(payload)) {
+            if (saveAsDraft && !isTemporary) {
                 payslipDraftService.saveAsDraftAsync(SecurityUtils.getCurrentCompanyId(), template, perRequestElements().getCalculatedElements(), payload.getContractId(), payload.getResourceId(), employee, month);
             }
             return new PayslipController.CalculatedPayslip(template, perRequestElements().getCalculatedElements());
@@ -477,11 +485,8 @@ public class PayslipService {
     }
 
     private boolean isHidden(PayslipElementDto element) {
-        if ((element.isTotal() && !perRequestElements().isShowIntermediate()) ||
-                (!perRequestElements().isShowZero() && element.isZero())) {
-            return true;
-        }
-        return false;
+        return (element.isTotal() && !perRequestElements().isShowIntermediate()) ||
+                (!perRequestElements().isShowZero() && element.isZero());
     }
 
     public void addCalculatedElement(PayslipElementDto element) {
