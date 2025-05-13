@@ -7,7 +7,6 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.HRSummaryMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,8 +53,9 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     public void saveDrafts(Set<Long> resourceIds, LocalDate month) {
-        deleteDrafts(resourceIds, month);
-        asyncService.saveDrafts(resourceIds, month, SecurityContextHolder.getContext().getAuthentication());
+        // todo uncomment this
+       /* deleteDrafts(resourceIds, month);
+        asyncService.saveDrafts(resourceIds, month, SecurityContextHolder.getContext().getAuthentication());*/
     }
 
     public void onTemplateChange(PayslipSettingDto template) {
