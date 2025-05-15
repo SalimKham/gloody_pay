@@ -12,7 +12,6 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.*;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
-import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -220,7 +219,9 @@ public class PayslipService {
     }
 
     public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipController.PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate, boolean isTemporary) {
-        LinkedHashSet<PayslipElementDto> calculatedElements = new LinkedHashSet<>();
+        return null;
+        // todo uncomment this later
+      /*  LinkedHashSet<PayslipElementDto> calculatedElements = new LinkedHashSet<>();
         if (payslipTemplate.isClosed()) {
             payslipTemplate.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
         } else {
@@ -238,7 +239,7 @@ public class PayslipService {
             template.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
         }
 
-        return calculatedElements;
+        return calculatedElements;*/
     }
 
     private Map<String, Double> getMonthlyValues(Long contractId, LocalDate month, double holidayCounts) {
@@ -287,6 +288,7 @@ public class PayslipService {
     public void initFunctionElements(Set<Long> resourceIds) {
         List<String> inFunctionsCodes = getInFunctionCodes();
         if(inFunctionsCodes == null || inFunctionsCodes.isEmpty() || resourceIds.isEmpty()) {
+            RequestContext.setFunctionElements(Collections.emptyMap());
             return;
         }
         RequestContext.initFunctionElements(resourceIds, inFunctionsCodes);
@@ -352,9 +354,9 @@ public class PayslipService {
             for (PayslipSettingElementDto elementDto : template.getElements()) {
                 calculateSection(elementDto);
             }
-            if (saveAsDraft && !isTemporary) {
+          /*  if (saveAsDraft && !isTemporary) {
                 payslipDraftService.saveAsDraftAsync(SecurityUtils.getCurrentCompanyId(), template, perRequestElements().getCalculatedElements(), payload.getContractId(), payload.getResourceId(), employee, month);
-            }
+            }*/
             return new PayslipController.CalculatedPayslip(template, perRequestElements().getCalculatedElements());
         } finally {
             if (clearContext) {
