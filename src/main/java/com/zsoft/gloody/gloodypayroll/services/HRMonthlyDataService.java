@@ -7,6 +7,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.HRSummaryMapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +17,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.logSuccess;
+
 @Service
 @AllArgsConstructor
 @Transactional
+@Slf4j
 public class HRMonthlyDataService extends CompanySupportService {
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
@@ -27,12 +31,14 @@ public class HRMonthlyDataService extends CompanySupportService {
 
 
     public void save(HRMonthlySummaryDTO summaryDTO) {
+        log.info("SAVING A HR VARIABLE: {} | CONTRACT: {} | VALUE: {}", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value() );
         HRMonthlyData entity = mapper.toEntity(summaryDTO);
         Long id = hrDataRepository
                 .findHrMonthlyDataByVariableAndContractIdAndMonth(summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month())
                 .map(HRMonthlyData::getId).orElse(null);
         entity.setId(id);
         hrDataRepository.save(entity);
+        logSuccess(String.format("SAVING A HR VARIABLE: %s | CONTRACT: %s | VALUE: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value()) );
     }
 
     public void save(List<HRMonthlySummaryDTO> summaryDTOS) {
