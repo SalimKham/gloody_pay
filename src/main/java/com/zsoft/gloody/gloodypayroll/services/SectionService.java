@@ -38,7 +38,7 @@ public class SectionService extends CompanySupportService {
     private final SectionSettingRepository sectionSettingRepository;
 
     public Optional<SectionDto> findByCode(String code) {
-        return this.sectionRepository.findByCode(code)
+        return this.sectionRepository.findByCodeAndCompany(code, SecurityUtils.getCurrentCompanyId())
                 .map(this.sectionMapper::toDto);
     }
 

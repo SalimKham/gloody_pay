@@ -6,6 +6,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionCategoryDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.accounting.AccountingSettingAccountMapper;
+import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -43,6 +44,6 @@ public abstract class SectionMapper {
         if (code == null) {
             return null;
         }
-       return  sectionRepository.findByCode(code).map(section -> Section.builder().id(section.getId()).code(section.getCode()).build()).orElse(null);
+       return  sectionRepository.findByCodeAndCompany(code, SecurityUtils.getCurrentCompanyId()).map(section -> Section.builder().id(section.getId()).code(section.getCode()).build()).orElse(null);
     }
 }

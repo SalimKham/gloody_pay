@@ -40,26 +40,32 @@ public class PayslipSettingService extends CompanySupportService {
             )
     })
     public PayslipSettingDto save(PayslipSettingDto dto, Long resourceId) {
-        PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
-        boolean updateEmployeeMonthlyTemplate = false;
-        if (dto.isTemplate()) {
-            payslipSetting.setPaymentDate(null);
+        try {
+            PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
+            boolean updateEmployeeMonthlyTemplate = false;
+            if (dto.isTemplate()) {
+                payslipSetting.setPaymentDate(null);
+            }
+            if (resourceId != null && Objects.nonNull(dto.getPaymentDate()) && Objects.nonNull(dto.getContract())) {
+                payslipSettingRepository.deleteByContractAndPaymentDate(dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1));
+                payslipSetting.setId(null);
+                payslipSetting.setEmployee(resourceId);
+                payslipSetting.setPayslipDetail(null);
+                updateEmployeeMonthlyTemplate = true;
+            }
+            payslipSetting = this.payslipSettingRepository.save(payslipSetting);
+            PayslipSettingDto result = this.payslipSettingMapper.toDto(payslipSetting);
+            if (updateEmployeeMonthlyTemplate) {
+                hrMonthlyDataService.updateHrTemplate(resourceId, dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1), payslipSetting.getId());
+            } else {
+                hrMonthlyDataService.onTemplateChange(result);
+            }
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        if (resourceId != null && Objects.nonNull(dto.getPaymentDate()) && Objects.nonNull(dto.getContract())) {
-          payslipSettingRepository.deleteByContractAndPaymentDate(dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1));
-           payslipSetting.setId(null);
-           payslipSetting.setEmployee(resourceId);
-           payslipSetting.setPayslipDetail(null);
-           updateEmployeeMonthlyTemplate = true;
-        }
-        payslipSetting = this.payslipSettingRepository.save(payslipSetting);
-        PayslipSettingDto result  = this.payslipSettingMapper.toDto(payslipSetting);
-        if (updateEmployeeMonthlyTemplate) {
-            hrMonthlyDataService.updateHrTemplate(resourceId, dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1), payslipSetting.getId());
-        } else {
-            hrMonthlyDataService.onTemplateChange(result);
-        }
-        return result;
+
+        return null;
     }
 
     public Page<PayslipSettingDto> deleteTemplate(Long templateId, Pageable pageable) {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,10 +76,9 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
-        Long variableId = hrDataRepository
-                .findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month)
-                .map(HRMonthlyData::getId).orElse(null);
-        hrDataRepository.save(new HRMonthlyData(variableId, resourceId, contractId, month, "TEMPLATE", templateId));
+        hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month);
+        hrDataRepository.save(new HRMonthlyData(null, resourceId, contractId, month, "TEMPLATE", templateId));
+        logSuccess(String.format("UPDATE TEMPLATE FOR  CONTRACT: %s | MONTH: %s", contractId, month) );
         saveDrafts(Set.of(resourceId), month);
     }
 
