@@ -79,12 +79,7 @@ public class EmployeeService extends CompanySupportService {
         return false;
     }
 
-    public boolean notExistsById(Long id) {
-        return !this.employeeRepository.existsById(id);
-    }
-
     public void save(EmployeeDto dto) {
-        log.info("UPDATING EMPLOYEE | ID: {} ", dto.getId());
         Employee entity = this.employeeMapper.toEntity(dto);
         employeeRepository.findById(dto.getId()).ifPresent(employee -> {
             if (employee.getAddress() != null && dto.getAddress() != null) {

@@ -31,14 +31,13 @@ public class HRMonthlyDataService extends CompanySupportService {
 
 
     public void save(HRMonthlySummaryDTO summaryDTO) {
-        log.info("SAVING A HR VARIABLE: {} | CONTRACT: {} | VALUE: {}", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value() );
         HRMonthlyData entity = mapper.toEntity(summaryDTO);
         Long id = hrDataRepository
                 .findHrMonthlyDataByVariableAndContractIdAndMonth(summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month())
                 .map(HRMonthlyData::getId).orElse(null);
         entity.setId(id);
         hrDataRepository.save(entity);
-        logSuccess(String.format("SAVING A HR VARIABLE: %s | CONTRACT: %s | VALUE: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value()) );
+        logSuccess(String.format("SAVING  HR VARIABLE: %s | CONTRACT: %s | VALUE: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value()) );
     }
 
     public void save(List<HRMonthlySummaryDTO> summaryDTOS) {
