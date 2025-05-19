@@ -747,7 +747,7 @@ public class PayslipService {
 
     public PayslipDetailDto getPayslipDetails(PayslipController.PayslipCalculatePayload payload) {
         if (payslipSettingRepository.isClosedPayslip(payload.getMonth().withDayOfMonth(1), payload.getContractId())) {
-            Long templateId = hrDataRepository.findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", payload.getContractId(), payload.getMonth().withDayOfMonth(1)).map(HRMonthlyData::getValue).orElse(-1d).longValue();
+            Long templateId = hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", payload.getContractId(), payload.getMonth().withDayOfMonth(1)).map(HRMonthlyData::getValue).orElse(-1d).longValue();
             PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false, false) : getTemplate(templateId, false, true);
             if (template == null) {
                 return null;

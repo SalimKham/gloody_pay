@@ -71,7 +71,7 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
 
     private void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
         Long variableId = hrDataRepository
-                .findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month)
+                .findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month)
                 .map(HRMonthlyData::getId).orElse(null);
         hrDataRepository.save(new HRMonthlyData(variableId, resourceId, contractId, month, "TEMPLATE", templateId));
     }
