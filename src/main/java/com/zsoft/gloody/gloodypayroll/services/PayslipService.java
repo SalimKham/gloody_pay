@@ -515,7 +515,7 @@ public class PayslipService {
         elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
         BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context, section.getNature());
         context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
-        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
+        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(2, RoundingMode.HALF_UP));
         if (value == null) {
             sectionValue = calculateSectionValue(section.getValueFormula(), value, context, section.getNature());
         } else {
