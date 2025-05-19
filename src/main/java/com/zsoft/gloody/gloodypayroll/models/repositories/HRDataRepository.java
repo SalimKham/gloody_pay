@@ -37,6 +37,10 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
     @Modifying
     void deleteAllByVariableAndContractIdInAndMonth(String variable, Collection<Long> contractIds, LocalDate month);
 
+    @Modifying
+    @Query(value = "DELETE hr FROM hr_monthly_data hr WHERE hr.contract_id in :contract_ids AND hr.hr_variable Rlike :variable and YEAR(hr.pay_month) = YEAR(:month) AND MONTH(hr.pay_month) = MONTH(:month)", nativeQuery = true)
+    void deleteAllByVariableLikeAndContractIdInAndMonth(@Param("variable") String variable, @Param("contract_ids") Collection<Long> contractIds,@Param("month") LocalDate month);
+
     @Query(value = """
             INSERT INTO `hr_monthly_data` (`pay_month`, `resource_id`,`contract_id`, `hr_variable`,  `hr_value`) 
             SELECT p.payment_date, p.employee_id, p.contract_id, 'DRAFT_ID', p.id FROM `payslip_setting`  p 
@@ -45,8 +49,8 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
     void bulkInsertDraftIds(@Param("month") LocalDate month, @Param("payslip_ids") List<Long> payslipIds);
 
     @Query(value = """
-            INSERT INTO `hr_monthly_data` (`pay_month`, `resource_id`,`contract_id`, `hr_variable`,  `hr_value`) 
-            SELECT p.payment_date, p.employee_id, p.contract_id, 'TEMPLATE', p.id FROM `payslip_setting`  p 
+            INSERT INTO `hr_monthly_data` (`pay_month`, `resource_id`,`contract_id`, `hr_variable`,  `hr_value`)
+            SELECT p.payment_date, p.employee_id, p.contract_id, 'TEMPLATE', p.id FROM `payslip_setting`  p
             WHERE p.payment_date = :month AND p.closed AND p.id in :payslip_ids
             """, nativeQuery = true)
     void bulkInsertClosedTemplateIds(@Param("month") LocalDate month, @Param("payslip_ids") List<Long> payslipIds);

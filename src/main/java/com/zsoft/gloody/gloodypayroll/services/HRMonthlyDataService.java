@@ -18,30 +18,44 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.logSuccess;
+import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.successMsg;
 
 @Service
 @AllArgsConstructor
 @Transactional
 @Slf4j
 public class HRMonthlyDataService extends CompanySupportService {
+    public static final String MEAL_VOUCHER = "MEAL_VOUCHER";
+    public static final String RESOURCE_MUTUAL = "RESOURCE_MUTUAL";
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
     private final PayslipSettingRepository payslipSettingRepository;
+    private final static List<String> ABSENCE_VARIABLES = List.of("ABSENCE", "ABS");
+    private final static List<String> EXPENSE_VARIABLES = List.of("EXP", "EXPENSE");
+    private final static List<String> BONUS_VARIABLES = List.of("BNS", "BONUS");
+    private final static List<String> ADVANCE_VARIABLES = List.of("ADVS", "ADVANCE");
     private final HRAsyncService asyncService;
 
 
     public void save(HRMonthlySummaryDTO summaryDTO) {
+        if (summaryDTO.empty()) {
+            return;
+        }
         HRMonthlyData entity = mapper.toEntity(summaryDTO);
-        Long id = hrDataRepository
-                .findHrMonthlyDataByVariableAndContractIdAndMonth(summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month())
-                .map(HRMonthlyData::getId).orElse(null);
-        entity.setId(id);
+        entity.setMonth(summaryDTO.month().withDayOfMonth(1));
         hrDataRepository.save(entity);
-        logSuccess(String.format("SAVING  HR VARIABLE: %s | CONTRACT: %s | VALUE: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value()) );
+        log.info(successMsg("HR VARIABLE SAVED: %s | CONTRACT: %s | VALUE: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value()));
     }
 
     public void save(List<HRMonthlySummaryDTO> summaryDTOS) {
+        if (summaryDTOS == null || summaryDTOS.isEmpty()) {
+            return;
+        }
+        HRMonthlySummaryDTO summaryDTO = summaryDTOS.get(0);
+        hrDataRepository.deleteAllByVariableLikeAndContractIdInAndMonth(getTobeClearedVariablesReg(summaryDTO.variable()), List.of(summaryDTO.contractId()), summaryDTO.month().withDayOfMonth(1));
+        if (summaryDTO.empty()) {
+            log.info(successMsg("HR VARIABLE CLEARED: %s | CONTRACT: %s | MONTH: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month().withDayOfMonth(1)));
+        }
         summaryDTOS.forEach(this::save);
     }
 
@@ -53,7 +67,7 @@ public class HRMonthlyDataService extends CompanySupportService {
     public void deleteDrafts(Set<Long> resourceIds, LocalDate month) {
         Map<Long, Long> resourceContracts = hrDataRepository.getContractIdsByMonthAndResourceIdIn(month, resourceIds).stream()
                 .collect(Collectors
-                        .toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Long.class),  (existing, replacement) -> existing));
+                        .toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Long.class), (existing, replacement) -> existing));
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("DRAFT_ID", resourceContracts.values(), month);
         payslipSettingRepository.deleteAllByContractInAndPaymentDateAndDraftIsTrue(resourceContracts.values(), month);
     }
@@ -67,19 +81,46 @@ public class HRMonthlyDataService extends CompanySupportService {
     public void onTemplateChange(PayslipSettingDto template) {
         Set<Long> resourceIds = null;
         if (template.isTemplate() && template.getId() != null) {
-            resourceIds = template.isByDefault() ?  hrDataRepository.findAllResourcesByDefaultTemplate(LocalDate.now().withDayOfMonth(1)):
+            resourceIds = template.isByDefault() ? hrDataRepository.findAllResourcesByDefaultTemplate(LocalDate.now().withDayOfMonth(1)) :
                     hrDataRepository.findAllResourcesByTemplateId(LocalDate.now().withDayOfMonth(1), template.getId());
         }
         if (resourceIds != null && !resourceIds.isEmpty()) {
-              saveDrafts(resourceIds, LocalDate.now().withDayOfMonth(1));
+            saveDrafts(resourceIds, LocalDate.now().withDayOfMonth(1));
         }
     }
 
     public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
+        hrDataRepository.findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month.withDayOfMonth(1)).ifPresent(monthlyData -> {
+            payslipSettingRepository.deleteById((long) monthlyData.getValue());
+        });
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month);
         hrDataRepository.save(new HRMonthlyData(null, resourceId, contractId, month, "TEMPLATE", templateId));
-        logSuccess(String.format("UPDATE TEMPLATE FOR  CONTRACT: %s | MONTH: %s", contractId, month) );
+        log.info(successMsg("TEMPLATE UPDATED | CONTRACT: %s | MONTH: %s", contractId, month));
         saveDrafts(Set.of(resourceId), month);
+    }
+
+    private String getTobeClearedVariablesReg(String variableName) {
+        if (variableName == null) {
+            return null;
+        }
+        List<String> variables = null;
+        if (ABSENCE_VARIABLES.contains(variableName.split("_")[0])) {
+            variables = ABSENCE_VARIABLES;
+        } else if (EXPENSE_VARIABLES.contains(variableName.split("_")[0])) {
+            variables = EXPENSE_VARIABLES;
+        } else if (BONUS_VARIABLES.contains(variableName.split("_")[0])) {
+            variables = BONUS_VARIABLES;
+        } else if (ADVANCE_VARIABLES.contains(variableName.split("_")[0])) {
+            variables = ADVANCE_VARIABLES;
+        } else if (MEAL_VOUCHER.contains(variableName.split("_")[0])) {
+            variables = List.of(MEAL_VOUCHER);
+        } else if (RESOURCE_MUTUAL.contains(variableName.split("_")[0])) {
+            variables = List.of(RESOURCE_MUTUAL);
+        }
+        if (variables != null) {
+            return String.join("|", variables);
+        }
+        return null;
     }
 
 }

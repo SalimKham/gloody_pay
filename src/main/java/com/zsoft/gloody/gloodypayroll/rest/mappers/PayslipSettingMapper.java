@@ -36,5 +36,12 @@ public abstract class PayslipSettingMapper {
             setting.setCompany(SecurityUtils.getCurrentCompanyId());
         }
     }
+
+    @AfterMapping
+    void afterMapping(@MappingTarget PayslipSettingElement element) {
+        if (Objects.nonNull(element)) {
+            element.setCompany(SecurityUtils.getCurrentCompanyId());
+        }
+    }
 }
 
