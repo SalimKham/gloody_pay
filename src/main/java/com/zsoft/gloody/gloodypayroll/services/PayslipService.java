@@ -14,6 +14,7 @@ import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -40,6 +41,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.*;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PayslipService {
     public static final String ATTRIBUTE_PREFIX = "LBL_";
     public static final String NATURE_PREFIX = "NTR_";
@@ -256,9 +258,7 @@ public class PayslipService {
                 if (!variables.containsKey(variable.getKey())) {
                     if (variable.getSource() != null) {
                         variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), 0d));
-                        if (monthlyValues.containsKey(variable.getSource())) {
-                            monthlyValues.remove(variable.getSource());
-                        }
+                        monthlyValues.remove(variable.getSource());
                     } else {
                         variables.put(variable.getKey(), Double.valueOf(variable.getFormula()));
                     }
@@ -279,7 +279,7 @@ public class PayslipService {
         perRequestElements().setShowZero(template.isShowZero());
         perRequestElements().setEmployeeId(template.getEmployee().getId());
         perRequestElements().setCurrentDate(template.getPaymentDate());
-        if(RequestContext.functionElements() == null) {
+        if (RequestContext.functionElements() == null) {
             this.initFunctionElements(Set.of(resourceId));
         }
         RequestContext.functionElements().getOrDefault(resourceId, Collections.emptyList());
@@ -287,7 +287,7 @@ public class PayslipService {
 
     public void initFunctionElements(Set<Long> resourceIds) {
         List<String> inFunctionsCodes = getInFunctionCodes();
-        if(inFunctionsCodes == null || inFunctionsCodes.isEmpty() || resourceIds.isEmpty()) {
+        if (inFunctionsCodes == null || inFunctionsCodes.isEmpty() || resourceIds.isEmpty()) {
             RequestContext.setFunctionElements(Collections.emptyMap());
             return;
         }
@@ -481,7 +481,7 @@ public class PayslipService {
             }
             return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
         } catch (Exception e) {
-            System.out.println(e.getCause());
+           log.error("ERROR WHILE CALCULATING ELEMENT {}", element.getSection(), e);
         }
         return null;
     }
@@ -524,7 +524,7 @@ public class PayslipService {
         if (sectionValue == null) {
             return elementDto.get();
         }
-
+        sectionValue = sectionValue.setScale(2, RoundingMode.HALF_UP);
         dictionaryService().setVariable(section.getCode(), sectionValue.doubleValue());
         BigDecimal gain = null;
         BigDecimal deduction = null;
