@@ -515,7 +515,7 @@ public class PayslipService {
         elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
         BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context, section.getNature());
         context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
-        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.HALF_UP));
+        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(2, RoundingMode.HALF_UP));
         if (value == null) {
             sectionValue = calculateSectionValue(section.getValueFormula(), value, context, section.getNature());
         } else {
@@ -747,7 +747,7 @@ public class PayslipService {
 
     public PayslipDetailDto getPayslipDetails(PayslipController.PayslipCalculatePayload payload) {
         if (payslipSettingRepository.isClosedPayslip(payload.getMonth().withDayOfMonth(1), payload.getContractId())) {
-            Long templateId = hrDataRepository.findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", payload.getContractId(), payload.getMonth().withDayOfMonth(1)).map(HRMonthlyData::getValue).orElse(-1d).longValue();
+            Long templateId = hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", payload.getContractId(), payload.getMonth().withDayOfMonth(1)).map(HRMonthlyData::getValue).orElse(-1d).longValue();
             PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false, false) : getTemplate(templateId, false, true);
             if (template == null) {
                 return null;

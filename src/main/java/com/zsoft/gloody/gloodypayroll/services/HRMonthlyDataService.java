@@ -30,7 +30,7 @@ public class HRMonthlyDataService extends CompanySupportService {
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
     private final PayslipSettingRepository payslipSettingRepository;
-    private final static List<String> ABSENCE_VARIABLES = List.of("ABSENCE", "ABS");
+    private final static List<String> ABSENCE_VARIABLES = List.of("ABSENCE", "ABS", "DAYS_NBR_RCT", "CONTRACT_OFF_DAYS");
     private final static List<String> EXPENSE_VARIABLES = List.of("EXP", "EXPENSE");
     private final static List<String> BONUS_VARIABLES = List.of("BNS", "BONUS");
     private final static List<String> ADVANCE_VARIABLES = List.of("ADVS", "ADVANCE");
@@ -90,7 +90,7 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
-        hrDataRepository.findHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month.withDayOfMonth(1)).ifPresent(monthlyData -> {
+        hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month.withDayOfMonth(1)).ifPresent(monthlyData -> {
             payslipSettingRepository.deleteById((long) monthlyData.getValue());
         });
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month);
@@ -104,9 +104,7 @@ public class HRMonthlyDataService extends CompanySupportService {
             return null;
         }
         List<String> variables = null;
-        if (ABSENCE_VARIABLES.contains(variableName.split("_")[0])) {
-            variables = ABSENCE_VARIABLES;
-        } else if (EXPENSE_VARIABLES.contains(variableName.split("_")[0])) {
+       if (EXPENSE_VARIABLES.contains(variableName.split("_")[0])) {
             variables = EXPENSE_VARIABLES;
         } else if (BONUS_VARIABLES.contains(variableName.split("_")[0])) {
             variables = BONUS_VARIABLES;
@@ -116,6 +114,8 @@ public class HRMonthlyDataService extends CompanySupportService {
             variables = List.of(MEAL_VOUCHER);
         } else if (RESOURCE_MUTUAL.contains(variableName.split("_")[0])) {
             variables = List.of(RESOURCE_MUTUAL);
+        }  else if (ABSENCE_VARIABLES.stream().anyMatch(variableName::contains)) {
+            variables = ABSENCE_VARIABLES;
         }
         if (variables != null) {
             return String.join("|", variables);

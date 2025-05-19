@@ -18,7 +18,7 @@ import java.util.Set;
 @Repository
 @Transactional
 public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
-    Optional<HRMonthlyData> findHrMonthlyDataByVariableAndContractIdAndMonth(String variable, Long contractId, LocalDate month);
+    Optional<HRMonthlyData> findTopHrMonthlyDataByVariableAndContractIdAndMonth(String variable, Long contractId, LocalDate month);
     List<HRMonthlyData> findAllByContractIdAndMonth(Long contractId, LocalDate month);
 
 
