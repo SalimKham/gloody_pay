@@ -524,7 +524,6 @@ public class PayslipService {
         if (sectionValue == null) {
             return elementDto.get();
         }
-        sectionValue = sectionValue.setScale(2, RoundingMode.HALF_UP);
         dictionaryService().setVariable(section.getCode(), sectionValue.doubleValue());
         BigDecimal gain = null;
         BigDecimal deduction = null;
