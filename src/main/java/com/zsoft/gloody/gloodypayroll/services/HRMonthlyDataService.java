@@ -104,7 +104,7 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     private String getVariablesAsReg(List<HRMonthlySummaryDTO> summaryDTOS) {
-        AtomicReference<String> variables = new AtomicReference<>("");
+        AtomicReference<String> variables = new AtomicReference<>("-1");
         summaryDTOS.forEach(summaryDTO -> {
             List<String> dataVariables = getTobeClearedVariablesReg(summaryDTO.variable());
             if(dataVariables != null && !dataVariables.isEmpty()) {
