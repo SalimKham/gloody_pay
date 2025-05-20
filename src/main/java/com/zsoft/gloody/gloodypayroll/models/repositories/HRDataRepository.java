@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -38,9 +39,13 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
     void deleteAllByVariableAndContractIdInAndMonth(String variable, Collection<Long> contractIds, LocalDate month);
 
     @Modifying
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     @Query(value = "DELETE hr FROM hr_monthly_data hr WHERE hr.contract_id in :contract_ids AND hr.hr_variable Rlike :variable and YEAR(hr.pay_month) = YEAR(:month) AND MONTH(hr.pay_month) = MONTH(:month)", nativeQuery = true)
     void deleteAllByVariableLikeAndContractIdInAndMonth(@Param("variable") String variable, @Param("contract_ids") Collection<Long> contractIds,@Param("month") LocalDate month);
 
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    @Query(value = "SELECT COUNT(hr.id) > 0 FROM HRMonthlyData hr WHERE hr.contractId = :contract_id AND hr.month = :month AND hr.variable = 'TEMPLATE' and hr.value != -1")
+    boolean hasTemplate(@Param("contract_id") Long contractId,@Param("month") LocalDate month);
     @Query(value = """
             INSERT INTO `hr_monthly_data` (`pay_month`, `resource_id`,`contract_id`, `hr_variable`,  `hr_value`) 
             SELECT p.payment_date, p.employee_id, p.contract_id, 'DRAFT_ID', p.id FROM `payslip_setting`  p 
