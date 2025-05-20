@@ -12,10 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.successMsg;
@@ -27,6 +25,7 @@ import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.successMsg;
 public class HRMonthlyDataService extends CompanySupportService {
     public static final String MEAL_VOUCHER = "MEAL_VOUCHER";
     public static final String RESOURCE_MUTUAL = "RESOURCE_MUTUAL";
+    public static final String TEMPLATE = "TEMPLATE";
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
     private final PayslipSettingRepository payslipSettingRepository;
@@ -43,7 +42,7 @@ public class HRMonthlyDataService extends CompanySupportService {
         }
         HRMonthlyData entity = mapper.toEntity(summaryDTO);
         entity.setMonth(summaryDTO.month().withDayOfMonth(1));
-        hrDataRepository.save(entity);
+        hrDataRepository.saveAndFlush(entity);
         log.info(successMsg("HR VARIABLE SAVED: %s | CONTRACT: %s | VALUE: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.value()));
     }
 
@@ -52,11 +51,18 @@ public class HRMonthlyDataService extends CompanySupportService {
             return;
         }
         HRMonthlySummaryDTO summaryDTO = summaryDTOS.get(0);
-        hrDataRepository.deleteAllByVariableLikeAndContractIdInAndMonth(getTobeClearedVariablesReg(summaryDTO.variable()), List.of(summaryDTO.contractId()), summaryDTO.month().withDayOfMonth(1));
+        String toClearedVariables = getVariablesAsReg(summaryDTOS);
+        hrDataRepository.deleteAllByVariableLikeAndContractIdInAndMonth(toClearedVariables, List.of(summaryDTO.contractId()), summaryDTO.month().withDayOfMonth(1));
         if (summaryDTO.empty()) {
             log.info(successMsg("HR VARIABLE CLEARED: %s | CONTRACT: %s | MONTH: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month().withDayOfMonth(1)));
         }
-        summaryDTOS.forEach(this::save);
+        Set<String> savedVariables = new HashSet<>(); // make sure
+        summaryDTOS.forEach(hrMonthlySummaryDTO -> {
+            if (!savedVariables.contains(hrMonthlySummaryDTO.variable()) ) {
+                this.save(hrMonthlySummaryDTO);
+                savedVariables.add(hrMonthlySummaryDTO.variable());
+            }
+        });
     }
 
     public List<Long> getMonthlyContractIds(Long resourceId, LocalDate date) {
@@ -90,21 +96,29 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
-        hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month.withDayOfMonth(1)).ifPresent(monthlyData -> {
-            payslipSettingRepository.deleteById((long) monthlyData.getValue());
-        });
+        hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month.withDayOfMonth(1)).ifPresent(monthlyData -> payslipSettingRepository.deleteById((long) monthlyData.getValue()));
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month);
         hrDataRepository.save(new HRMonthlyData(null, resourceId, contractId, month, "TEMPLATE", templateId));
         log.info(successMsg("TEMPLATE UPDATED | CONTRACT: %s | MONTH: %s", contractId, month));
         saveDrafts(Set.of(resourceId), month);
     }
 
-    private String getTobeClearedVariablesReg(String variableName) {
+    private String getVariablesAsReg(List<HRMonthlySummaryDTO> summaryDTOS) {
+        AtomicReference<String> variables = new AtomicReference<>("");
+        summaryDTOS.forEach(summaryDTO -> {
+            List<String> dataVariables = getTobeClearedVariablesReg(summaryDTO.variable());
+            if(dataVariables != null && !dataVariables.isEmpty()) {
+                    variables.set(variables.get() + "|" + String.join("|", dataVariables));
+            }
+        });
+        return variables.get();
+    }
+    private List<String> getTobeClearedVariablesReg(String variableName) {
         if (variableName == null) {
             return null;
         }
         List<String> variables = null;
-       if (EXPENSE_VARIABLES.contains(variableName.split("_")[0])) {
+        if (EXPENSE_VARIABLES.contains(variableName.split("_")[0])) {
             variables = EXPENSE_VARIABLES;
         } else if (BONUS_VARIABLES.contains(variableName.split("_")[0])) {
             variables = BONUS_VARIABLES;
@@ -114,13 +128,13 @@ public class HRMonthlyDataService extends CompanySupportService {
             variables = List.of(MEAL_VOUCHER);
         } else if (RESOURCE_MUTUAL.contains(variableName.split("_")[0])) {
             variables = List.of(RESOURCE_MUTUAL);
-        }  else if (ABSENCE_VARIABLES.stream().anyMatch(variableName::contains)) {
+        } else if (TEMPLATE.contains(variableName.split("_")[0])) {
+            variables = List.of(TEMPLATE);
+        } else if (ABSENCE_VARIABLES.stream().anyMatch(variableName::contains)) {
             variables = ABSENCE_VARIABLES;
         }
-        if (variables != null) {
-            return String.join("|", variables);
-        }
-        return null;
+
+        return variables;
     }
 
 }
