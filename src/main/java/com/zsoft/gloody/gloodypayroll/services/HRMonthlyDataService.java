@@ -6,6 +6,10 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingReposito
 import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.HRSummaryMapper;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,6 +55,8 @@ public class HRMonthlyDataService extends CompanySupportService {
             return;
         }
         HRMonthlySummaryDTO summaryDTO = summaryDTOS.get(0);
+        boolean hasTemplate = hrDataRepository.hasTemplate(summaryDTO.contractId(), summaryDTO.month().withDayOfMonth(1));
+        summaryDTOS = summaryDTOS.stream().filter(dto -> !dto.variable().equals(TEMPLATE) || !hasTemplate).toList();
         String toClearedVariables = getVariablesAsReg(summaryDTOS);
         hrDataRepository.deleteAllByVariableLikeAndContractIdInAndMonth(toClearedVariables, List.of(summaryDTO.contractId()), summaryDTO.month().withDayOfMonth(1));
         if (summaryDTO.empty()) {
@@ -63,6 +69,25 @@ public class HRMonthlyDataService extends CompanySupportService {
                 savedVariables.add(hrMonthlySummaryDTO.variable());
             }
         });
+    }
+
+    public int deleteByFieldMatchingRegex(LocalDate month, Long contactId, String regexPattern) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+        CriteriaDelete<HRMonthlyData> delete = cb.createCriteriaDelete(HRMonthlyData.class);
+        Root<HRMonthlyData> root = delete.from(HRMonthlyData.class);
+
+        Expression<Boolean> regexExpression = cb.function("REGEXP", Boolean.class,
+                root.get("variable"),
+                cb.literal(regexPattern));
+        delete.where(
+                cb.and(
+                        cb.equal(root.get("month"), month),
+                        cb.equal(root.get("contract"), contactId),
+                        cb.isTrue(regexExpression)
+                )
+        );
+        return entityManager.createQuery(delete).executeUpdate();
     }
 
     public List<Long> getMonthlyContractIds(Long resourceId, LocalDate date) {
