@@ -14,6 +14,6 @@ import java.util.Set;
 @Repository
 public interface PayslipElementSettingRepository extends JpaRepository<PayslipSettingElement, Long> {
     @Query("SELECT NEW com.zsoft.gloody.gloodypayroll.rest.dto.PayslipFunctionElement(pse.payslipSetting.employee, pse.section.code, pse.payslipSetting.paymentDate, pse.value)  FROM PayslipSettingElement  pse WHERE pse.section.code in :codes " +
-            "AND pse.payslipSetting.employee in :resource_ids and pse.payslipSetting.closed")
+            "AND pse.value IS NOT NULL AND pse.payslipSetting.employee in :resource_ids")
     List<PayslipFunctionElement> findAllByEmployeeIdAndClosed(@Param("resource_ids") Set<Long> resourceIds, @Param("codes") List<String> codes);
 }
