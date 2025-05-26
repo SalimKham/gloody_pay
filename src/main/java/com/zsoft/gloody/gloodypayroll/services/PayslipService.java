@@ -481,7 +481,7 @@ public class PayslipService {
             }
             return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
         } catch (Exception e) {
-           log.error("ERROR WHILE CALCULATING ELEMENT {}", element.getSection(), e);
+            log.error("ERROR WHILE CALCULATING ELEMENT {}", element.getSection(), e);
         }
         return null;
     }
@@ -594,63 +594,43 @@ public class PayslipService {
         return elementDto.get();
     }
 
-    private LocalDate getFunctionStartDate(String functionName, String param) {
+    private Period getFunctionPeriod(String functionName, String[] paramList) {
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        int n = Integer.parseInt(paramList[1]);
+        n = perRequestElements().getCurrentDate().getMonthValue() < 7 ? n + 1 : n;
+        LocalDate targetYear = perRequestElements().getCurrentDate().withMonth(7).withDayOfMonth(1).minusYears(n);
         if (functionName.contains("FROM")) {
-            int n = Integer.parseInt(param);
-            if (n >= perRequestElements().getCurrentDate().getMonthValue()) {
-                return perRequestElements().getCurrentDate().withMonth(n).withYear(perRequestElements().getCurrentDate().getYear() - 1).withDayOfMonth(1);
-            } else {
-                return perRequestElements().getCurrentDate().withMonth(n).withDayOfMonth(1);
-            }
+            int nbrOfMonths = Integer.parseInt(paramList[2]);
+            startDate = targetYear;
+            endDate = startDate.plusMonths(nbrOfMonths).minusMonths(1);
         } else if (functionName.contains("BK")) {
-            int n = Integer.parseInt(param);
-            return perRequestElements().getCurrentDate().minusMonths(n).withDayOfMonth(1);
+            int nbrOfMonths = Integer.parseInt(paramList[2]);
+            endDate = targetYear.plusMonths(11);
+            startDate = endDate.minusMonths(nbrOfMonths).plusMonths(1);
         } else {
-            return LocalDate.parse(param);
+            int parsedStartMonth = Integer.parseInt(paramList[2]);
+            int parsedEndMonth = Integer.parseInt(paramList[3]);
+            startDate = parsedStartMonth < 7 ? targetYear.plusYears(1).withMonth(parsedStartMonth)
+                    : targetYear.withMonth(parsedEndMonth);
+            endDate = parsedEndMonth < 7 ? targetYear.plusYears(1).withMonth(parsedEndMonth)
+                    : targetYear.withMonth(parsedEndMonth);
         }
+        return new Period(startDate, endDate);
     }
 
     private Double calculateFunctionByName(String functionName, String[] paramList) {
-        // todo remove 'when' function if it is not needed
-        if (Objects.equals(functionName, "WHEN")) {
-            String section = paramList[0];
-            String variableName = paramList[1];
-            String value = paramList[2];
-            if (Objects.nonNull(variableName) && Objects.nonNull(value) && Objects.nonNull(section)) {
-                // here we recalculate the function by setting the variableName value to 'value'
-                LinkedHashMap<String, Object> currentVariables = new LinkedHashMap<>(dictionaryService().getAllVariables()); // first we need to save the current variables state
-                boolean currentAddElement = dictionaryService().getAddElements();
-                String currentVariableValue = String.valueOf(dictionaryService().getInitialVariables().getOrDefault(variableName, "0"));
-                dictionaryService().setAddElements(false);
-                dictionaryService().getAllVariables().clear();
-                dictionaryService().getInitialVariables().put(variableName, Double.valueOf(value));
-                dictionaryService().getAllVariables().putAll(dictionaryService().getInitialVariables());
-                calculateSection(section, null, null, null, null);
-                Double result = dictionaryService().findDoubleValue(section);
-                // now we need to restore the previous variables state
-                dictionaryService().getAllVariables().clear();
-                dictionaryService().getInitialVariables().put(variableName, currentVariableValue);
-                dictionaryService().getAllVariables().putAll(currentVariables);
-                dictionaryService().getAllVariables().putAll(dictionaryService().getInitialVariables());
-                dictionaryService().setAddElements(currentAddElement);
-                return result;
-
-            }
-            return 0.0;
-
-        }
         if (Objects.equals(functionName, "EOFMONTH")) {
             return perRequestElements().getCurrentDate().isEqual(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())) ? 1.0 : 0.0;
         } else {
-            LocalDate startDate = getFunctionStartDate(functionName, paramList[1]);
-            LocalDate endDate = functionName.equals("AVRG") ? LocalDate.parse(paramList[2]) : perRequestElements().getCurrentDate();
-            if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
+            Period period = getFunctionPeriod(functionName, paramList);
+            if (period.end().isBefore(period.start()) || period.end().isEqual(period.start())) {
                 return 0.0;
             }
             DoubleStream values = perRequestElements().getFunctionElements()
                     .stream().filter(el -> el.code().equals(paramList[0]) &&
-                            el.date().isBefore(endDate) &&
-                            !el.date().isBefore(startDate.withDayOfMonth(1)))
+                            el.date().isBefore(period.end()) &&
+                            !el.date().isBefore(period.start().withDayOfMonth(1)))
                     .mapToDouble(PayslipFunctionElement::value);
             if (functionName.contains("AVRG")) {
                 return values.average().orElse(0.0);
