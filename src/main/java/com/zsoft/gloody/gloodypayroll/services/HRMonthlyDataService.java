@@ -33,7 +33,8 @@ public class HRMonthlyDataService extends CompanySupportService {
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
     private final PayslipSettingRepository payslipSettingRepository;
-    private final static List<String> ABSENCE_VARIABLES = List.of("ABSENCE", "ABS", "DAYS_NBR_RCT", "CONTRACT_OFF_DAYS");
+    private final static List<String> CONTRACT_VARIABLES = List.of("DAYS_NBR_RCT", "CONTRACT_OFF_DAYS");
+    private final static List<String> ABSENCE_VARIABLES = List.of("ABSENCE", "ABS");
     private final static List<String> EXPENSE_VARIABLES = List.of("EXP", "EXPENSE");
     private final static List<String> BONUS_VARIABLES = List.of("BNS", "BONUS");
     private final static List<String> ADVANCE_VARIABLES = List.of("ADVS", "ADVANCE");
@@ -157,6 +158,8 @@ public class HRMonthlyDataService extends CompanySupportService {
             variables = List.of(TEMPLATE);
         } else if (ABSENCE_VARIABLES.stream().anyMatch(variableName::contains)) {
             variables = ABSENCE_VARIABLES;
+        } else if (CONTRACT_VARIABLES.stream().anyMatch(variableName::contains)) {
+            variables = CONTRACT_VARIABLES;
         }
 
         return variables;
