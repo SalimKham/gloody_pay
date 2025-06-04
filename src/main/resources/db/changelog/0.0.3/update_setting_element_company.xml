@@ -1,0 +1,15 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="update_setting_element_company" author="Salim Kham">
+      <sql>
+          delete ps from payslip_setting ps where not ps.template and not exists(select 1 from hr_monthly_data hr where hr.hr_value = ps.id and hr.hr_variable = 'TEMPLATE');
+          update payslip_setting_element pse LEFT JOIN payslip_setting ps on pse.payslip_setting_id = ps.id
+          set pse.company_id = ps.company_id;
+      </sql>
+    </changeSet>
+</databaseChangeLog>

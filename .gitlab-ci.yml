@@ -30,10 +30,19 @@ deploy_staging:
     - ssh-keyscan $STAGING_PAY_HOST >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - echo "Deploying gloody-payroll-staging.war to $STAGING_PAY_HOST"
-    - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-staging.war ec2-user@$STAGING_PAY_HOST:/opt/tomcat/webapps/
+    - echo "Stopping Tomcat using shutdown.sh..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo /opt/tomcat/bin/shutdown.sh || true'
+    - echo "Cleaning up old deployment..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo rm -rf /opt/tomcat/webapps/gloody-payroll-staging*'
+    - echo "Copying new WAR file..."
+    - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-staging.war ec2-user@$STAGING_PAY_HOST:/tmp/
+    - echo "Moving WAR file with sudo..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo mv /tmp/gloody-payroll-staging.war /opt/tomcat/webapps/'
+    - echo "Starting Tomcat using startup.sh..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$STAGING_PAY_HOST 'sudo /opt/tomcat/bin/startup.sh'
   only:
     - staging
+
   
 # UAT Environment
 build_uat:
@@ -51,17 +60,28 @@ build_uat:
 
 deploy_uat:
   stage: deploy
-  image: python:3.9.1
+  image: alpine:latest
   dependencies:
     - build_uat
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$LIGHTSAIL_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan $UAT_PAY_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
-    - pip install awscli
-    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-    - aws configure set region eu-west-3
-    - aws s3 cp ./target/gloody-payroll-uat.war s3://ssii-back/pay/Uat/Versions/gloody-payroll-uat-$CI_PIPELINE_ID.war
-    - aws elasticbeanstalk create-application-version --application-name "$AWS_EBS_APP" --version-label gloody-payroll-uat-$CI_PIPELINE_ID --source-bundle S3Bucket=ssii-back,S3Key=pay/Uat/Versions/gloody-payroll-uat-$CI_PIPELINE_ID.war
-    - aws elasticbeanstalk update-environment --application-name "$AWS_EBS_APP" --environment-name "$AWS_EBS_ENV_UAT" --version-label gloody-payroll-uat-$CI_PIPELINE_ID
+    - echo "Arrêt de Tomcat sur $UAT_PAY_HOST..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$UAT_PAY_HOST 'sudo /opt/tomcat/bin/shutdown.sh || true'
+    - echo "Suppression de l'ancien déploiement..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$UAT_PAY_HOST 'sudo rm -rf /opt/tomcat/webapps/gloody-payroll-uat*'
+    - echo "Copie du nouveau WAR dans /tmp..."
+    - scp -i ~/.ssh/id_rsa ./target/gloody-payroll-uat.war ec2-user@$UAT_PAY_HOST:/tmp/
+    - echo "Déplacement du WAR vers Tomcat avec sudo..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$UAT_PAY_HOST 'sudo mv /tmp/gloody-payroll-uat.war /opt/tomcat/webapps/'
+    - echo "Redémarrage de Tomcat..."
+    - ssh -i ~/.ssh/id_rsa ec2-user@$UAT_PAY_HOST 'sudo /opt/tomcat/bin/startup.sh'
   only:
     - uat
 

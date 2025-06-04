@@ -23,7 +23,7 @@ import java.util.Set;
 public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, Long> {
 
     @EntityGraph(value = "PayslipSetting.elements")
-    List<PayslipSetting> findAll();
+    List<PayslipSetting> findAllByDraftIsFalseAndClosedIsFalse();
 
     @Override
     @EntityGraph(value = "PayslipSetting.elements", type = EntityGraph.EntityGraphType.LOAD)
@@ -44,15 +44,14 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     Page<PayslipSetting> findAllByNameLikeAndTemplateIsTrue(String query, Pageable pageable);
 
-    @EntityGraph(value = "PayslipSetting.elements")
-    @Query("SELECT ps FROM PayslipSetting ps where ps.employee = :employee_id  AND not ps.draft AND MONTH(ps.paymentDate) = MONTH(:current_month ) AND YEAR(ps.paymentDate) = YEAR (:current_month ) order by ps.id desc ")
-    List<PayslipSetting> findByEmployeeAndCurrentMonth(@Param("employee_id") Long employeeId, @Param("current_month") LocalDate currentMonth);
-
     @Modifying
     void deleteByContractAndPaymentDate(Long contractId, LocalDate paymentDate);
 
     @Query("SELECT ps.contract FROM PayslipSetting ps WHERE ps.closed OR ps.draft AND ps.paymentDate = :month")
     Set<Long> getAllClosedContracts(@Param("month") LocalDate month);
+
+    @Query("SELECT ps.employee FROM PayslipSetting ps WHERE (ps.closed OR ps.draft) AND ps.paymentDate = :month")
+    Set<Long> getAllClosedPayslipResources(@Param("month") LocalDate month);
 
     @Query("SELECT EXISTS(SELECT ps.id FROM PayslipSetting ps WHERE ps.closed And ps.contract = :contract_id AND ps.paymentDate = :month)")
     Boolean isClosedPayslip(@Param("month") LocalDate month,@Param("contract_id") Long contractId);
