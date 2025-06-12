@@ -41,7 +41,7 @@ public class HRAsyncService extends EntityManagerService {
                 return;
             }
             month = month.withDayOfMonth(1);
-            Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
+            Set<Long> closedIds = payslipSettingRepository.getAllClosedOrDraftPayslipResources(month);
             resourceIds.removeAll(closedIds);
             if (resourceIds.isEmpty()) {
                 return;

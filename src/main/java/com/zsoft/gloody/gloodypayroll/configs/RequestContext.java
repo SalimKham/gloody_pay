@@ -2,7 +2,6 @@ package com.zsoft.gloody.gloodypayroll.configs;
 
 
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
-import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
@@ -23,7 +22,6 @@ public class RequestContext {
     private static final ThreadLocal<SectionDictionaryService> dictionaryService = new InheritableThreadLocal<>();
     private static final ThreadLocal<PerRequestElements> perRequestElements = new InheritableThreadLocal<>();
     private static final ThreadLocal<CompanySections> companySections = new InheritableThreadLocal<>();
-    private static final ThreadLocal<DefaultSectionSettings> defaultSectionSettings = new InheritableThreadLocal<>();
     private static final ThreadLocal<Map<Long, PayslipSettingDto>> templates = new InheritableThreadLocal<>();
     private static final ThreadLocal<PayslipSettingDto> defaultTemplate = new InheritableThreadLocal<>();
     private static final ThreadLocal<Map<Long, Map<String, Double>>> monthlyValues = new InheritableThreadLocal<>();
@@ -35,7 +33,6 @@ public class RequestContext {
 
     public static void initRequestContext() {
         initCompanySections();
-        initDefaultSectionSettings();
         initPerRequestElements();
     }
 
@@ -106,20 +103,6 @@ public class RequestContext {
     }
 
 
-    public static void setDefaultSectionSettings(DefaultSectionSettings dS) {
-        defaultSectionSettings.set(dS);
-    }
-
-    public static void initDefaultSectionSettings() {
-        setDefaultSectionSettings(SpringContextHolder.getBean(SectionService.class).findDefaultSections());
-    }
-
-    public static DefaultSectionSettings defaultSectionSettings() {
-        if (defaultSectionSettings.get() == null) {
-            initDefaultSectionSettings();
-        }
-        return defaultSectionSettings.get();
-    }
 
     public static void setMonthlyValues(Map<Long, Map<String, Double>> mv) {
         monthlyValues.set(mv);
@@ -165,7 +148,6 @@ public class RequestContext {
 
     public static void clear() {
         dictionaryService.remove();
-        defaultSectionSettings.remove();
         perRequestElements.remove();
         defaultTemplate.remove();
         monthlyValues.remove();
