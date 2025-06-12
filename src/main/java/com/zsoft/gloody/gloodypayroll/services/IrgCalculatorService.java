@@ -12,8 +12,8 @@ public class IrgCalculatorService {
     }
 
     public static void main(String[] args) {
-        double b = 72839.5;
-        double irg = new IrgCalculatorService().calculateIrg( 126259.01, 2023, false);
+        double b = .5;
+        double irg = new IrgCalculatorService().calculateIrg( 72839.51, 2023, false);
         System.out.println("irg: "+  irg);
     }
 

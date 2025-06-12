@@ -87,51 +87,5 @@ public class Section extends CompanySupport {
             """)
     private Boolean referenced;
 
-    public boolean isSalary() {
-        return type != null && type.equals(SectionType.SALARY);
-    }
 
-    public boolean isTotal() {
-        return type != null && type.equals(SectionType.TOTAL);
-    }
-
-    public boolean isIntermediate() {
-        return type != null && type.equals(SectionType.INTERMEDIATE);
-    }
-
-    public boolean isGain() {
-        return type != null && type.equals(SectionType.GAIN);
-    }
-
-    public boolean isDeduction() {
-        return type != null && type.equals(SectionType.DEDUCTION);
-    }
-
-    /* public boolean isContribution() {
-        return Objects.equals(category, SectionCategory.TAXABLE_CONTRIBUTORY);
-    }
-
-    public boolean isTaxationNotContribution() {
-        return Objects.equals(category, SectionCategory.TAXABLE_NOT_CONTRIBUTORY);
-    }
-
-    public boolean isContributionNotTaxation() {
-        return Objects.equals(category, SectionCategory.NOT_TAXABLE_CONTRIBUTORY);
-    }
-
-    public boolean notTaxationNotContribution() {
-        return Objects.equals(category, SectionCategory.NOT_TAXABLE_NOT_CONTRIBUTORY);
-    }
-
-    public boolean isCharge() {
-        return Objects.equals(category, SectionCategory.CHARGE);
-    }
-
-    public boolean isGrossSalary() {
-        return Objects.equals(category, SectionCategory.GROSS);
-    }
-
-    public boolean isTaxation() {
-        return category != null && category.equals(SectionCategory.TAXATION);
-    }*/
 }
