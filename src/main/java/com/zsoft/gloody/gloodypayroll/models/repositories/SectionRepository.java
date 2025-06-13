@@ -17,7 +17,8 @@ public interface SectionRepository extends JpaRepository<Section, Long>, JpaSpec
     @Query("SELECT distinct new com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry(s.code,s) FROM Section s WHERE s.company = :company_id" )
     List<SectionMapEntry> findAllByCompanyAsMap(@Param("company_id") Long companyId);
 
-    Optional<Section> findByCode(String code);
+
+    Boolean existsByCodeAndCompany(String code, Long company_id);
 
     @Query("SELECT s FROM Section  s WHERE s.code LIKE :code AND s.company = :companyId")
     Optional<Section> findByCodeAndCompany(@Param("code")  String  code, @Param("companyId") Long CompanyId);
