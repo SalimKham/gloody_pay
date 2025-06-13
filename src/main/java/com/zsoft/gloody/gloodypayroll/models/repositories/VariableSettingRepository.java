@@ -12,8 +12,7 @@ import java.util.Optional;
 @Repository
 @Transactional
 public interface VariableSettingRepository extends JpaRepository<VariableSetting, Long> {
-    boolean existsByKeyAndCompanyAndIdNot(String key, Long company, Long id);
-    boolean existsBySourceAndCompanyAndIdNot(String source, Long company, Long id);
+    boolean existsByKeyAndCompany(String key, Long company);
     void deleteBySource(String key);
     Optional<VariableSetting> findTopBySource(String source);
     void deleteAllBySourceIsNotNullAndCompany(Long company);

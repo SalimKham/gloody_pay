@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface PayslipConfigRepository extends JpaRepository<SectionCategory, Long> {
+     Boolean existsByCodeAndCompany(String code, Long companyId);
      @Nonnull
      @OrderBy("code asc")
      List<SectionCategory> findByCompany(Long company);

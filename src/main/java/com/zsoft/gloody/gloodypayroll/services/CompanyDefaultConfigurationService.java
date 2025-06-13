@@ -39,6 +39,7 @@ public class CompanyDefaultConfigurationService {
         stringListConverter = new StringListConverter();
         initDefaultVariables(companyId, data.get("default-variables"));
         initDefaultCategories(companyId, data.get("default-categories"));
+        initDefaultLabels(companyId, data.get("default-labels"));
         initSections(companyId, data.get("default-sections"));
         initDefaultTemplates(companyId, data.get("default-templates"));
     }
@@ -52,11 +53,14 @@ public class CompanyDefaultConfigurationService {
             if (!obj.isObject() || !obj.has("key") || !obj.has("formula")) {
                 continue;
             }
+            if (variableSettingRepository.existsByKeyAndCompany(obj.get("key").asText(), companyId)) {
+                continue;
+            }
             VariableSetting variableSetting = VariableSetting.builder()
                     .key(obj.get("key").asText())
                     .formula(obj.get("formula").asText())
                     .label(obj.has("label") ? obj.get("label").asText() : null)
-                    .label(obj.has("source") ? obj.get("source").asText() : null)
+                    .source(obj.has("source") ? obj.get("source").asText() : null)
                     .description(obj.has("description") ? obj.get("description").asText() : null)
                     .updatedAt(LocalDateTime.now())
                     .company(companyId)
@@ -78,10 +82,12 @@ public class CompanyDefaultConfigurationService {
             if (!obj.isObject() || !obj.has("key") || !obj.has("label")) {
                 continue;
             }
+            if (labelSettingRepository.existsByKeyAndCompany(obj.get("key").asText(), companyId)) {
+                continue;
+            }
             LabelSetting labelSetting = LabelSetting.builder()
                     .key(obj.get("key").asText())
                     .label(obj.get("label").asText())
-                    .label(obj.has("source") ? obj.get("source").asText() : null)
                     .updatedAt(LocalDateTime.now())
                     .company(companyId)
                     .build();
@@ -107,6 +113,9 @@ public class CompanyDefaultConfigurationService {
             if (!obj.isObject() || !obj.has("name") || !obj.has("code")) {
                 continue;
             }
+            if (categoryRepository.existsByCodeAndCompany(obj.get("code").asText(), companyId)) {
+                continue;
+            }
             SectionCategory category = SectionCategory.builder()
                     .name(obj.get("name").asText())
                     .code(obj.get("code").asText())
@@ -128,6 +137,9 @@ public class CompanyDefaultConfigurationService {
             if (!obj.isObject() || !obj.has("code") || !obj.has("label" ) || !obj.has("category") || !obj.has("type")) {
                 continue;
             }
+            if (sectionRepository.existsByCodeAndCompany(obj.get("code").asText(), companyId)) {
+                continue;
+            }
             Section section = Section.builder()
                     .label(obj.get("label").asText())
                     .code(obj.get("code").asText())
@@ -136,7 +148,7 @@ public class CompanyDefaultConfigurationService {
                     .type(SectionType.valueOf(obj.get("type").asText()))
                     .baseFormula(obj.has("base_formula") ? obj.get("base_formula").asText() : null)
                     .rateFormula(obj.has("rate_formula") ? obj.get("rate_formula").asText() : null)
-                    .labelKeys(obj.has("rate_formula") ? stringListConverter.convertToEntityAttribute(obj.get("rate_formula").asText()) : null)
+                    .labelKeys(obj.has("label_keys") ? stringListConverter.convertToEntityAttribute(obj.get("label_keys").asText()) : null)
                     .valueFormula(obj.has("value_formula") ? obj.get("value_formula").asText() : null)
                     .description(obj.has("description") ? obj.get("description").asText() : null)
                     .ratePercent(obj.has("rate_percent") && obj.get("rate_percent").asBoolean())
@@ -150,6 +162,9 @@ public class CompanyDefaultConfigurationService {
     }
 
     private void initDefaultTemplates(Long companyId, JsonNode data) {
+        if(payslipSettingRepository.existsByCompanyAndByDefaultIsTrue(companyId)) {
+            return;
+        }
         if (data == null) {
             return;
         }

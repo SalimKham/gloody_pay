@@ -21,11 +21,7 @@ public class SectionsConfigService extends CompanySupportService {
 
     public void initCompanyDefaultConfiguration(List<Long> ids) {
         disableFilters();
-        ids.forEach(id -> {
-            if (payslipConfigRepository.findByCompany(id).isEmpty()) {
-                companyDefaultConfigurationService.initCompanyConfiguration(id);
-            }
-        });
+        ids.forEach(companyDefaultConfigurationService::initCompanyConfiguration);
     }
 
 

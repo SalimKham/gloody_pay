@@ -25,6 +25,7 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @EntityGraph(value = "PayslipSetting.elements")
     List<PayslipSetting> findAllByDraftIsFalseAndClosedIsFalse();
 
+   Boolean existsByCompanyAndByDefaultIsTrue(Long company);
     @Override
     @EntityGraph(value = "PayslipSetting.elements", type = EntityGraph.EntityGraphType.LOAD)
     @Query("SELECT ps FROM PayslipSetting ps  WHERE ps.id = :id AND (ps.draft IS NULL OR NOT ps.draft)")
