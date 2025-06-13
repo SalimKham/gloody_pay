@@ -36,7 +36,7 @@
       "formula": "120"
     },
     {
-      "key": "WORKING_HOURS_NBR",
+      "key": "V_NBH_TRAV",
       "source": "WORKING_HOURS_NBR",
       "formula": "151.67"
     },
@@ -70,13 +70,6 @@
       "source": "HLD",
       "description": "Les Jours fériés",
       "label": "Les Jours fériés",
-      "formula": "0"
-    },
-    {
-      "key": "V_PR_TRSP",
-      "source": "BONUS_162",
-      "description": "Montant de la prime de type \"Prime de transport\"",
-      "label": "Prime (Prime de transport)",
       "formula": "0"
     },
     {
@@ -276,7 +269,6 @@
       "base_formula": "R_BRUT_IMPOS",
       "rate_formula": "10",
       "value_formula": "R_BRUT_IMPOS-BASE*RATE",
-      "label_keys": "",
       "rate_percent": true
     },
     {
@@ -298,7 +290,6 @@
       "base_formula": "R_BRUT_IMPOS",
       "rate_formula": null,
       "value_formula": "IRG(BASE)*IMP_ARR/R_ABS_SABS_ARR",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -309,7 +300,7 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "BNS_AID",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -320,19 +311,18 @@
       "base_formula": "R_SAL_IMP_SABS",
       "rate_formula": "10",
       "value_formula": "R_SAL_IMP_SABS-BASE*RATE",
-      "label_keys": "",
+     
       "rate_percent": true
     },
     {
       "code": "R_BRUT",
       "label": "Salaire de poste",
-     
       "type": "INTERMEDIATE",
       "category": "C007",
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "V_SALAIRE+LBL_CR_COTI",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -343,7 +333,6 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "(V_SALAIRE+LBL_CR_IMP+LBL_CR_IMP10-R_RET_SS-R_DED_SS)",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -354,7 +343,6 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "LBL_CR_IMP10-(0.09*LBL_CR_IMP10)",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -388,7 +376,7 @@
       "base_formula": "R_SALH*0.25",
       "rate_formula": "V_HEUR_SUP25",
       "value_formula": "BASE*RATE",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -399,7 +387,7 @@
       "base_formula": "R_SALH*0.5",
       "rate_formula": "V_HEUR_SUP50",
       "value_formula": "BASE*RATE",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -421,7 +409,7 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "LBL_CR_IMP10-(0.09*LBL_CR_IMP10)",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -454,7 +442,7 @@
       "base_formula": "R_DED_SS",
       "rate_formula": "10",
       "value_formula": "BASE*RATE",
-      "label_keys": "",
+     
       "rate_percent": true
     },
     {
@@ -465,7 +453,7 @@
       "base_formula": "R_SAL_IMP_SABS",
       "rate_formula": null,
       "value_formula": "IRG(BASE)",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -488,7 +476,7 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "R_SAL_NET+LBL_CR_EXN",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -733,7 +721,6 @@
       "base_formula": "R_BRUT_IMPOS",
       "rate_formula": null,
       "value_formula": "IRG(BASE)*(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -854,7 +841,6 @@
       "base_formula": "R_BRUT",
       "rate_formula": "9",
       "value_formula": "BASE*RATE",
-      "label_keys": "",
       "rate_percent": true
     },
     {
@@ -865,7 +851,7 @@
       "base_formula": "V_SALAIRE/V_NBR_JOUR",
       "rate_formula": "V_NBR_JOUR",
       "value_formula": "BASE*RATE",
-      "label_keys": "",
+     
       "rate_percent": false
     },
     {
@@ -877,7 +863,6 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "V_SALAIRE/V_NBH",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -888,7 +873,6 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "V_SALAIRE/V_NBR_JOUR",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -900,7 +884,6 @@
       "base_formula": "V_SALAIRE/V_NBJ_OUVRES",
       "rate_formula": "V_NBJ_OUVRES",
       "value_formula": "BASE*RATE",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -911,7 +894,6 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "R_BRUT+R_RET_SS+LBL_CR_IMP-LBL_CR_COTI",
-      "label_keys": "",
       "rate_percent": false
     },
     {
@@ -922,18 +904,16 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "R_BRUT_IMPOS-R_RET_IRG+(R_IMP10_SS-R_IRG_10)",
-      "label_keys": "",
       "rate_percent": false
     },
     {
-      "code": "R_WORKING_DAYS",
+      "code": "R_NBJ_TRAV",
       "label": "WORKING DAYS ",
       "type": "INTERMEDIATE",
       "category": "C007",
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "V_NBJ_OUVRABL",
-      "label_keys": "",
       "rate_percent": false
     }
   ],
