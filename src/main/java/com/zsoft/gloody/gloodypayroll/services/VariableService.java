@@ -42,7 +42,13 @@ public class VariableService extends CompanySupportService {
             key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
     )
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
-        variableRepository.saveAll(variables.stream().filter(variableSettingDto -> !variableRepository.existsByKeyAndCompany(variableSettingDto.getKey(), variableSettingDto.getCompany()))
+        variableRepository.saveAll(variables.stream().filter(variableSettingDto ->
+                {
+                    if (variableSettingDto.getId() == null) {
+                        return !variableRepository.existsByKeyAndCompany(variableSettingDto.getKey(), variableSettingDto.getCompany());
+                    }
+                    return !variableRepository.existsByKeyAndCompanyAndIdNot(variableSettingDto.getKey(), variableSettingDto.getCompany(), variableSettingDto.getId());
+                })
                 .peek(variableSettingDto -> {
                     if (Objects.nonNull(variableSettingDto.getSource())) {
                         variableRepository.findTopBySource(variableSettingDto.getSource()).ifPresent(v -> variableSettingDto.setId(v.getId()));
