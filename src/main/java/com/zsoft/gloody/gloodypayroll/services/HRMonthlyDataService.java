@@ -30,6 +30,7 @@ public class HRMonthlyDataService extends CompanySupportService {
     public static final String MEAL_VOUCHER = "MEAL_VOUCHER";
     public static final String RESOURCE_MUTUAL = "RESOURCE_MUTUAL";
     public static final String TEMPLATE = "TEMPLATE";
+    public static final String EXTRA_HOURS = "EXTRA_HOURS";
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
     private final PayslipSettingRepository payslipSettingRepository;
@@ -160,6 +161,8 @@ public class HRMonthlyDataService extends CompanySupportService {
             variables = ABSENCE_VARIABLES;
         } else if (CONTRACT_VARIABLES.stream().anyMatch(variableName::contains)) {
             variables = CONTRACT_VARIABLES;
+        } else if(variableName.contains(EXTRA_HOURS)) {
+            variables =List.of(EXTRA_HOURS);
         }
 
         return variables;
