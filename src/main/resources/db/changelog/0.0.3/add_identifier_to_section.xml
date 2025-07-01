@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add_identifier_to_section" author="Salim Kham">
+        <addColumn tableName="section">
+            <column name="identifier" afterColumn="code" type="int">
+               <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            SET @current_company := NULL;
+            SET @row_number := 1000;
+
+            UPDATE section s
+                JOIN (
+                SELECT id,
+                company_id,
+                @row_number := IF(@current_company = company_id, @row_number + 1, 1000) AS new_identifier,
+                @current_company := company_id
+                FROM section
+                ORDER BY company_id, id
+                ) AS sub
+            ON s.id = sub.id
+                SET s.identifier = sub.new_identifier;
+        </sql>
+        <addUniqueConstraint constraintName="section_identifier_company_unique_constraint" tableName="section" columnNames="identifier,company_id"/>
+    </changeSet>
+</databaseChangeLog>

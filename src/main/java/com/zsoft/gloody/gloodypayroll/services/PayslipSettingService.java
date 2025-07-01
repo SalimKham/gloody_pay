@@ -45,9 +45,12 @@ public class PayslipSettingService extends CompanySupportService {
             boolean updateEmployeeMonthlyTemplate = false;
             if (dto.isTemplate()) {
                 payslipSetting.setPaymentDate(null);
+            } else if(payslipSetting.getPaymentDate()!= null) {
+                payslipSetting.setPaymentDate(payslipSetting.getPaymentDate().withDayOfMonth(1));
+                dto.setPaymentDate(dto.getPaymentDate().withDayOfMonth(1));
             }
             if (resourceId != null && Objects.nonNull(dto.getPaymentDate()) && Objects.nonNull(dto.getContract())) {
-                payslipSettingRepository.deleteByContractAndPaymentDate(dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1));
+                payslipSettingRepository.deleteByContractAndPaymentDate(dto.getContract().getId(), payslipSetting.getPaymentDate());
                 payslipSetting.setId(null);
                 payslipSetting.setEmployee(resourceId);
                 payslipSetting.setPayslipDetail(null);

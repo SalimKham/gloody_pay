@@ -18,7 +18,10 @@ import java.util.List;
 @Getter
 @ToString
 @Entity
-@Table(name = "section", uniqueConstraints = @UniqueConstraint(name = "section_code_company_unique_constraint", columnNames = {"code", "company_id"}))
+@Table(name = "section", uniqueConstraints ={
+        @UniqueConstraint(name = "section_code_company_unique_constraint", columnNames = {"code", "company_id"}),
+        @UniqueConstraint(name = "section_identifier_company_unique_constraint", columnNames = {"code", "company_id"})
+})
 public class Section extends CompanySupport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +30,9 @@ public class Section extends CompanySupport {
 
     @Column(name = "code")
     private String code;
+
+    @Column(name = "identifier", nullable = false)
+    private Integer identifier;
 
     @Column(name = "label")
     private String label;
