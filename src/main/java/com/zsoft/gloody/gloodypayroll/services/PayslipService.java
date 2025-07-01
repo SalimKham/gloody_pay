@@ -7,14 +7,17 @@ import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
+import com.zsoft.gloody.gloodypayroll.models.repositories.CompanyRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.*;
+import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
+import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +64,7 @@ public class PayslipService {
     private final HRDataRepository hrDataRepository;
     private final VariableService variableService;
     private final EmployeeMapper employeeMapper;
+    private final CompanyMapper companyMapper;
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
         {
             put(SectionNature.NOT_TAXABLE_CONTRIBUTORY, "NTC");
@@ -71,6 +75,7 @@ public class PayslipService {
     };
     private final EmployeeRepository employeeRepository;
     private final PayslipDraftService payslipDraftService;
+    private final CompanyRepository companyRepository;
 
     public List<Long> closePayslips(Set<Long> resourceIds, LocalDate month) {
         List<PayslipSettingDto> result = new ArrayList<>();
@@ -144,19 +149,6 @@ public class PayslipService {
         return failedIds;
     }
 
-    public PayslipElementDto templateElementToCalculatedElement(PayslipSettingElementDto templateElement) {
-        PayslipElementDto calculatedElement = new PayslipElementDto();
-        SectionDto sectionDto = companySections().findByCode(templateElement.getSection()).get();
-        calculatedElement.setCode(sectionDto.getCode());
-        calculatedElement.setTotal(sectionDto.isIntermediate());
-        calculatedElement.setDescription(sectionDto.getDescription());
-        calculatedElement.setLabel(sectionDto.getLabel());
-        calculatedElement.setBase(BigDecimal.valueOf(templateElement.getBaseValue()));
-        calculatedElement.setRate(BigDecimal.valueOf(templateElement.getRateValue()));
-        calculatedElement.setGain(templateElement.getValue() > 0 ? BigDecimal.valueOf(templateElement.getValue()) : null);
-        calculatedElement.setDeduction(templateElement.getValue() < 0 ? BigDecimal.valueOf(templateElement.getValue()) : null);
-        return calculatedElement;
-    }
 
     public static void calculatedElementToTemplateElement(PayslipSettingElementDto templateElement, PayslipElementDto calculatedElement) {
         if (calculatedElement == null) {
@@ -183,10 +175,12 @@ public class PayslipService {
         if (calculatedPayslip == null || calculatedPayslip.template() == null) {
             return null;
         }
+        CompanyDto companyDto  = companyRepository.findById(SecurityUtils.getCurrentCompanyId()).map(companyMapper::toDto).orElse(null);
         Locale locale = Locale.getDefault();
         Context context = new Context(locale);
         context.setVariable("locale", locale);
         context.setVariable("elements", calculatedPayslip.calculatedElements());
+        employeeDto.setCompany(companyDto);
         templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale).forEach(context::setVariable);
         return templateEngine.process("payslip/template", context);
     }
@@ -493,6 +487,7 @@ public class PayslipService {
     private PayslipElementDto evaluateSectionFormulas(SectionDto section, String label, Double baseValue, Double rateValue, Double value) {
         AtomicReference<PayslipElementDto> elementDto = new AtomicReference<>(new PayslipElementDto());
         elementDto.get().setCode(section.getCode());
+        elementDto.get().setIdentifier(SECTIONS_PREFIX + section.getIdentifier());
         elementDto.get().setLabel(label == null ? section.getLabel() : label);
         elementDto.get().setDescription(section.getDescription());
         elementDto.get().setTotal(section.isIntermediate());
@@ -546,6 +541,7 @@ public class PayslipService {
                 if (section.isTotal()) {
                     elementDto.set(getTotalElement(label == null ? section.getLabel() : label));
                     elementDto.get().setCode(section.getCode());
+                    elementDto.get().setIdentifier(SECTIONS_PREFIX + section.getIdentifier());
                     if (dictionaryService().getAddElements()) {
                         addCalculatedElement(elementDto.get());
                     }

@@ -38,6 +38,14 @@ public class SectionService extends CompanySupportService {
                 .map(this.sectionMapper::toDto);
     }
 
+    public Boolean existByIdentifier(Integer identifier) {
+        return this.sectionRepository.existsByIdentifierAndCompany(identifier, SecurityUtils.getCurrentCompanyId());
+    }
+
+    public Integer getNextIdentifier() {
+        return this.sectionRepository.findTopByCompanyOrderByIdentifierDesc(SecurityUtils.getCurrentCompanyId()).map(section -> section.getIdentifier() + 1).orElse(9999);
+    }
+
     public List<SectionDto> findAll() {
         return this.sectionRepository.findAll()
                 .stream()
@@ -120,6 +128,9 @@ public class SectionService extends CompanySupportService {
     public SectionDto save(SectionDto dto) {
         try {
             Section section = this.sectionMapper.toEntity(dto);
+            if(section.getIdentifier() == null) {
+                section.setIdentifier(getNextIdentifier());
+            }
             section = this.sectionRepository.save(section);
             cacheService.updateSectionMapCache();
             return this.sectionMapper.toDto(section);

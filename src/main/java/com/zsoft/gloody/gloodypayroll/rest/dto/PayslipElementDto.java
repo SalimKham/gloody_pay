@@ -15,6 +15,7 @@ public class PayslipElementDto {
     private String code;
     private String label;
     private String description;
+    private String identifier;
     private BigDecimal base;
     private BigDecimal rate;
     private BigDecimal gain;

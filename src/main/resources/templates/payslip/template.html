@@ -253,24 +253,8 @@
     </div>
     <div class="payslip-header">
         <div class="payslip-header-left">
-            <h3 th:if="${cmp_name != null}" th:text="${cmp_name}"></h3>
+            <h3  th:text="${cmp_name}"></h3>
             <p th:if="${cmp_adr != null}" th:text="${cmp_adr}"></p>
-            <table class="info-table" border="0" cellpadding="0" cellspacing="0">
-                <tbody>
-                <tr th:if="${cmp_registration_number != null}">
-                    <td>
-                        <span th:text="#{tpl.payroll.v1.company_info.registration_number}"></span>
-                        <span th:text="${cmp_registration_number}"></span>
-                    </td>
-                </tr>
-                <tr th:if="${cmp_tax_number != null}">
-                    <td>
-                        <span th:text="#{tpl.payroll.v1.company_info.tax_number}"></span>
-                        <span th:text="${cmp_tax_number}"></span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
         </div>
         <div class="payslip-header-center">
             <h3 th:if="${emp_full_name != null}" th:text="${emp_full_name}"></h3>
@@ -319,14 +303,6 @@
             <h3 th:text="#{tpl.payroll.v1.employee_info.title}"></h3>
             <table class="info-table" border="0" cellpadding="0" cellspacing="0">
                 <tbody>
-                <tr th:if="${emp_job_classification != null}">
-                    <td th:text="#{tpl.payroll.v1.employee_info.classification}"></td>
-                    <td><span th:text="${emp_job_classification}"></span></td>
-                </tr>
-                <tr th:if="${emp_job_category != null}">
-                    <td th:text="#{tpl.payroll.v1.employee_info.job_category}"></td>
-                    <td><span th:text="${emp_job_category}"></span></td>
-                </tr>
                 <tr th:if="${emp_job_title != null}">
                     <td th:text="#{tpl.payroll.v1.employee_info.job}"></td>
                     <td><span th:text="${emp_job_title}"></span></td>
@@ -338,14 +314,6 @@
                 <tr th:if="${emp_base_salary != null}">
                     <td th:text="#{tpl.payroll.v1.employee_info.base_salary}"></td>
                     <td><span th:text="${#numbers.formatDecimal(emp_base_salary, 1, 2)}"></span> <small th:text="${currency}"></small></td>
-                </tr>
-                <tr th:if="${monthly_duration != null}">
-                    <td th:text="#{tpl.payroll.v1.employee_info.monthly_duration}"></td>
-                    <td><span th:text="${#numbers.formatDecimal(monthly_duration, 1, 2)}"></span> <small>h</small></td>
-                </tr>
-                <tr th:if="${hourly_rate != null}">
-                    <td th:text="#{tpl.payroll.v1.employee_info.hourly_rate}"></td>
-                    <td><span th:text="${#numbers.formatDecimal(hourly_rate, 1, 2)}"></span> <small th:text="${currency}"></small></td>
                 </tr>
                 </tbody>
             </table>
@@ -386,7 +354,7 @@
                     <td th:if="${show_employer_col}" class="align-right"></td>
                 </tr>
                 <tr th:if="${!element.total}">
-                    <td th:text="${element.code}" class="align-center"></td>
+                    <td th:text="${element.identifier}" class="align-center"></td>
                     <td class="align-left">
                         <span th:text="${element.label}"></span>
                         <small th:if="${element.description != null && !element.description.isEmpty()}" th:text="${'(' + element.description + ')'}"></small>
