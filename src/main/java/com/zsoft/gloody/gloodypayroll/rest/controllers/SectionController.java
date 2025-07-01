@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
 import com.zsoft.gloody.gloodypayroll.services.SectionService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @AllArgsConstructor
@@ -35,6 +35,16 @@ public class SectionController {
         return sectionService.findByCode(code)
                 .map(result -> ResponseEntity.ok().body(result))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/exists_by_identifier/{identifier}")
+    public ResponseEntity<Boolean> existsByIdentifier(@PathVariable("identifier") Integer identifier) {
+        return  ResponseEntity.ok().body(sectionService.existByIdentifier(identifier));
+    }
+
+    @GetMapping("/next_identifier")
+    public ResponseEntity<Integer> existsByIdentifier() {
+        return  ResponseEntity.ok().body(sectionService.getNextIdentifier());
     }
 
     @PostMapping

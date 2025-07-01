@@ -18,6 +18,7 @@ import java.util.List;
 public class SectionDto {
     private Long id;
     private String code;
+    private Integer identifier;
     private String label;
     private String description;
     @Enumerated(EnumType.STRING)

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public class Constants {
     public static final String BASE_SALARY = "BASE_SALARY";
+    public static final String SECTIONS_PREFIX = "R";
     public static final String IS_DAILY_RATE = "IS_DAILY_RATE";
     public static final String IS_HOURLY_RATE = "IS_HOURLY_RATE";
     public static final String DAYS_BY_WEEK = "DAYS_BY_WEEK";

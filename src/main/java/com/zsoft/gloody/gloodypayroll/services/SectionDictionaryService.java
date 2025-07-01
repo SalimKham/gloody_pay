@@ -16,7 +16,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @RequiredArgsConstructor
 public class SectionDictionaryService extends CompanySupportService {
-    private LinkedHashMap<String, Object> variables;
+    private LinkedHashMap<String, Object> variables =  new LinkedHashMap<>();
     private LinkedHashMap<String, Object> initialVariables = new LinkedHashMap<>();
     private boolean addElements = true;
 
@@ -34,7 +34,6 @@ public class SectionDictionaryService extends CompanySupportService {
 
     @PostConstruct
     private void initVariables() {
-        variables = new LinkedHashMap<>();
         setVariable(IRG_YEAR, LocalDate.now().getYear());
     }
 
