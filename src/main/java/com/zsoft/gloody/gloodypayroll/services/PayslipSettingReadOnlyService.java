@@ -47,7 +47,6 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
     }
 
     public Optional<PayslipSettingDto> findDraftById(Long id) {
-        System.out.println("GETTING DRAFT TEMPLATE "+ id);
         return this.payslipSettingRepository.findDraftPayslip(id).map(this::toDto);
     }
 

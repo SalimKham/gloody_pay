@@ -38,6 +38,9 @@ public class PayslipSettingDto implements Cloneable{
     @Builder.Default
     private Boolean draft = false;
 
+    @Builder.Default
+    private Boolean referenced = false;
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         PayslipSettingDto cloned = (PayslipSettingDto) super.clone();
