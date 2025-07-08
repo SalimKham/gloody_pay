@@ -29,7 +29,7 @@ public class PayslipSettingDto implements Cloneable{
     private boolean showIntermediate = false;
     @Builder.Default
     private boolean showZero= true;
-    @Builder.Default
+
     private LocalDate paymentDate = LocalDate.now();
     private boolean closed;
     private boolean approved;
@@ -37,6 +37,9 @@ public class PayslipSettingDto implements Cloneable{
     private PayslipDetailDto payslipDetail;
     @Builder.Default
     private Boolean draft = false;
+
+    @Builder.Default
+    private Boolean referenced = false;
 
     @Override
     public Object clone() throws CloneNotSupportedException {

@@ -25,7 +25,8 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @EntityGraph(value = "PayslipSetting.elements")
     List<PayslipSetting> findAllByDraftIsFalseAndClosedIsFalse();
 
-   Boolean existsByCompanyAndByDefaultIsTrue(Long company);
+    Boolean existsByCompanyAndByDefaultIsTrue(Long company);
+
     @Override
     @EntityGraph(value = "PayslipSetting.elements", type = EntityGraph.EntityGraphType.LOAD)
     @Query("SELECT ps FROM PayslipSetting ps  WHERE ps.id = :id AND (ps.draft IS NULL OR NOT ps.draft)")
@@ -37,7 +38,7 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     @Nonnull
     @EntityGraph(value = "PayslipSetting.elements")
-    Optional<PayslipSetting> findTopByByDefaultOrderByIdAsc(boolean template);
+    Optional<PayslipSetting> findTopByTemplateAndByDefaultOrderByIdAsc(boolean template, boolean byDefault);
 
     @Modifying
     @Query("UPDATE PayslipSetting  p SET p.byDefault = CASE WHEN p.id =:template_id THEN true ELSE false END")
@@ -46,7 +47,11 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     Page<PayslipSetting> findAllByNameLikeAndTemplateIsTrue(String query, Pageable pageable);
 
     @Modifying
-    void deleteByContractAndPaymentDate(Long contractId, LocalDate paymentDate);
+    void deleteByContractAndPaymentDateAndIdNot(Long contractId, LocalDate paymentDate, Long id);
+
+    Optional<PayslipSetting> findTopByContractAndPaymentDateAndByDefaultOrderByIdDesc(Long contractId, LocalDate paymentDate, Boolean byDefault);
+
+    Optional<PayslipSetting> findTopByContractAndPaymentDateOrderByIdDesc(Long contractId, LocalDate paymentDate);
 
     @Query("SELECT ps.contract FROM PayslipSetting ps WHERE ps.closed OR ps.draft AND ps.paymentDate = :month")
     Set<Long> getAllClosedContracts(@Param("month") LocalDate month);
@@ -61,7 +66,7 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     Set<Long> getAllDraftPayslipResources(@Param("month") LocalDate month);
 
     @Query("SELECT EXISTS(SELECT ps.id FROM PayslipSetting ps WHERE ps.closed And ps.contract = :contract_id AND ps.paymentDate = :month)")
-    Boolean isClosedPayslip(@Param("month") LocalDate month,@Param("contract_id") Long contractId);
+    Boolean isClosedPayslip(@Param("month") LocalDate month, @Param("contract_id") Long contractId);
 
     @Modifying
     void deleteAllByContractInAndPaymentDateAndDraftIsTrue(Collection<Long> contractIds, LocalDate paymentDate);
