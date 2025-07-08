@@ -31,12 +31,9 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
             key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
     )
     public Optional<PayslipSettingDto> findDefaultTemplate() {
-        return this.payslipSettingRepository.findTopByByDefaultOrderByIdAsc(true).map(this::toDto);
+        return this.payslipSettingRepository.findTopByTemplateAndByDefaultOrderByIdAsc(true, true).map(this::toDto);
     }
 
-    public Optional<PayslipSettingDto> findById(Long id, Long employeeId, LocalDate date, Long contractId) {
-        return this.payslipSettingRepository.findById(id).map(this::toDto);
-    }
 
     @Cacheable(
             cacheNames = "company_template_by_id",
@@ -47,7 +44,6 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
     }
 
     public Optional<PayslipSettingDto> findDraftById(Long id) {
-        System.out.println("GETTING DRAFT TEMPLATE "+ id);
         return this.payslipSettingRepository.findDraftPayslip(id).map(this::toDto);
     }
 

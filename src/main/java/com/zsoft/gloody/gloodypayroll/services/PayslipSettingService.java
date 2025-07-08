@@ -41,22 +41,24 @@ public class PayslipSettingService extends CompanySupportService {
     })
     public PayslipSettingDto save(PayslipSettingDto dto, Long resourceId) {
         try {
-            PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
-            boolean updateEmployeeMonthlyTemplate = false;
-            if (dto.isTemplate()) {
-                payslipSetting.setPaymentDate(null);
-            } else if(payslipSetting.getPaymentDate()!= null) {
-                payslipSetting.setPaymentDate(payslipSetting.getPaymentDate().withDayOfMonth(1));
+            if(dto.getPaymentDate()!= null) {
                 dto.setPaymentDate(dto.getPaymentDate().withDayOfMonth(1));
             }
+            PayslipSetting payslipSetting = this.payslipSettingMapper.toEntity(dto);
+            boolean updateEmployeeMonthlyTemplate = false;
             if (resourceId != null && Objects.nonNull(dto.getPaymentDate()) && Objects.nonNull(dto.getContract())) {
-                payslipSettingRepository.deleteByContractAndPaymentDate(dto.getContract().getId(), payslipSetting.getPaymentDate());
-                payslipSetting.setId(null);
+
+                Long id = dto.isByDefault() ?  payslipSettingRepository.findTopByContractAndPaymentDateOrderByIdDesc(dto.getContract().getId(), payslipSetting.getPaymentDate()).map(PayslipSetting::getId).orElse(null) :
+                        payslipSettingRepository.findTopByContractAndPaymentDateAndByDefaultOrderByIdDesc(dto.getContract().getId(), payslipSetting.getPaymentDate(), false).map(PayslipSetting::getId).orElse(null);
+                if(dto.isByDefault() && Objects.nonNull(id)) {
+                    payslipSettingRepository.deleteByContractAndPaymentDateAndIdNot(dto.getContract().getId(), payslipSetting.getPaymentDate(), id);
+                }
+                payslipSetting.setId(id);
                 payslipSetting.setEmployee(resourceId);
                 payslipSetting.setPayslipDetail(null);
                 updateEmployeeMonthlyTemplate = true;
             }
-            payslipSetting = this.payslipSettingRepository.save(payslipSetting);
+            payslipSetting = this.payslipSettingRepository.saveAndFlush(payslipSetting);
             PayslipSettingDto result = this.payslipSettingMapper.toDto(payslipSetting);
             if (updateEmployeeMonthlyTemplate) {
                 hrMonthlyDataService.updateHrTemplate(resourceId, dto.getContract().getId(), dto.getPaymentDate().withDayOfMonth(1), payslipSetting.getId());

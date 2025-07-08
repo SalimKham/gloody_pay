@@ -123,7 +123,6 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
-        hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month.withDayOfMonth(1)).ifPresent(monthlyData -> payslipSettingRepository.deleteById((long) monthlyData.getValue()));
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month);
         hrDataRepository.save(new HRMonthlyData(null, resourceId, contractId, month, "TEMPLATE", templateId));
         log.info(successMsg("TEMPLATE UPDATED | CONTRACT: %s | MONTH: %s", contractId, month));
