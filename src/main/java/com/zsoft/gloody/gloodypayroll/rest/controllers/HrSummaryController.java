@@ -32,6 +32,12 @@ public class HrSummaryController {
         return ResponseEntity.ok().body(service.getMonthlyContractIds(resourceId, month));
     }
 
+    @GetMapping("/monthly_contracts/{month}")
+    public ResponseEntity<List<Long>> getMonthlyContracts(@PathVariable(name = "month") LocalDate month
+    ) {
+        return ResponseEntity.ok().body(service.getAllMonthlyContracts(month));
+    }
+
     @PostMapping("/save_drafts/{month}")
     public ResponseEntity<Void> saveSummaryData(@RequestBody Set<Long> resourceIds,@PathVariable LocalDate month) {
         service.saveDrafts(resourceIds, month);
