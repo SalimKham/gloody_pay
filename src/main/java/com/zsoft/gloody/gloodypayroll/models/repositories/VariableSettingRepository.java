@@ -16,6 +16,7 @@ public interface VariableSettingRepository extends JpaRepository<VariableSetting
     boolean existsByKeyAndCompany(String key, Long company);
     void deleteBySource(String key);
     Optional<VariableSetting> findTopBySource(String source);
+    Optional<VariableSetting> findTopBySourceAndCompany(String source, Long companyId);
     void deleteAllBySourceIsNotNullAndCompany(Long company);
     Page<VariableSetting> findAllByLabelLikeOrKeyLike(String label, String key, Pageable pageable);
 }

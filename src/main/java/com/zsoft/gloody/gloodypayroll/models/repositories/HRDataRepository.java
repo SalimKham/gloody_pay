@@ -33,8 +33,8 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
     List<Tuple> getContractsByMonth(@Param("month") LocalDate month);
 
 
-    @Query("SELECT distinct  hr.contractId FROM HRMonthlyData hr WHERE hr.month = :month")
-    List<Long> getAllMonthlyContracts(@Param("month") LocalDate month);
+    @Query("SELECT distinct  hr.contractId FROM HRMonthlyData hr Left JOIN Employee e ON e.id  = hr.resourceId WHERE e.company = :company_id AND hr.month = :month")
+    List<Long> getAllMonthlyContracts(@Param("month") LocalDate month, @Param("company_id") Long companyId);
 
     @Query("SELECT distinct  hr.contractId, hr.value FROM HRMonthlyData hr WHERE hr.month = :month AND hr.variable = 'DRAFT_ID'")
     Set<Tuple> getDraftedTemplateIds(@Param("month") LocalDate month);

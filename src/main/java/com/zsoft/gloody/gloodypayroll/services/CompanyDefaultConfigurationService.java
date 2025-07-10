@@ -6,6 +6,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.*;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.support.StringListConverter;
+import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +57,13 @@ public class CompanyDefaultConfigurationService {
             if (variableSettingRepository.existsByKeyAndCompany(obj.get("key").asText(), companyId)) {
                 continue;
             }
+            String source  = obj.has("source") ? obj.get("source").asText() : null;
+            Long id = null;
+            if(source != null) {
+                 id = variableSettingRepository.findTopBySourceAndCompany(source, companyId).map(VariableSetting::getId).orElse(null);
+            }
             VariableSetting variableSetting = VariableSetting.builder()
+                    .id(id)
                     .key(obj.get("key").asText())
                     .formula(obj.get("formula").asText())
                     .label(obj.has("label") ? obj.get("label").asText() : null)
@@ -133,6 +140,7 @@ public class CompanyDefaultConfigurationService {
             return;
         }
         List<Section> sections = new ArrayList<>();
+        Integer identifier = sectionRepository.findTopByCompanyOrderByIdentifierDesc(SecurityUtils.getCurrentCompanyId()).map(section -> section.getIdentifier() + 1).orElse(9001);
         for (JsonNode obj : data) {
             if (!obj.isObject() || !obj.has("code") || !obj.has("label" ) || !obj.has("category") || !obj.has("type")) {
                 continue;
@@ -143,6 +151,7 @@ public class CompanyDefaultConfigurationService {
             Section section = Section.builder()
                     .label(obj.get("label").asText())
                     .code(obj.get("code").asText())
+                    .identifier(identifier++)
                     .category(categoryRepository.findByCodeAndCompany(obj.get("category").asText(), companyId)
                             .map(sectionCategory -> SectionCategory.builder().id(sectionCategory.getId()).build()).orElse(null))
                     .type(SectionType.valueOf(obj.get("type").asText()))

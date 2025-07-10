@@ -1,0 +1,15 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="change_lbl_prefix_to_TOT" author="Salim Kham">
+        <sql>
+            update section s set s.value_formula = replace(s.value_formula, 'LBL_', 'TOT_' ) where s.value_formula like '%LBL_%';
+            update section s set s.base_formula = replace(s.base_formula, 'LBL_', 'TOT_' ) where s.base_formula like '%LBL_%';
+            update section s set s.rate_formula = replace(s.rate_formula, 'LBL_', 'TOT_' ) where s.rate_formula like '%LBL_%';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

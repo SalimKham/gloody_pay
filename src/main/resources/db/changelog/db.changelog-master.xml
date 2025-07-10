@@ -28,4 +28,5 @@
     <include file="0.0.2/hr_monthly_summary.xml" relativeToChangelogFile="true"/>
     <include file="0.0.3/update_setting_element_company.xml" relativeToChangelogFile="true"/>
     <include file="0.0.3/add_identifier_to_section.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/change_lbl_prefix_to_TOT.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
