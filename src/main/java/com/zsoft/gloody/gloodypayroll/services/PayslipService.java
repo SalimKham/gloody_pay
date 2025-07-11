@@ -181,8 +181,7 @@ public class PayslipService {
         Context context = new Context(locale);
         context.setVariable("locale", locale);
         context.setVariable("elements", calculatedPayslip.calculatedElements());
-        employeeDto.setCompany(companyDto);
-        templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale).forEach(context::setVariable);
+        templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
         return templateEngine.process("payslip/template", context);
     }
 

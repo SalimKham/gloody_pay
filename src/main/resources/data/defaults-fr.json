@@ -48,7 +48,8 @@
     {
       "key": "VB_TH",
       "source": "IS_HOURLY_RATE",
-      "description": "description",
+      "label": "estTauxHoraire",
+      "description": "Cette variable est un booléen permettant d’indiquer si le taux est exprimé en horaire (true) ou non (false)",
       "formula": "0"
     },
     {
