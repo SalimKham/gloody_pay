@@ -15,10 +15,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -155,10 +152,10 @@ public class CompanyDefaultConfigurationService {
                     .category(categoryRepository.findByCodeAndCompany(obj.get("category").asText(), companyId)
                             .map(sectionCategory -> SectionCategory.builder().id(sectionCategory.getId()).build()).orElse(null))
                     .type(SectionType.valueOf(obj.get("type").asText()))
-                    .baseFormula(obj.has("base_formula") ? obj.get("base_formula").asText() : null)
-                    .rateFormula(obj.has("rate_formula") ? obj.get("rate_formula").asText() : null)
+                    .baseFormula(obj.has("base_formula") && Objects.nonNull(obj.get("base_formula")) ? obj.get("base_formula").asText() : null)
+                    .rateFormula(obj.has("rate_formula")   && Objects.nonNull(obj.get("rate_formula"))  ? obj.get("rate_formula").asText() : null)
                     .labelKeys(obj.has("label_keys") ? stringListConverter.convertToEntityAttribute(obj.get("label_keys").asText()) : null)
-                    .valueFormula(obj.has("value_formula") ? obj.get("value_formula").asText() : null)
+                    .valueFormula(obj.has("value_formula")  && Objects.nonNull(obj.get("value_formula"))  ? obj.get("value_formula").asText() : null)
                     .description(obj.has("description") ? obj.get("description").asText() : null)
                     .ratePercent(obj.has("rate_percent") && obj.get("rate_percent").asBoolean())
                     .company(companyId)

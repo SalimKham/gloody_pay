@@ -671,7 +671,7 @@
     },
     {
       "code": "R_PR_VEH_PERSO",
-      "label": "Indemnité de véhicule ",
+      "label": "Indemnité véhicule personnel",
       "type": "GAIN",
       "category": "IMP",
       "base_formula": "V_PR_VEH_SOC",
@@ -682,7 +682,7 @@
     },
     {
       "code": "R_PR_VEH_SOC",
-      "label": "Indemnité de véhicule ",
+      "label": "Indemnité véhicule société",
       "type": "GAIN",
       "category": "EXN",
       "base_formula": "V_PR_VEH_SOC",
@@ -909,7 +909,7 @@
     },
     {
       "code": "R_NBJ_TRAV",
-      "label": "WORKING DAYS ",
+      "label": "Jours travaillés",
       "type": "INTERMEDIATE",
       "category": "C007",
       "base_formula": null,
