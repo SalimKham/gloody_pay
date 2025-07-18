@@ -41,8 +41,10 @@
       "formula": "151.67"
     },
     {
-      "key": "IS_DAILY_RATE",
+      "key": "V_NBJ",
       "source": "IS_DAILY_RATE",
+      "label": "estTauxJournalier",
+      "description": "Cette variable est un booléen permettant d’indiquer si le taux est exprimé en jours (true) ou non (false)",
       "formula": "0"
     },
     {
@@ -53,7 +55,7 @@
       "formula": "0"
     },
     {
-      "key": "DAYS_BY_WEEK",
+      "key": "V_NBJ_SEM",
       "source": "DAYS_BY_WEEK",
       "description": "Jours par semaine",
       "label": "Jours par semaine",
@@ -273,23 +275,11 @@
       "rate_percent": true
     },
     {
-      "code": "IND_VEHC_IMP2",
-      "label": "Indemnité Véhicule IMPO",
-      "type": "GAIN",
-      "category": "IMP",
-      "base_formula": "V_PR_VEH_PERSO",
-      "rate_formula": "(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
-      "value_formula": "BASE*RATE",
-      "label_keys": "CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_IMP",
-      "rate_percent": false
-    },
-    {
       "code": "IRG3",
       "label": "Retenue IRG HRV - Used ",
       "type": "DEDUCTION",
       "category": "C007",
       "base_formula": "R_BRUT_IMPOS",
-      "rate_formula": null,
       "value_formula": "IRG(BASE)*IMP_ARR/R_ABS_SABS_ARR",
       "rate_percent": false
     },
@@ -298,8 +288,6 @@
       "label": "Prime de l'AID",
       "type": "GAIN",
       "category": "C002",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "BNS_AID",
      
       "rate_percent": false
@@ -320,8 +308,6 @@
       "label": "Salaire de poste",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_SALAIRE+LBL_CR_COTI",
      
       "rate_percent": false
@@ -331,8 +317,6 @@
       "label": "Salaire imposable",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "(V_SALAIRE+LBL_CR_IMP+LBL_CR_IMP10-R_RET_SS-R_DED_SS)",
       "rate_percent": false
     },
@@ -341,8 +325,6 @@
       "label": "Imposable à 10% (après déduction SS)",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "LBL_CR_IMP10-(0.09*LBL_CR_IMP10)",
       "rate_percent": false
     },
@@ -407,8 +389,6 @@
       "label": "Imposable à 10% (après déduction SS)",
       "type": "INTERMEDIATE",
       "category": "C005",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "LBL_CR_IMP10-(0.09*LBL_CR_IMP10)",
      
       "rate_percent": false
@@ -452,7 +432,6 @@
       "type": "GAIN",
       "category": "C007",
       "base_formula": "R_SAL_IMP_SABS",
-      "rate_formula": null,
       "value_formula": "IRG(BASE)",
      
       "rate_percent": false
@@ -462,8 +441,6 @@
       "label": "Retenue mutuelle",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_MUTUELLE",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -474,8 +451,6 @@
      
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "R_SAL_NET+LBL_CR_EXN",
      
       "rate_percent": false
@@ -508,8 +483,6 @@
      
       "type": "GAIN",
       "category": "C002",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_PR_ENC10",
       "label_keys": "CR_IMP10##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_COTI",
       "rate_percent": false
@@ -530,8 +503,6 @@
       "label": "Indemnité Congés payés",
       "type": "GAIN",
       "category": "C001",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_IND_CP",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
       "rate_percent": false
@@ -541,8 +512,6 @@
       "label": "Indemnité Congé payé reliquat",
       "type": "GAIN",
       "category": "C001",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_IND_RELIQ",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
       "rate_percent": false
@@ -553,8 +522,6 @@
      
       "type": "GAIN",
       "category": "C002",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_PR_INTERIM",
       "label_keys": "CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP",
       "rate_percent": false
@@ -586,8 +553,6 @@
       "label": "Prime d'objectif 10%",
       "type": "GAIN",
       "category": "C002",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_PR_OBJ10",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP10##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
       "rate_percent": false
@@ -630,8 +595,6 @@
       "label": "Prime de Recherche et Dévelop.",
       "type": "GAIN",
       "category": "C002",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_PR_RD",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
       "rate_percent": false
@@ -697,8 +660,6 @@
      
       "type": "GAIN",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_REMB_DEP",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -720,7 +681,6 @@
       "type": "DEDUCTION",
       "category": "C007",
       "base_formula": "R_BRUT_IMPOS",
-      "rate_formula": null,
       "value_formula": "IRG(BASE)*(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
       "rate_percent": false
     },
@@ -751,8 +711,6 @@
       "label": "Retenue Prime panier",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_RET_PANIER",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -762,8 +720,6 @@
       "label": "Retenue prêt social 1",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_RET_PRET",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -773,8 +729,6 @@
       "label": "Retenue prêt social_002",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_RET_PRET_02",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -784,8 +738,6 @@
       "label": "Retenue prêt social 2",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_RET_PRET_1",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -795,8 +747,6 @@
       "label": "Retenue prêt social 3",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_RET_PRET_2",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -806,8 +756,6 @@
       "label": "Retenue Avance autre 01",
       "type": "DEDUCTION",
       "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_RET_PRET_AUT",
       "label_keys": "CR_EXN",
       "rate_percent": false
@@ -850,8 +798,6 @@
      
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_SALAIRE/V_NBH",
       "rate_percent": false
     },
@@ -860,8 +806,6 @@
       "label": "Salaire par jour",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_SALAIRE/V_NBR_JOUR",
       "rate_percent": false
     },
@@ -881,8 +825,6 @@
       "label": "Salaire imposable sans absences ",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "R_BRUT+R_RET_SS+LBL_CR_IMP-LBL_CR_COTI",
       "rate_percent": false
     },
@@ -891,8 +833,6 @@
       "label": "Salaire net",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "R_BRUT_IMPOS-R_RET_IRG+(R_IMP10_SS-R_IRG_10)",
       "rate_percent": false
     },
@@ -901,8 +841,6 @@
       "label": "Jours travaillés",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "base_formula": null,
-      "rate_formula": null,
       "value_formula": "V_NBJ_OUVRABL",
       "rate_percent": false
     }
