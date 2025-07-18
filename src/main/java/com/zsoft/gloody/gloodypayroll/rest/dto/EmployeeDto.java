@@ -33,15 +33,20 @@ public class EmployeeDto {
     private String bankName;
     private String iban;
     private LocalDate hireDate;
+    private LocalDate birthDate;
+    private LocalDate seniority_date;
+    private LocalDate exitDate;
     private String contractNature;
     private String jobClassification;
     private String jobCategory;
     private String jobTitle;
     private String department;
+    private String affiliate;
+    private String office;
     private Double baseSalary;
     private String remunerationType;
     @NotNull
-    private CompanyDto company;
+    private Long company;
 
     @Override
     public boolean equals(Object o) {

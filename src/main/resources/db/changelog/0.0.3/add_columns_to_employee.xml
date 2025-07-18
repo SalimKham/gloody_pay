@@ -1,0 +1,17 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add_columns_to_employee" author="Salim Kham">
+     <addColumn tableName="employee">
+         <column name="birth_date" type="date"/>
+         <column name="seniority_date" type="date"/>
+         <column name="exit_date" type="date"/>
+         <column name="affiliate" type="varchar(200)"/>
+         <column name="office" type="varchar(200)"/>
+     </addColumn>
+    </changeSet>
+</databaseChangeLog>

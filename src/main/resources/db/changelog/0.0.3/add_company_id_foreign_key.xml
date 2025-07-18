@@ -1,0 +1,112 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add_company_id_foreign_key" author="Salim Kham">
+        <sql>
+           delete e from employee e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from label_setting e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from payslip_setting e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from payslip_setting_element e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from `section` e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from section_category e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from variable_setting e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from accounting_setting e  where not exists(select 1 from company c where c.id = e.company_id);
+           delete e from hr_monthly_data e  where not exists(select 1 from employee c where c.id = e.resource_id);
+           delete e from payslip_setting e  where not exists(select 1 from employee c where c.id = e.employee_id);
+           delete e from payslip_setting_element e  where not exists(select 1 from payslip_setting c where c.id = e.payslip_setting_id);
+        </sql>
+        <addForeignKeyConstraint baseTableName="employee"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_employee_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="label_setting"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_label_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="payslip_setting"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_payslip_setting_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="payslip_setting_element"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_payslip_setting_element_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="section"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_section_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="section_category"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_section_category_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="variable_setting"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_variable_setting_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="accounting_setting"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_account_setting_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="hr_monthly_data"
+                                 baseColumnNames="resource_id"
+                                 constraintName="fk_hr_monthly_data_to_employee"
+                                 referencedTableName="employee"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="payslip_setting"
+                                 baseColumnNames="employee_id"
+                                 constraintName="fk_payslip_setting_to_employee"
+                                 referencedTableName="employee"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="payslip_setting_element"
+                                 baseColumnNames="payslip_setting_id"
+                                 constraintName="fk_payslip_setting_element_to_payslip_setting"
+                                 referencedTableName="payslip_setting"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"
+        />
+
+    </changeSet>
+</databaseChangeLog>

@@ -35,7 +35,7 @@ public class TemplateHelper extends EntityManagerService {
         return messageSources.get(file);
     }
 
-    public Map<String, Object> getPayrollData(PayslipDetailDto payslipDetail, EmployeeDto employee, Locale locale) {
+    public Map<String, Object> getPayrollData(PayslipDetailDto payslipDetail, EmployeeDto employee, Locale locale, CompanyDto company) {
         Map<String, Object> data = new HashMap<>();
         data.put("payroll_start", dictionaryService().findValue(PAYMENT_START));
         data.put("payroll_end", dictionaryService().findValue(PAYMENT_END));
@@ -49,7 +49,7 @@ public class TemplateHelper extends EntityManagerService {
         } else {
             data.putAll(getEmployeeDataFromPayslipDetails(employee, payslipDetail, locale));
         }
-
+        data.putAll(getCompanyData(company, locale));
         return data;
     }
 
@@ -65,8 +65,6 @@ public class TemplateHelper extends EntityManagerService {
             data.put("contract_end", null);
             data.put("emp_job_title", payslipDetailDto.getJobTitle());
             data.put("emp_department", payslipDetailDto.getDepartmentName());
-
-            data.putAll(getCompanyData(employee.getCompany(), locale));
         }
         return data;
     }
@@ -83,8 +81,6 @@ public class TemplateHelper extends EntityManagerService {
             data.put("contract_end", null);
             data.put("emp_job_title", employee.getJobTitle());
             data.put("emp_department", employee.getDepartment());
-
-            data.putAll(getCompanyData(employee.getCompany(), locale));
         }
         return data;
     }
