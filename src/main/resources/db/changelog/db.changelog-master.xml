@@ -32,4 +32,5 @@
     <include file="0.0.3/add_columns_to_employee.xml" relativeToChangelogFile="true"/>
     <include file="0.0.3/add_columns_to_company.xml" relativeToChangelogFile="true"/>
     <include file="0.0.3/add_company_id_foreign_key.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/update_contract_nature_type.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

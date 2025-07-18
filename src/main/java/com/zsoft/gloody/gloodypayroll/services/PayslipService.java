@@ -653,6 +653,9 @@ public class PayslipService {
             sections.add(m.group());
         }
         for (String code : sections) {
+            if(code == null) {
+                System.out.println("hello");
+            }
             if (!dictionaryService().hasVariable(code)) {
                 if (isFunction(code)) {
                     calculateFunction(code);

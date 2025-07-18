@@ -1,6 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
-import com.zsoft.gloody.gloodypayroll.models.enums.*;
+import com.zsoft.gloody.gloodypayroll.models.enums.Gender;
+import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
+import com.zsoft.gloody.gloodypayroll.models.enums.PaymentMethod;
+import com.zsoft.gloody.gloodypayroll.models.enums.SalaryProfile;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -67,7 +70,7 @@ public class Employee {
     @Column(name = "exit_date")
     private LocalDate exitDate;
     @Column(name = "contract_nature")
-    private ContractNature contractNature;
+    private String contractNature;
     @Column(name = "job_classification")
     private String jobClassification;
     @Column(name = "job_category")
