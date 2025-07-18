@@ -48,7 +48,8 @@
     {
       "key": "VB_TH",
       "source": "IS_HOURLY_RATE",
-      "description": "description",
+      "label": "estTauxHoraire",
+      "description": "Cette variable est un booléen permettant d’indiquer si le taux est exprimé en horaire (true) ou non (false)",
       "formula": "0"
     },
     {
@@ -73,7 +74,7 @@
       "formula": "0"
     },
     {
-      "key": "ADVNS",
+      "key": "V_PR_TOTAL",
       "source": "ADVANCE",
       "description": "Prêt",
       "label": "Prêt",
@@ -670,7 +671,7 @@
     },
     {
       "code": "R_PR_VEH_PERSO",
-      "label": "Indemnité de véhicule ",
+      "label": "Indemnité véhicule personnel",
       "type": "GAIN",
       "category": "IMP",
       "base_formula": "V_PR_VEH_SOC",
@@ -681,7 +682,7 @@
     },
     {
       "code": "R_PR_VEH_SOC",
-      "label": "Indemnité de véhicule ",
+      "label": "Indemnité véhicule société",
       "type": "GAIN",
       "category": "EXN",
       "base_formula": "V_PR_VEH_SOC",
@@ -764,17 +765,6 @@
       "base_formula": null,
       "rate_formula": null,
       "value_formula": "V_RET_PRET",
-      "label_keys": "CR_EXN",
-      "rate_percent": false
-    },
-    {
-      "code": "R_RET_PRET_01",
-      "label": "Retenue prêt social_001",
-      "type": "DEDUCTION",
-      "category": "EXN",
-      "base_formula": null,
-      "rate_formula": null,
-      "value_formula": "V_RET_PRET_01",
       "label_keys": "CR_EXN",
       "rate_percent": false
     },
@@ -908,7 +898,7 @@
     },
     {
       "code": "R_NBJ_TRAV",
-      "label": "WORKING DAYS ",
+      "label": "Jours travaillés",
       "type": "INTERMEDIATE",
       "category": "C007",
       "base_formula": null,
@@ -975,12 +965,6 @@
         },
         {
           "sectionCode": "R_MUTUELLE"
-        },
-        {
-          "sectionCode": "R_RET_PRET_02"
-        },
-        {
-          "sectionCode": "R_RET_PRET_01"
         },
         {
           "sectionCode": "R_NET_PAYE"

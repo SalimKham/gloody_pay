@@ -6,6 +6,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.*;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.support.StringListConverter;
+import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +15,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +54,13 @@ public class CompanyDefaultConfigurationService {
             if (variableSettingRepository.existsByKeyAndCompany(obj.get("key").asText(), companyId)) {
                 continue;
             }
+            String source  = obj.has("source") ? obj.get("source").asText() : null;
+            Long id = null;
+            if(source != null) {
+                 id = variableSettingRepository.findTopBySourceAndCompany(source, companyId).map(VariableSetting::getId).orElse(null);
+            }
             VariableSetting variableSetting = VariableSetting.builder()
+                    .id(id)
                     .key(obj.get("key").asText())
                     .formula(obj.get("formula").asText())
                     .label(obj.has("label") ? obj.get("label").asText() : null)
@@ -133,6 +137,7 @@ public class CompanyDefaultConfigurationService {
             return;
         }
         List<Section> sections = new ArrayList<>();
+        Integer identifier = sectionRepository.findTopByCompanyOrderByIdentifierDesc(SecurityUtils.getCurrentCompanyId()).map(section -> section.getIdentifier() + 1).orElse(9001);
         for (JsonNode obj : data) {
             if (!obj.isObject() || !obj.has("code") || !obj.has("label" ) || !obj.has("category") || !obj.has("type")) {
                 continue;
@@ -143,13 +148,14 @@ public class CompanyDefaultConfigurationService {
             Section section = Section.builder()
                     .label(obj.get("label").asText())
                     .code(obj.get("code").asText())
+                    .identifier(identifier++)
                     .category(categoryRepository.findByCodeAndCompany(obj.get("category").asText(), companyId)
                             .map(sectionCategory -> SectionCategory.builder().id(sectionCategory.getId()).build()).orElse(null))
                     .type(SectionType.valueOf(obj.get("type").asText()))
-                    .baseFormula(obj.has("base_formula") ? obj.get("base_formula").asText() : null)
-                    .rateFormula(obj.has("rate_formula") ? obj.get("rate_formula").asText() : null)
+                    .baseFormula(obj.has("base_formula") && Objects.nonNull(obj.get("base_formula")) ? obj.get("base_formula").asText() : null)
+                    .rateFormula(obj.has("rate_formula")   && Objects.nonNull(obj.get("rate_formula"))  ? obj.get("rate_formula").asText() : null)
                     .labelKeys(obj.has("label_keys") ? stringListConverter.convertToEntityAttribute(obj.get("label_keys").asText()) : null)
-                    .valueFormula(obj.has("value_formula") ? obj.get("value_formula").asText() : null)
+                    .valueFormula(obj.has("value_formula")  && Objects.nonNull(obj.get("value_formula"))  ? obj.get("value_formula").asText() : null)
                     .description(obj.has("description") ? obj.get("description").asText() : null)
                     .ratePercent(obj.has("rate_percent") && obj.get("rate_percent").asBoolean())
                     .company(companyId)

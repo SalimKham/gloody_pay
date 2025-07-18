@@ -97,6 +97,11 @@ public class HRMonthlyDataService extends CompanySupportService {
         return hrDataRepository.getContractIdsByMonthAndResourceIdIn(date, Set.of(resourceId)).stream().map(tuple -> tuple.get(1, Long.class)).toList();
     }
 
+    public List<Long> getAllMonthlyContracts(LocalDate date, Long companyId) {
+        date = date.withDayOfMonth(1);
+        return hrDataRepository.getAllMonthlyContracts(date, companyId);
+    }
+
     public void deleteDrafts(Set<Long> resourceIds, LocalDate month) {
         Map<Long, Long> resourceContracts = hrDataRepository.getContractIdsByMonthAndResourceIdIn(month, resourceIds).stream()
                 .collect(Collectors

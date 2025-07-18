@@ -49,7 +49,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.*;
 @Transactional
 @Slf4j
 public class PayslipService {
-    public static final String ATTRIBUTE_PREFIX = "LBL_";
+    public static final String ATTRIBUTE_PREFIX = "TOT_";
     public static final String NATURE_PREFIX = "NTR_";
     public static final String CODE_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)|[A-Z][A-Z0-9_]{2,}";
     public static final String FUNCTION_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)";
@@ -65,6 +65,7 @@ public class PayslipService {
     private final VariableService variableService;
     private final EmployeeMapper employeeMapper;
     private final CompanyMapper companyMapper;
+    // TODO CHECK IF THIS STILL NEEDED
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
         {
             put(SectionNature.NOT_TAXABLE_CONTRIBUTORY, "NTC");
@@ -180,8 +181,7 @@ public class PayslipService {
         Context context = new Context(locale);
         context.setVariable("locale", locale);
         context.setVariable("elements", calculatedPayslip.calculatedElements());
-        employeeDto.setCompany(companyDto);
-        templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale).forEach(context::setVariable);
+        templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
         return templateEngine.process("payslip/template", context);
     }
 
