@@ -637,7 +637,7 @@
       "label": "Indemnité véhicule personnel",
       "type": "GAIN",
       "category": "IMP",
-      "base_formula": "V_PR_VEH_SOC",
+      "base_formula": "V_PR_VEH_PERSO",
       "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
       "value_formula": "BASE*RATE",
       "label_keys": "CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
