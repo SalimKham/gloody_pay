@@ -78,16 +78,19 @@ public class PayslipService {
     private final PayslipDraftService payslipDraftService;
     private final CompanyRepository companyRepository;
 
-    public List<Long> closePayslips(Set<Long> resourceIds, LocalDate month) {
+
+    public Set<Long> getClosedPayslips(LocalDate month) {
+        return payslipSettingRepository.getAllClosedPayslipResources(month.withDayOfMonth(1));
+    }
+    public void closePayslips(Set<Long> resourceIds, LocalDate month) {
         List<PayslipSettingDto> result = new ArrayList<>();
         month = month.withDayOfMonth(1);
-        List<Long> failedIds = new ArrayList<>();
         if (resourceIds.isEmpty()) {
-            return failedIds;
+            return;
         }
         Map<Long, List<Long>> contracts = loadContracts(resourceIds, month);
         if (contracts.isEmpty()) {
-            return failedIds;
+            return;
         }
         if (contracts.size() > 20) {
             RequestContext.initTemplates();
@@ -139,7 +142,6 @@ public class PayslipService {
                     }
                 }
             } catch (Exception e) {
-                failedIds.add(resourceId);
             }
         }
         RequestContext.clear();
@@ -147,7 +149,6 @@ public class PayslipService {
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", closedContractIds, month);
         hrDataRepository.bulkInsertClosedTemplateIds(month, closedPayslips.stream().map(PayslipSetting::getId).toList());
         payslipDraftService.deleteAllDraftedByContractAndMonth(closedContractIds, month);
-        return failedIds;
     }
 
 

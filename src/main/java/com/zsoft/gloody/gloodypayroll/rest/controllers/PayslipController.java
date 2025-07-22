@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
@@ -66,10 +65,18 @@ public class PayslipController {
     public record CalculatedPayslip(PayslipSettingDto template, Set<PayslipElementDto> calculatedElements){}
 
     @PostMapping("/close/{month}")
-    public ResponseEntity<List<Long>> calculate(
+    public ResponseEntity<Void> calculate(
             @RequestBody Set<Long> resourceIds,
             @PathVariable LocalDate month
     ) {
-        return ResponseEntity.ok().body( payslipService.closePayslips(resourceIds, month ));
+        payslipService.closePayslips(resourceIds, month );
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/close/fetch_closed/{month}")
+    public ResponseEntity<Set<Long>> getCloseEmployeeIds(
+            @PathVariable LocalDate month
+    ) {
+        return ResponseEntity.ok().body( payslipService.getClosedPayslips(month ));
     }
 }
