@@ -64,11 +64,12 @@ public class HRMonthlyDataService extends CompanySupportService {
         if (summaryDTO.empty()) {
             log.info(successMsg("HR VARIABLE CLEARED: %s | CONTRACT: %s | MONTH: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month().withDayOfMonth(1)));
         }
-        Set<String> savedVariables = new HashSet<>(); // make sure
+        Set<String> savedVariables = new HashSet<>();
         summaryDTOS.forEach(hrMonthlySummaryDTO -> {
-            if (!savedVariables.contains(hrMonthlySummaryDTO.variable()) ) {
+            String key = String.format("%s_%s_%s", hrMonthlySummaryDTO.contractId(), hrMonthlySummaryDTO.month(), hrMonthlySummaryDTO.variable());
+            if (!savedVariables.contains(key) ) {
                 this.save(hrMonthlySummaryDTO);
-                savedVariables.add(hrMonthlySummaryDTO.variable());
+                savedVariables.add(key);
             }
         });
     }
