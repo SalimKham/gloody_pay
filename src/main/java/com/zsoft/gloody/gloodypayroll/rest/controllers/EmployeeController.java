@@ -22,14 +22,14 @@ public class EmployeeController {
 
     @PostMapping("bulk")
     public ResponseEntity<Void> createEmployees(@RequestBody  List<EmployeeDto> payload) {
-        service.createBulk(payload);
+        service.saveBulk(payload);
         return ResponseEntity.ok().build();
     }
 
 
-    @PutMapping
-    public ResponseEntity<Void> updateEmployee(@RequestBody List<UpdateEmployeeFieldPayload> payload) {
-        service.updateFields(payload);
+    @PutMapping("/bulk")
+    public ResponseEntity<Void> updateEmployee(@RequestBody List<EmployeeDto> payload) {
+        service.saveBulk(payload);
         return ResponseEntity.ok().build();
     }
 

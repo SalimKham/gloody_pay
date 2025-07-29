@@ -18,7 +18,7 @@ public class PayslipController {
     private final PayslipService payslipService;
 
     @PostMapping("/print")
-    public ResponseEntity<String> print( @RequestBody PayslipCalculatePayload payload) {
+    public ResponseEntity<String> print(@RequestBody PayslipCalculatePayload payload) {
         String result = payslipService.print(payload);
         return ResponseEntity.ok().body(result);
     }
@@ -34,7 +34,7 @@ public class PayslipController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-       return null;
+        return null;
 
     }
 
@@ -50,11 +50,13 @@ public class PayslipController {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class PayslipCalculatePayload{
+    public static class PayslipCalculatePayload {
         private Long resourceId;
-        private Long contractId; LocalDate month;
+        private Long contractId;
+        LocalDate month;
         private double holidaysCount;
         private PayslipSettingDto tempTemplate;
+
         public void setValues(Long resourceId, Long contractId, LocalDate month) {
             this.resourceId = resourceId;
             this.contractId = contractId;
@@ -62,21 +64,21 @@ public class PayslipController {
         }
     }
 
-    public record CalculatedPayslip(PayslipSettingDto template, Set<PayslipElementDto> calculatedElements){}
+    public record CalculatedPayslip(PayslipSettingDto template, Set<PayslipElementDto> calculatedElements) {
+    }
 
     @PostMapping("/close/{month}")
-    public ResponseEntity<Void> calculate(
+    public ResponseEntity<Set<Long>> calculate(
             @RequestBody Set<Long> resourceIds,
             @PathVariable LocalDate month
     ) {
-        payslipService.closePayslips(resourceIds, month );
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body( payslipService.closePayslips(resourceIds, month ));
     }
 
     @GetMapping("/close/fetch_closed/{month}")
     public ResponseEntity<Set<Long>> getCloseEmployeeIds(
             @PathVariable LocalDate month
     ) {
-        return ResponseEntity.ok().body( payslipService.getClosedPayslips(month ));
+        return ResponseEntity.ok().body(payslipService.getClosedPayslips(month));
     }
 }

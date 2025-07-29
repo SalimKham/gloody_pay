@@ -2,16 +2,13 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
-import com.zsoft.gloody.gloodypayroll.rest.controllers.EmployeeController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
-import com.zsoft.gloody.gloodypayroll.utils.FieldAccessorUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,32 +33,12 @@ public class EmployeeService extends CompanySupportService {
         return dto;
     }
 
-    public void createBulk(List<EmployeeDto> dtos) {
-        employeeRepository.saveAll(dtos.stream().map(employeeMapper::toEntity).toList());
+    public void saveBulk(List<EmployeeDto> dtos) {
+       dtos.forEach(this::save);
     }
     public EmployeeDto update(EmployeeDto dto) {
         this.save(dto);
         return dto;
-    }
-
-    public void updateFields(List<EmployeeController.UpdateEmployeeFieldPayload> payload) {
-        if(payload == null || payload.isEmpty()) {
-            return;
-        }
-        payload.forEach(p -> {
-            this.findById(p.dto().getId())
-                    .ifPresent(oldDto -> {
-                        p.fields().forEach(fieldName -> {
-                            Class<?> className = EmployeeDto.class;
-                            Field field = FieldAccessorUtils.findField(className, fieldName);
-                            if (field != null) {
-                                FieldAccessorUtils.setFieldValue(className, field, oldDto, p.dto());
-                            }
-                        });
-                        this.save(oldDto);
-                    });
-        });
-
     }
 
     public void save(EmployeeDto dto) {

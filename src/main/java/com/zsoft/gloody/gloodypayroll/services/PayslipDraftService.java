@@ -3,6 +3,7 @@ package com.zsoft.gloody.gloodypayroll.services;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
+import com.zsoft.gloody.gloodypayroll.models.enums.SummaryDataType;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
@@ -74,7 +75,7 @@ public class PayslipDraftService extends EntityManagerService{
         }catch (Exception e) {
             e.printStackTrace();
         }
-        hrDataRepository.save(new HRMonthlyData(null , resourceId, contractId, month, "DRAFT_ID", payslip.getId()));
+        hrDataRepository.save(new HRMonthlyData(null , resourceId, contractId, SummaryDataType.DRAFT, month, "DRAFT_ID", payslip.getId()));
     }
 
     public void deleteAllDraftedByContractAndMonth(Set<Long> contractIds, LocalDate month) {
