@@ -1,0 +1,30 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add-summary-data-souce-type" author="Salim Kham">
+        <addColumn tableName="hr_monthly_data">
+            <column name="source_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE hr_monthly_data hrd
+            SET hrd.source_type = CASE
+                                      WHEN hrd.hr_variable LIKE '%EXP_%' OR hrd.hr_variable LIKE '%EXPENSE%' THEN 'EXPENSE'
+                                      WHEN hrd.hr_variable LIKE '%BNS_%'  OR hrd.hr_variable LIKE '%BONUS%'THEN 'SALARY_BONUS'
+                                      WHEN hrd.hr_variable LIKE '%ADVS%' OR hrd.hr_variable LIKE '%ADVANCE%' THEN 'SALARY_ADVANCE'
+                                      WHEN hrd.hr_variable = 'MEAL_VOUCHER' THEN 'MEAL_VOUCHER'
+                                      WHEN hrd.hr_variable = 'RESOURCE_MUTUAL' THEN 'RESOURCE_MUTUAL'
+                                      WHEN hrd.hr_variable = 'TEMPLATE' THEN 'TEMPLATE'
+                                      WHEN hrd.hr_variable LIKE '%ABS%' OR hrd.hr_variable LIKE '%ABSENCE%'THEN 'ABSENCE'
+                                      WHEN hrd.hr_variable LIKE '%DAYS_NBR_RCT%'  OR   hrd.hr_variable LIKE '%CONTRACT_OFF_DAYS%' THEN 'CONTRACT'
+                                      WHEN hrd.hr_variable LIKE '%EXTRA_HOURS%' THEN 'EXTRA_HOURS'
+                                      ELSE 'NOT_FOUND'
+                END;
+    </sql>
+</changeSet>
+        </databaseChangeLog>
