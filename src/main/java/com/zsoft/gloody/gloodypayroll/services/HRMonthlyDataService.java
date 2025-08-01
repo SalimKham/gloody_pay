@@ -45,7 +45,6 @@ public class HRMonthlyDataService extends CompanySupportService {
             return;
         }
         hrDataRepository.deleteByContractIdInAndTypeInAndMonth(contractIds, sourceTypes, month);
-        summaryDTOS = summaryDTOS.stream().filter(dto -> !dto.variable().equals(TEMPLATE)).toList();
         if (summaryDTO.empty()) {
             log.info(successMsg("HR VARIABLE CLEARED: %s | CONTRACT: %s | MONTH: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month().withDayOfMonth(1)));
         }
