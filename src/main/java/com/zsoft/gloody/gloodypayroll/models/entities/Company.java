@@ -28,4 +28,5 @@ public class Company  {
     @JoinColumn(name = "address_id")
     @ToString.Exclude
     private Address address;
+
 }

@@ -1,0 +1,27 @@
+package com.zsoft.gloody.gloodypayroll.rest.dto.payrollrecords;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public final class PayrollElementPayloadDTO {
+    private  Long id;
+    private  Long identification;
+    private  String lastName;
+    private  String firstName;
+    private  String jobTitle;
+    private  String socialSecurity;
+    private  int year;
+    private String birthDate;
+    private  String hireDate;
+    private  String gender;
+    private  String maritalStatus;
+    public  int nbrOfChildren;
+    private  String contractNature;
+
+}
