@@ -1,0 +1,98 @@
+<html lang="fr">
+<head>
+    <meta   charset="UTF-8" name="viewport"/>
+    <style>
+        .info-block {
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+
+        .employee-info-title {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .sub-title {
+            border: solid 2px;
+            width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 4px 50px 4px 50px;
+            margin-top: 4px;
+        }
+
+        .info-section {
+            display: inline-block;
+            vertical-align: top;
+        }
+        table, th, td {
+            border-collapse: collapse;
+            border: 1px solid #000;
+            padding: 12px;
+            font-size: 12px;
+        }
+        .float-right {
+            text-align: right;
+        }
+       th {
+           text-align: left;
+        }
+        .doc-container {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #000;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="doc-container">
+
+    <h3 style="text-align: center; margin-bottom: 3px">CAISSE NATIONALE DES ASSURANCE SOCIALE CNAS</h3>
+    <div style="text-align: center; margin-bottom: 30px"><h4 class="sub-title">DECLARATION ANNUELLE DES SALAIRES</h4></div>
+
+    <div style="margin-bottom: 30px;">
+        <div class="info-section">
+            <div class="info-block"><span class="employee-info-title">N° Employeur :</span><span>{{memberShip}}</span></div>
+            <div class="info-block"><span class="employee-info-title">Dénomination :</span><span>{{affiliate}}</span></div>
+            <div class="info-block"><span class="employee-info-title">Raison Sociale :</span><span>{{service}}</span></div>
+            <div class="info-block " style="margin-bottom: 10px"><span class="employee-info-title">Adresse :</span><span>{{companyAddress}}</span></div>
+            <div>
+                <span style="margin-right: 30px"><strong >Déclaration pour l'exercice :</strong><span>{{year}}</span></span>
+                <span ><strong >Type de déclaration :</strong><span>{{declarationType}}</span></span>
+            </div>
+
+        </div>
+    </div>
+
+    <table style="width: 100%">
+        <thead>
+        <tr>
+            <th>Numéro SS</th>
+            <th>Date de naissance</th>
+            <th>Nom Prémon date d'entrée/sortie</th>
+            <th>JT1<br/>JT2</th>
+            <th>Brut1<br/>Brut2</th>
+            <th>JT3<br/>JT4</th>
+            <th>Brut3<br/>Brut4</th>
+            <th>Brut total annuel</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{socialSecurity}}</td>
+            <td>{{birthDate}}</td>
+            <td>{{fullName}}<br/><b>E/S</b> {{range}}</td>
+            <td>{{wd1}}<br/>{{wd2}}</td>
+            <td class="float-right">{{gross1}}<br/>{{gross2}}</td>
+            <td>{{wd3}}<br/>{{wd4}}</td>
+            <td class="float-right">{{gross3}}<br/>{{gross4}}</td>
+            <td class="float-right" >{{grossYear}}</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>

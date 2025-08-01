@@ -30,4 +30,8 @@ public class Address {
     private String postalCode;
     @Column(name = "country_code")
     private String countryCode;
+
+    public String toString() {
+        return  String.format("%s, %s, %s", id, addressLine1, addressLine2, city);
+    }
 }
