@@ -152,7 +152,7 @@ public class PayrollRecordService {
         try {
             String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.PAYROLL_ELEMENTS.name().toLowerCase();
             String contentType = "application/msword";
-            String fileName = String.format("Éléments de paie-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+            String fileName = String.format("Elements-de-paie-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
             byte[] content = payrollElementsService.generate(payload);
@@ -160,7 +160,7 @@ public class PayrollRecordService {
                 deleteRecordFile(payrollRecord.getId());
                 return;
             }
-            saveFile(PayrollRecordType.PAYROLL_ELEMENTS, content, contentType, path);
+            saveFile(PayrollRecordType.PAYROLL_ELEMENTS, content, contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);

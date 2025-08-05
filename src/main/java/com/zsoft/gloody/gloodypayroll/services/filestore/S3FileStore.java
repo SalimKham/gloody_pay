@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 
-@Profile({"staging","preprod", "uat","prod"})
+@Profile({"staging","preprod", "uat","prod", "dev"})
 @Service
 @RequiredArgsConstructor
 public class S3FileStore implements FileStoreService {

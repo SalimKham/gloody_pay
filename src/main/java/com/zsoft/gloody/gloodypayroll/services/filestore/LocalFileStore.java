@@ -15,7 +15,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Optional;
 
-@Profile({"dev", "test"})
+@Profile({"test"})
 @Service
 @RequiredArgsConstructor
 public class LocalFileStore implements FileStoreService {
