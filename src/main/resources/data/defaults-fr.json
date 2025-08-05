@@ -308,7 +308,7 @@
       "label": "Salaire de poste",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "V_SALAIRE+LBL_CR_COTI",
+      "value_formula": "V_SALAIRE+TOT_CR_COTI",
      
       "rate_percent": false
     },
@@ -317,7 +317,7 @@
       "label": "Salaire imposable",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "(V_SALAIRE+LBL_CR_IMP+LBL_CR_IMP10-R_RET_SS-R_DED_SS)",
+      "value_formula": "(V_SALAIRE+TOT_CR_IMP+TOT_CR_IMP10-R_RET_SS-R_DED_SS)",
       "rate_percent": false
     },
     {
@@ -325,7 +325,7 @@
       "label": "Imposable à 10% (après déduction SS)",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "LBL_CR_IMP10-(0.09*LBL_CR_IMP10)",
+      "value_formula": "TOT_CR_IMP10-(0.09*TOT_CR_IMP10)",
       "rate_percent": false
     },
     {
@@ -389,7 +389,7 @@
       "label": "Imposable à 10% (après déduction SS)",
       "type": "INTERMEDIATE",
       "category": "C005",
-      "value_formula": "LBL_CR_IMP10-(0.09*LBL_CR_IMP10)",
+      "value_formula": "TOT_CR_IMP10-(0.09*TOT_CR_IMP10)",
      
       "rate_percent": false
     },
@@ -451,7 +451,7 @@
      
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "R_SAL_NET+LBL_CR_EXN",
+      "value_formula": "R_SAL_NET+TOT_CR_EXN",
      
       "rate_percent": false
     },
@@ -825,7 +825,7 @@
       "label": "Salaire imposable sans absences ",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "R_BRUT+R_RET_SS+LBL_CR_IMP-LBL_CR_COTI",
+      "value_formula": "R_BRUT+R_RET_SS+TOT_CR_IMP-TOT_CR_COTI",
       "rate_percent": false
     },
     {
