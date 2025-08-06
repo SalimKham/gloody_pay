@@ -89,6 +89,9 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     private SalaryProfile remunerationType;
 
+    @Column(name = "seniority_order_number")
+    private Integer seniorityOrderNumber;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

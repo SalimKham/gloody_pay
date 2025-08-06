@@ -47,6 +47,7 @@ public class EmployeeDto {
     private String department;
     private String affiliate;
     private String office;
+    private Integer seniorityOrderNumber;
     private Double baseSalary;
     private String remunerationType;
     @NotNull

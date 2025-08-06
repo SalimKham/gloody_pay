@@ -17,21 +17,13 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 
-@Profile({"staging","preprod", "uat","prod", "dev"})
+@Profile({"staging","preprod", "uat","prod"})
 @Service
 @RequiredArgsConstructor
 public class S3FileStore implements FileStoreService {
     private static final Logger log = LoggerFactory.getLogger(S3FileStore.class);
     private final AmazonS3 s3;
 
-    /**
-     * Upload a file to S3 bucket
-     *
-     * @param path        the path in the bucket to where to upload the file
-     * @param filename    the key of the file on the bucket
-     * @param optionalMetadata    the file metadata options
-     * @param inputStream the file as inputStream
-     */
     @Override
     public void save(String path, String filename, Optional<Map<String, String>> optionalMetadata, InputStream inputStream) {
         log.debug("Requesting to upload a file {} to {} ", filename, path);
@@ -49,13 +41,6 @@ public class S3FileStore implements FileStoreService {
         }
     }
 
-    /**
-     * Retrieve file from the S3 bucket
-     *
-     * @param path     the path to the file
-     * @param filename the key of the file on the bucket
-     * @return the file as byte of array
-     */
     @Override
     public byte[] download(String path, String filename) {
         log.debug("Requesting to download the file {} from {} ", filename, path);

@@ -7,6 +7,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.payrollrecords.PayrollElementPayl
 import jakarta.persistence.Tuple;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +31,17 @@ public class PayrollElementsService {
         if (employeeRepository.findById(payload.getId()).isPresent()) {
             PayrollElement data = new PayrollElement();
             data.setPrintDate(LocalDate.now().format( dateFormatter));
-            data.setEmployee(payload);
-            if(data.getEmployee().getGender() != null) {
-                data.getEmployee().setGender( Objects.equals(data.getEmployee().getGender(),"SIR") ? "masculin" : "feminin");
+            PayrollElementPayloadDTO employee = payload;
+            data.setEmployee(employee);
+            if(employee.getGender() != null) {
+                employee.setGender( Objects.equals(employee.getGender(),"SIR") ? "Masculin" : "Feminin");
             }
-            data.getEmployee().setMaritalStatus(translateMaritalStatus(payload.getMaritalStatus()));
-            data.getEmployee().setBirthDate(data.getEmployee().getBirthDate() != null ? LocalDate.parse(data.getEmployee().getBirthDate()).format(dateFormatter) : "");
-            data.getEmployee().setHireDate(data.getEmployee().getHireDate() != null ? LocalDate.parse(data.getEmployee().getHireDate()).format(dateFormatter) : "");
+            employee.setIdentification(StringUtils.leftPad(employee.getIdentification(), 5, "0"));
+            employee.setFirstName(Objects.requireNonNullElse(employee.getFirstName(),  "").toUpperCase());
+            employee.setLastName(Objects.requireNonNullElse(employee.getLastName(),  "").toUpperCase());
+            employee.setMaritalStatus(translateMaritalStatus(payload.getMaritalStatus()));
+            employee.setBirthDate(employee.getBirthDate() != null ? LocalDate.parse(employee.getBirthDate()).format(dateFormatter) : "");
+            employee.setHireDate(employee.getHireDate() != null ? LocalDate.parse(employee.getHireDate()).format(dateFormatter) : "");
             data.setTotal(new PayrollElementTotal());
             data.setItems( new ArrayList<>());
             Map<LocalDate, List<Tuple>> result = payslipElementSettingRepository.getClosedElementsByEmployeeIdAndCodeIn(payload.getId(),  sectionCodes, payload.getYear()).stream()

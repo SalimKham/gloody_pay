@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 public final class PayrollElementPayloadDTO {
     private  Long id;
-    private  Long identification;
+    private  String identification;
     private  String lastName;
     private  String firstName;
     private  String jobTitle;

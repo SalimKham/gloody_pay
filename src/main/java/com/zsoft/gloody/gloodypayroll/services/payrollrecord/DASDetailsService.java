@@ -14,10 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,7 +105,7 @@ public class DASDetailsService {
 
     private  String transform(Employee employee, int year, String employerNumber) {
         List<DasQuarter> quarters = getEmployeeQuarters(employee.getId());
-        StringBuilder sb = new StringBuilder(200); // Approximate total length
+        StringBuilder sb = new StringBuilder(200);
 
         // Employer No. (10 chars)
         appendPadded(sb, employerNumber, 10);
@@ -117,7 +114,7 @@ public class DASDetailsService {
         appendPadded(sb, String.valueOf(year), 4);
 
         // Sequential No. (6 chars)
-        appendPadded(sb, "999999", 6); // todo generate this
+        appendPadded(sb,Objects.nonNull(employee.getSeniorityOrderNumber()) ? employee.getSeniorityOrderNumber().toString() : "", 6);
 
         // SS No. (12 chars)
         appendPadded(sb, employee.getSocialSecurity(), 12);
