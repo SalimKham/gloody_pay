@@ -70,4 +70,11 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     @Modifying
     void deleteAllByContractInAndPaymentDateAndDraftIsTrue(Collection<Long> contractIds, LocalDate paymentDate);
+
+
+    @Query("SELECT ps FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month AND (:employee_ids IS NULL OR ps.employee IN :employee_ids)")
+    Page<PayslipSetting> findAllClosed(@Param("month") LocalDate month,  @Param("employee_ids") Set<Long> employeeIds, Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT ps.employee) FROM PayslipSetting ps LEFT JOIN Employee e on e.id  = ps.employee WHERE ps.closed AND e.affiliate = :affiliate AND ps.paymentDate BETWEEN :start_date AND :end_date ")
+    Long countAllClosed(@Param("start_date") LocalDate startDate, @Param("end_date") LocalDate endDate,  @Param("affiliate") String affiliate);
 }

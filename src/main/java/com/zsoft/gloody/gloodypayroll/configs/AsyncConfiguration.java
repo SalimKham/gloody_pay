@@ -36,8 +36,21 @@ public class AsyncConfiguration {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(3);
         executor.setMaxPoolSize(3);
-        executor.setQueueCapacity(100);
+        executor.setQueueCapacity(40);
         executor.setThreadNamePrefix("DraftAsyncThread-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = "payrollRecordsAsyncExecutor")
+    public Executor payrollRecordsAsyncExecutor()
+    {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(60);
+        executor.setThreadPriority(2);
+        executor.setThreadNamePrefix("payrollRecordsAsyncExecutor-");
         executor.initialize();
         return executor;
     }

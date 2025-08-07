@@ -1,6 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
-import com.zsoft.gloody.gloodypayroll.models.enums.Gender;
+import com.zsoft.gloody.gloodypayroll.models.enums.EmployeeTitle;
 import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
 import com.zsoft.gloody.gloodypayroll.models.enums.PaymentMethod;
 import com.zsoft.gloody.gloodypayroll.models.enums.SalaryProfile;
@@ -38,9 +38,9 @@ public class Employee {
     private String firstName;
     @Column(name = "middle_name")
     private String middleName;
-    @Column(name = "gender")
     @Enumerated(EnumType.STRING)
-    private Gender gender;
+    @Column(name = "employee_title")
+    private EmployeeTitle employeeTitle;
     @Column(name = "family_situation")
     private MaritalStatus maritalStatus;
     @Column(name = "number_of_children")
@@ -88,6 +88,9 @@ public class Employee {
     @Column(name = "salary_profile")
     @Enumerated(EnumType.STRING)
     private SalaryProfile remunerationType;
+
+    @Column(name = "seniority_order_number")
+    private Integer seniorityOrderNumber;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
