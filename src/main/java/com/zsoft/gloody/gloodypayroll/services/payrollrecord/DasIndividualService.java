@@ -42,6 +42,7 @@ public class DasIndividualService {
         individualDasDTO.setCompanyAddress(company.getAddress().toString());
         individualDasDTO.setDeclarationType("N");
         individualDasDTO.setMemberShip(company.getMembershipNumber());
+        individualDasDTO.setService(company.getActivitySector());
         individualDasDTO.setSocialSecurity(employee.getSocialSecurity());
         double GROSS1 =  Objects.requireNonNullElse(payslipElementSettingRepository
                 .findEmployeeGrossSalary(LocalDate.of(year, 1, 1), LocalDate.of(year, 3, 1), resourceId ), 0d);

@@ -37,4 +37,5 @@
     <include file="0.0.3/add-payroll-record-table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add_column_employee_title.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add_column_seniority_order.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-activity-sector-to-company.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
