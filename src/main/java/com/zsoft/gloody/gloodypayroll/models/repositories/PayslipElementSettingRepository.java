@@ -52,10 +52,10 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
 
     @Query("""
             SELECT pse.payslipSetting.paymentDate, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.section.code in :codes 
-            AND pse.value IS NOT NULL AND pse.payslipSetting.employee = :resource_id AND pse.payslipSetting.closed AND YEAR(pse.payslipSetting.paymentDate) = :year  
+            AND pse.value IS NOT NULL AND pse.payslipSetting.employee = :resource_id AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate BETWEEN :start_month AND :end_month
             ORDER BY pse.payslipSetting.paymentDate ASC
             """)
-    List<Tuple> getClosedElementsByEmployeeIdAndCodeIn(@Param("resource_id") Long resourceId, @Param("codes") List<String> codes, @Param("year") int year);
+    List<Tuple> getClosedElementsByEmployeeIdAndCodeIn(@Param("resource_id") Long resourceId, @Param("codes") List<String> codes, @Param("start_month") LocalDate startMonth,   @Param("end_month") LocalDate endMonth);
 
 
     @Query("SELECT pse.payslipSetting.employee, pse.payslipSetting.paymentDate, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.section.code in :codes " +
