@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -82,7 +83,7 @@ public class Form301BISService {
                     Row row = sheet.createRow(currentIndex.getAndIncrement());
                     row.createCell(0).setCellValue(Objects.requireNonNullElse(employee.getIdentification(), "-"));
                     row.createCell(1).setCellValue(fullName.toUpperCase());
-                    row.createCell(2).setCellValue(date.format(dateFormatter));
+                    row.createCell(2).setCellValue(date.with(TemporalAdjusters.lastDayOfMonth()).format(dateFormatter));
                     row.createCell(3).setCellValue(Objects.equals(employee.getEmployeeTitle(), EmployeeTitle.SIR) ? "1" : null);
                     row.createCell(4).setCellValue(employee.getEmployeeTitle() != null && !Objects.equals(employee.getEmployeeTitle(), EmployeeTitle.SIR) ? "1" : null);
                     AtomicReference<Double> brut = new AtomicReference<>((double) 0);
