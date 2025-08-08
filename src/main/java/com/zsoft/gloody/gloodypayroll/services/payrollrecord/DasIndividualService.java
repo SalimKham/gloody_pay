@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -61,11 +63,11 @@ public class DasIndividualService {
                 .findEmployeeWorkingDays(90d, LocalDate.of(year, 7, 1), LocalDate.of(year, 9, 1), resourceId ), 90d);
         double  WD4 = Objects.requireNonNullElse( payslipElementSettingRepository
                 .findEmployeeWorkingDays(90d, LocalDate.of(year, 10, 1), LocalDate.of(year, 12, 1), resourceId ), 90d);
-      individualDasDTO.setGross1(GROSS1);
-      individualDasDTO.setGross2(GROSS2);
-      individualDasDTO.setGross3(GROSS3);
-      individualDasDTO.setGross4(GROSS4);
-      individualDasDTO.setGrossYear(GROSS_YEAR);
+      individualDasDTO.setGross1(BigDecimal.valueOf(GROSS1).setScale(2, RoundingMode.HALF_UP));
+      individualDasDTO.setGross2(BigDecimal.valueOf(GROSS2).setScale(2, RoundingMode.HALF_UP));
+      individualDasDTO.setGross3(BigDecimal.valueOf(GROSS3).setScale(2, RoundingMode.HALF_UP));
+      individualDasDTO.setGross4(BigDecimal.valueOf(GROSS4).setScale(2, RoundingMode.HALF_UP));
+      individualDasDTO.setGrossYear(BigDecimal.valueOf(GROSS_YEAR).setScale(2, RoundingMode.HALF_UP));
       individualDasDTO.setWd1(WD1);
       individualDasDTO.setWd2(WD2);
       individualDasDTO.setWd3(WD3);
