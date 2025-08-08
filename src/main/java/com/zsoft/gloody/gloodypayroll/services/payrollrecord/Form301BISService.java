@@ -106,9 +106,9 @@ public class Form301BISService {
                     totalIrg.set(totalIrg.get() + irg.get());
                     totalIrg10.set(totalIrg10.get() + irg.get());
                     row.createCell(6).setCellValue(brut.get() == 0 ? "" : PayrollRecordUtils.formatMoney(brut.get()));
-                    row.createCell(7).setCellValue(irg.get() == 0 ? "" : PayrollRecordUtils.formatMoney(brut.get()));
-                    row.createCell(8).setCellValue(irg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(brut.get()));
-                    row.createCell(9).setCellValue(irg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(brut.get() * 10 / 100));
+                    row.createCell(7).setCellValue(irg.get() == 0 ? "" : PayrollRecordUtils.formatMoney(irg.get()));
+                    row.createCell(8).setCellValue(irg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(irg10.get()));
+                    row.createCell(9).setCellValue(irg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(irg10.get() * 10 / 100));
 
                 });
 
