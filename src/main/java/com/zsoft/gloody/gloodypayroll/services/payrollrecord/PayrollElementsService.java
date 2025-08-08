@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
 public class PayrollElementsService {
     private final EmployeeRepository employeeRepository;
     private final PayslipElementSettingRepository payslipElementSettingRepository;
-    private final List<String> sectionCodes = List.of("R_BRUT", "R_RET_SS", "R_BRUT_IMPOS", "R_RET_IRG", "R_IRG_10", "R_SAL_NET");
+    private final List<String> sectionCodes = List.of("R_BRUT", "R_RET_SS", "R_BRUT_IMPOS", "R_RET_IRG", "R_IRG_10", "R_NET_PAYE");
 
     public byte[] generate(PayrollElementPayloadDTO payload) throws IOException {
         DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
@@ -44,41 +46,45 @@ public class PayrollElementsService {
             employee.setHireDate(employee.getHireDate() != null ? LocalDate.parse(employee.getHireDate()).format(dateFormatter) : "");
             data.setTotal(new PayrollElementTotal());
             data.setItems( new ArrayList<>());
-            Map<LocalDate, List<Tuple>> result = payslipElementSettingRepository.getClosedElementsByEmployeeIdAndCodeIn(payload.getId(),  sectionCodes, payload.getYear()).stream()
+            LocalDate startMonth = payload.getStartMonth().withDayOfMonth(1);
+            LocalDate endMonth = payload.getEndMonth().withDayOfMonth(1);
+
+            Map<LocalDate, List<Tuple>> result = payslipElementSettingRepository.getClosedElementsByEmployeeIdAndCodeIn(payload.getId(),  sectionCodes, startMonth, endMonth).stream()
                     .collect(Collectors.groupingBy(
                             tuple -> tuple.get(0, LocalDate.class),
                             LinkedHashMap::new,
                             Collectors.toList()
                     ));
-            result.forEach((date, values) -> {
+            while (!startMonth.isAfter(endMonth)) {
                 PayrollElementItem item = new PayrollElementItem();
-                item.setMonth(date.format(monthFormatter));
+                item.setMonth(startMonth.format(monthFormatter));
+                List<Tuple> values = result.getOrDefault(startMonth, Collections.emptyList());
                 values.forEach(tuple -> {
                     switch (tuple.get(1, String.class)) {
                         case "R_BRUT":
-                            item.setBrut(tuple.get(2, Double.class));
+                            item.setBrut(BigDecimal.valueOf(tuple.get(2, Double.class)).setScale(2, RoundingMode.HALF_UP));
                             break;
                         case "R_RET_SS":
-                            item.setRet_ss(tuple.get(2, Double.class));
+                            item.setRet_ss(BigDecimal.valueOf(tuple.get(2, Double.class)).setScale(2, RoundingMode.HALF_UP));
                             break;
                         case "R_BRUT_IMPOS":
-                            item.setBrut_impos(tuple.get(2, Double.class));
+                            item.setBrut_impos(BigDecimal.valueOf(tuple.get(2, Double.class)).setScale(2, RoundingMode.HALF_UP));
                             break;
                         case "R_RET_IRG":
-                            item.setIrg(tuple.get(2, Double.class));
+                            item.setIrg(BigDecimal.valueOf(tuple.get(2, Double.class)).setScale(2, RoundingMode.HALF_UP));
                             break;
                         case "R_IRG_10":
-                            item.setIrg10(tuple.get(2, Double.class));
+                            item.setIrg10(BigDecimal.valueOf(tuple.get(2, Double.class)).setScale(2, RoundingMode.HALF_UP));
                             break;
-                        case "R_SAL_NET":
-                            item.setNet_payer(tuple.get(2, Double.class));
+                        case "R_NET_PAYE":
+                            item.setNet_payer(BigDecimal.valueOf(tuple.get(2, Double.class)).setScale(2, RoundingMode.HALF_UP));
                             break;
                     }
                 });
                 updateTotal(data.getTotal(), item);
                 data.getItems().add(item);
-            });
-
+                startMonth = startMonth.plusMonths(1);
+            }
             return PayrollRecordsUtils.generateDocFromTemplate("payroll_elements", data);
         }
         return null;
@@ -102,12 +108,12 @@ public class PayrollElementsService {
     }
 
     private void updateTotal(@NotNull  PayrollElementTotal total, @NotNull  PayrollElementItem item) {
-        total.setBrut(total.getBrut() + item.getBrut());
-        total.setRet_ss(total.getRet_ss() + item.getRet_ss());
-        total.setBrut_impos(total.getBrut_impos() + item.getBrut_impos());
-        total.setIrg(total.getIrg() + item.getIrg());
-        total.setIrg10(total.getIrg10() + item.getIrg10());
-        total.setNet_payer(total.getNet_payer() + item.getNet_payer());
+        total.setBrut(total.getBrut().add(item.getBrut()).setScale(2, RoundingMode.HALF_UP));
+        total.setRet_ss(total.getRet_ss().add(item.getRet_ss()).setScale(2, RoundingMode.HALF_UP));
+        total.setBrut_impos(total.getBrut_impos().add(item.getBrut_impos()).setScale(2, RoundingMode.HALF_UP));
+        total.setIrg(total.getIrg().add(item.getIrg()).setScale(2, RoundingMode.HALF_UP));
+        total.setIrg10(total.getIrg10().add(item.getIrg10()).setScale(2, RoundingMode.HALF_UP));
+        total.setNet_payer(total.getNet_payer().add(item.getNet_payer()).setScale(2, RoundingMode.HALF_UP));
     }
 
 

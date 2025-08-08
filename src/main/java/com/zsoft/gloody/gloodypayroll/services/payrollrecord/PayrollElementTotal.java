@@ -6,16 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public  class PayrollElementTotal implements Serializable {
-        private double brut;
-        private double ret_ss;
-        private double brut_impos;
-        private  double irg;
-        private double irg10;
-        private double net_payer;
+        private BigDecimal brut = new BigDecimal(0);
+        private BigDecimal ret_ss = new BigDecimal(0);
+        private BigDecimal brut_impos = new BigDecimal(0);
+        private  BigDecimal irg = new BigDecimal(0);
+        private BigDecimal irg10  = new BigDecimal(0);
+        private BigDecimal net_payer = new BigDecimal(0);
     }

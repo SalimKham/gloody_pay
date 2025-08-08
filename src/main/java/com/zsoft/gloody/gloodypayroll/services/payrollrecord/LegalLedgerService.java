@@ -38,7 +38,7 @@ public class LegalLedgerService {
         put("R_RET_SS", 8);
         put("R_BRUT_IMPOS", 9);
         put("R_RET_IRG", 10);
-        put("R_SAL_NET", 11);
+        put("R_NET_PAYE", 11);
     }};
     private final EmployeeRepository employeeRepository;
 

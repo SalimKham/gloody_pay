@@ -14,7 +14,6 @@ public class PayrollRecordsUtils {
 
     public static byte[] convertHtmlToDoc(String htmlContent) throws IOException {
 
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -23,7 +22,7 @@ public class PayrollRecordsUtils {
             builder.toStream(baos);
             builder.run();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate DOCX", e);
+            throw new RuntimeException("Failed to generate PDF", e);
         }
         return baos.toByteArray();
     }

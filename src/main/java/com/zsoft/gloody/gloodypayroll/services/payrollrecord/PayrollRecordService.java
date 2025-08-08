@@ -151,7 +151,7 @@ public class PayrollRecordService {
         payrollRecord = payrollRecordRepository.save(payrollRecord);
         try {
             String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.PAYROLL_ELEMENTS.name().toLowerCase();
-            String contentType = "application/msword";
+            String contentType = "application/pdf";
             String fileName = String.format("Elements-de-paie-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
@@ -206,7 +206,7 @@ public class PayrollRecordService {
         payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
         try {
             String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.DAS_INDIVIDUAL.name().toLowerCase();
-            String contentType = "application/msword";
+            String contentType = "application/pdf";
             String fileName = String.format("DAS-individuel-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
