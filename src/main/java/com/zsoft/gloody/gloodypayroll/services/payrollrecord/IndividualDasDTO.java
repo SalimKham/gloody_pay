@@ -22,12 +22,12 @@ public  class IndividualDasDTO {
         private String birthDate;
         private String range;
         private String fullName;
-        private Double wd1;
-        private Double wd2;
+        private int wd1;
+        private int wd2;
         private BigDecimal gross1;
         private BigDecimal gross2;
-        private Double wd3;
-        private Double wd4;
+        private int wd3;
+        private int wd4;
         private BigDecimal gross3;
         private BigDecimal gross4;
         private BigDecimal grossYear;

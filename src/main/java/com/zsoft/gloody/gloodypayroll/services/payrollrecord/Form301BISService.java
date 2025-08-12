@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +44,6 @@ public class Form301BISService {
         final Sheet sheet = workbook.createSheet("Form 301BIS");
         createFirstRow(workbook, sheet);
         AtomicInteger currentIndex = new AtomicInteger(1);
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         int PAGE_SIZE = 500;
         List<Set<Long>> employeeIdsList =  CommonUtils.splitSet(ids, PAGE_SIZE);
 
@@ -83,7 +81,7 @@ public class Form301BISService {
                     Row row = sheet.createRow(currentIndex.getAndIncrement());
                     row.createCell(0).setCellValue(Objects.requireNonNullElse(employee.getIdentification(), "-"));
                     row.createCell(1).setCellValue(fullName.toUpperCase());
-                    row.createCell(2).setCellValue(date.with(TemporalAdjusters.lastDayOfMonth()).format(dateFormatter));
+                    row.createCell(2).setCellValue(date.with(TemporalAdjusters.lastDayOfMonth()).format(PayrollRecordsUtils.dateFormatter));
                     row.createCell(3).setCellValue(Objects.equals(employee.getEmployeeTitle(), EmployeeTitle.SIR) ? "1" : null);
                     row.createCell(4).setCellValue(employee.getEmployeeTitle() != null && !Objects.equals(employee.getEmployeeTitle(), EmployeeTitle.SIR) ? "1" : null);
                     AtomicReference<Double> brut = new AtomicReference<>((double) 0);
@@ -105,10 +103,10 @@ public class Form301BISService {
                     totalBrut.set(totalBrut.get() + brut.get());
                     totalIrg.set(totalIrg.get() + irg.get());
                     totalIrg10.set(totalIrg10.get() + irg.get());
-                    row.createCell(6).setCellValue(brut.get() == 0 ? "" : PayrollRecordUtils.formatMoney(brut.get()));
-                    row.createCell(7).setCellValue(irg.get() == 0 ? "" : PayrollRecordUtils.formatMoney(irg.get()));
-                    row.createCell(8).setCellValue(irg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(irg10.get()));
-                    row.createCell(9).setCellValue(irg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(irg10.get() * 10 / 100));
+                    row.createCell(6).setCellValue(brut.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(brut.get()));
+                    row.createCell(7).setCellValue(irg.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(irg.get()));
+                    row.createCell(8).setCellValue(irg10.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(irg10.get()));
+                    row.createCell(9).setCellValue(irg10.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(irg10.get() * 10 / 100));
 
                 });
 
@@ -120,10 +118,10 @@ public class Form301BISService {
                 createBorderedCell(row, borderedStyle, 3).setCellValue("");
                 createBorderedCell(row, borderedStyle, 4).setCellValue("");
                 createBorderedCell(row, borderedStyle, 5).setCellValue("");
-                createBorderedCell(row, borderedStyle, 6).setCellValue(totalBrut.get() == 0 ? "" : PayrollRecordUtils.formatMoney(totalBrut.get()));
-                createBorderedCell(row, borderedStyle, 7).setCellValue(totalIrg.get() == 0 ? "" : PayrollRecordUtils.formatMoney(totalIrg.get()));
-                createBorderedCell(row, borderedStyle, 8).setCellValue(totalIrg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(totalIrg10.get()));
-                createBorderedCell(row, borderedStyle, 9).setCellValue(totalIrg10.get() == 0 ? "" : PayrollRecordUtils.formatMoney(totalIrg10.get() * 10 / 100));
+                createBorderedCell(row, borderedStyle, 6).setCellValue(totalBrut.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(totalBrut.get()));
+                createBorderedCell(row, borderedStyle, 7).setCellValue(totalIrg.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(totalIrg.get()));
+                createBorderedCell(row, borderedStyle, 8).setCellValue(totalIrg10.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(totalIrg10.get()));
+                createBorderedCell(row, borderedStyle, 9).setCellValue(totalIrg10.get() == 0 ? "" : PayrollRecordsUtils.formatMoney(totalIrg10.get() * 10 / 100));
             });
         }
 

@@ -42,6 +42,7 @@ public class LegalLedgerService {
     }};
     private final EmployeeRepository employeeRepository;
 
+
     public byte[] generate(LocalDate month, Set<Long> employeeIds) {
         XSSFWorkbook workbook = new XSSFWorkbook();
         final Sheet sheet = workbook.createSheet("Journal légal");
@@ -50,7 +51,8 @@ public class LegalLedgerService {
         AtomicInteger currentIndex = new AtomicInteger(3);
 
         int PAGE_SIZE = 500;
-        Page<PayslipSetting> data = payslipSettingRepository.findAllClosed(month.withDayOfMonth(1), employeeIds, Pageable.ofSize(PAGE_SIZE));
+        LocalDate startOfMonth = month.minusMonths(1);
+        Page<PayslipSetting> data = payslipSettingRepository.findAllClosed(startOfMonth, employeeIds, Pageable.ofSize(PAGE_SIZE));
         if (data.isEmpty()) {
             return null;
         }
@@ -67,11 +69,12 @@ public class LegalLedgerService {
                 Row row = sheet.createRow(currentIndex.getAndIncrement());
                 row.createCell(0).setCellValue(Objects.requireNonNullElse(employee.getIdentification(), "-"));
                 row.createCell(1).setCellValue(fullName.toUpperCase());
+                row.createCell(2).setCellValue(startOfMonth.format(PayrollRecordsUtils.fullMonthYearFormatter));
                 row.createCell(3).setCellValue(Objects.equals(employee.getEmployeeTitle(), EmployeeTitle.SIR) ? "1":  null);
                 row.createCell(4).setCellValue(employee.getEmployeeTitle() != null && !Objects.equals(employee.getEmployeeTitle(), EmployeeTitle.SIR)  ? "1":  null);
                 payslipSetting.getElements().forEach(element -> {
                     if (columnToSectionCode.containsKey(element.getSection().getCode())) {
-                        row.createCell(columnToSectionCode.get(element.getSection().getCode())).setCellValue(element.getValue() == null ? null : PayrollRecordUtils.formatMoney(element.getValue()));
+                        row.createCell(columnToSectionCode.get(element.getSection().getCode())).setCellValue(element.getValue() == null ? null : PayrollRecordsUtils.formatMoney(element.getValue()));
                     }
                 });
             });
@@ -125,10 +128,10 @@ public class LegalLedgerService {
 
         Cell todate = dateRow.createCell(11);
         todate.setCellStyle(dateStyle);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        fromDate.setCellValue("Du " + month.withDayOfMonth(1).format(formatter));
-        todate.setCellValue("au " + month.with(TemporalAdjusters.lastDayOfMonth()).format(formatter));
+
+        fromDate.setCellValue("Du " + month.withDayOfMonth(1).format(PayrollRecordsUtils.dateFormatter));
+        todate.setCellValue("au " + month.with(TemporalAdjusters.lastDayOfMonth()).format(PayrollRecordsUtils.dateFormatter));
 
         for (int i = 0; i <= 11; i++) {
             sheet.autoSizeColumn(i);
@@ -157,7 +160,7 @@ public class LegalLedgerService {
         Row headerRow = sheet.createRow(2); // example: row index 5
 
         String[] headers = {
-                "Matricule", "Nom & Prénom", "Date", "Hom", "Fem", "Tot",
+                "Matricule", "Nom   Prénom", "Date", "Hom", "Fem", "Tot",
                 "Salaire", "Salaire brut", "Ret SS", "Sal. Imposable", "Ret. IRG", "Net à payer"
         };
 

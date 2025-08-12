@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,11 +27,9 @@ public class PayrollElementsService {
     private final List<String> sectionCodes = List.of("R_BRUT", "R_RET_SS", "R_BRUT_IMPOS", "R_RET_IRG", "R_IRG_10", "R_NET_PAYE");
 
     public byte[] generate(PayrollElementPayloadDTO payload) throws IOException {
-        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         if (employeeRepository.findById(payload.getId()).isPresent()) {
             PayrollElement data = new PayrollElement();
-            data.setPrintDate(LocalDate.now().format( dateFormatter));
+            data.setPrintDate(LocalDate.now().format( PayrollRecordsUtils.dateFormatter));
             PayrollElementPayloadDTO employee = payload;
             data.setEmployee(employee);
             if(employee.getGender() != null) {
@@ -42,8 +39,8 @@ public class PayrollElementsService {
             employee.setFirstName(Objects.requireNonNullElse(employee.getFirstName(),  "").toUpperCase());
             employee.setLastName(Objects.requireNonNullElse(employee.getLastName(),  "").toUpperCase());
             employee.setMaritalStatus(translateMaritalStatus(payload.getMaritalStatus()));
-            employee.setBirthDate(employee.getBirthDate() != null ? LocalDate.parse(employee.getBirthDate()).format(dateFormatter) : "");
-            employee.setHireDate(employee.getHireDate() != null ? LocalDate.parse(employee.getHireDate()).format(dateFormatter) : "");
+            employee.setBirthDate(employee.getBirthDate() != null ? LocalDate.parse(employee.getBirthDate()).format(PayrollRecordsUtils.dateFormatter) : "");
+            employee.setHireDate(employee.getHireDate() != null ? LocalDate.parse(employee.getHireDate()).format(PayrollRecordsUtils.dateFormatter) : "");
             data.setTotal(new PayrollElementTotal());
             data.setItems( new ArrayList<>());
             LocalDate startMonth = payload.getStartMonth().withDayOfMonth(1);
@@ -57,7 +54,7 @@ public class PayrollElementsService {
                     ));
             while (!startMonth.isAfter(endMonth)) {
                 PayrollElementItem item = new PayrollElementItem();
-                item.setMonth(startMonth.format(monthFormatter));
+                item.setMonth(startMonth.format(PayrollRecordsUtils.fullMonthYearFormatter));
                 List<Tuple> values = result.getOrDefault(startMonth, Collections.emptyList());
                 values.forEach(tuple -> {
                     switch (tuple.get(1, String.class)) {
