@@ -30,7 +30,7 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
             WHERE ps.closed = true
             AND pse.value IS NOT NULL
             AND pse.payslipSetting.employee IS NOT NULL 
-            AND s.labelKeys LIKE CONCAT('%', 'CR_COTI', '%') 
+            AND s.code = 'R_BRUT'
             AND ps.paymentDate BETWEEN :start_date AND :end_date 
             GROUP BY pse.payslipSetting.employee
             """)
@@ -46,7 +46,7 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
     Double findEmployeeWorkingDays(@Param("days_nbr") Double daysNbr, @Param("start_date") LocalDate startDate, @Param("end_date") LocalDate endDate, @Param("resource_id") Long resourceId);
 
 
-    @Query("SELECT SUM(IF(pse.section.type = 'DEDUCTION', 0 - pse.value, pse.value )) FROM PayslipSettingElement  pse LEFT JOIN Employee e on e.id = pse.payslipSetting.employee  where pse.payslipSetting.closed AND  pse.value IS NOT NULL AND e.affiliate = :affiliate AND pse.section.labelKeys like concat('%', 'CR_COTI', '%') AND pse.payslipSetting.paymentDate BETWEEN :start_date AND :end_date")
+    @Query("SELECT SUM(IF(pse.section.type = 'DEDUCTION', 0 - pse.value, pse.value )) FROM PayslipSettingElement  pse LEFT JOIN Employee e on e.id = pse.payslipSetting.employee  where pse.payslipSetting.closed AND  pse.value IS NOT NULL AND e.affiliate = :affiliate AND pse.section.code = 'R_BRUT' AND pse.payslipSetting.paymentDate BETWEEN :start_date AND :end_date")
     Double sumQuarterContribution(@Param("start_date") LocalDate startDate, @Param("end_date") LocalDate endDate, @Param("affiliate") String affiliate);
 
 

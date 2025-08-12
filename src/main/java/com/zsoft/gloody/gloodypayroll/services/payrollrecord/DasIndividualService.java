@@ -7,6 +7,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class DasIndividualService {
         individualDasDTO.setFullName( Objects.requireNonNullElse(employee.getFullName(), "").toUpperCase());
         individualDasDTO.setYear(year);
         individualDasDTO.setBirthDate(employee.getBirthDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        individualDasDTO.setRange(getRange(employee, PayrollRecordsUtils.dateFormatter));
+        individualDasDTO.setRange(getRange(employee));
         individualDasDTO.setAffiliate(employee.getAffiliate());
         individualDasDTO.setService(employee.getOffice());
         individualDasDTO.setCompanyAddress(company.getAddress().toString());
@@ -67,18 +68,18 @@ public class DasIndividualService {
       individualDasDTO.setGross3(BigDecimal.valueOf(GROSS3).setScale(2, RoundingMode.HALF_UP));
       individualDasDTO.setGross4(BigDecimal.valueOf(GROSS4).setScale(2, RoundingMode.HALF_UP));
       individualDasDTO.setGrossYear(BigDecimal.valueOf(GROSS_YEAR).setScale(2, RoundingMode.HALF_UP));
-      individualDasDTO.setWd1(WD1.intValue());
-      individualDasDTO.setWd2(WD2.intValue());
-      individualDasDTO.setWd3(WD3.intValue());
-      individualDasDTO.setWd4(WD4.intValue());
+      individualDasDTO.setWd1(StringUtils.leftPad(String.valueOf(WD1.intValue()), 2, "0"));
+      individualDasDTO.setWd2(StringUtils.leftPad(String.valueOf(WD2.intValue()), 2, "0"));
+      individualDasDTO.setWd3(StringUtils.leftPad(String.valueOf(WD3.intValue()), 2, "0"));
+      individualDasDTO.setWd4(StringUtils.leftPad(String.valueOf(WD4.intValue()), 2, "0"));
 
         return PayrollRecordsUtils.generateDocFromTemplate("das_individual", individualDasDTO);
     }
 
 
-    private String getRange(Employee employee, DateTimeFormatter formatter) {
-        String hireDate = employee.getHireDate() != null ? employee.getHireDate().format(formatter) : "__/__/____";
-        String exitDate = employee.getExitDate() != null ? employee.getExitDate().format(formatter) : "__/__/____";
+    private String getRange(Employee employee) {
+        String hireDate = employee.getHireDate() != null ? employee.getHireDate().format(PayrollRecordsUtils.dateFormatter) : "__/__/____";
+        String exitDate = employee.getExitDate() != null ? employee.getExitDate().format(PayrollRecordsUtils.dateFormatter) : "__/__/____";
         return String.format("%s    %s", hireDate, exitDate);
     }
 }
