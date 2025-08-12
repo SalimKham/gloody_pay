@@ -51,7 +51,7 @@ public class LegalLedgerService {
         AtomicInteger currentIndex = new AtomicInteger(3);
 
         int PAGE_SIZE = 500;
-        LocalDate startOfMonth = month.minusMonths(1);
+        LocalDate startOfMonth = month.withDayOfMonth(1);
         Page<PayslipSetting> data = payslipSettingRepository.findAllClosed(startOfMonth, employeeIds, Pageable.ofSize(PAGE_SIZE));
         if (data.isEmpty()) {
             return null;
