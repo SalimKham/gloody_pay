@@ -61,7 +61,7 @@ public class DasHeaderService {
         sb.append(formatSalary(thirdQuarter));
         sb.append(formatSalary(forthQuarter));
         sb.append(formatSalary(firstQuarter + secondQuarter + thirdQuarter + forthQuarter));
-        sb.append(padLeft(String.valueOf(totalEmployees), 6, '0'));
+        sb.append(padLeft(String.valueOf(totalEmployees), 6, ' '));
 
         return sb.toString();
     }
@@ -81,6 +81,6 @@ public class DasHeaderService {
         if (amount == null) amount = 0d;
         BigDecimal decimalAmmount = new BigDecimal(amount);
         BigDecimal scaled = decimalAmmount.setScale(2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
-        return padLeft(scaled.toBigInteger().toString(), 16, '0');
+        return padLeft(scaled.toBigInteger().toString(), 16, ' ');
     }
 }

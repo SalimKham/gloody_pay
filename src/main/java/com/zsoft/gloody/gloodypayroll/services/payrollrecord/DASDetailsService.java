@@ -76,7 +76,7 @@ public class DASDetailsService {
                 .stream().collect(Collectors.toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Double.class)));
     }
 
-    // todo check working days
+    // todo check working days (should be calculated according to contract dates and not 90)
     private void initQuarterWorkingDays(int year) {
         firstQuarterWorkingDays = payslipElementSettingRepository
                 .findQuarterlyWorkingDays(90d, LocalDate.of(year, 1, 1), LocalDate.of(year, 3, 1) )
