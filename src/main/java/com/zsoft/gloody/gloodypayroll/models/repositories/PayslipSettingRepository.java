@@ -44,6 +44,7 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @Query("UPDATE PayslipSetting  p SET p.byDefault = CASE WHEN p.id =:template_id THEN true ELSE false END")
     void markAsDefault(@Param("template_id") Long templateId);
 
+    @EntityGraph(value = "PayslipSetting.elements")
     Page<PayslipSetting> findAllByNameLikeAndTemplateIsTrue(String query, Pageable pageable);
 
     @Modifying
