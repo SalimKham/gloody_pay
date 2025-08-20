@@ -8,12 +8,30 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class PayrollRecordsUtils {
 
 
-    public static byte[] convertHtmlToDoc(String htmlContent) throws IOException {
+    public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+   public static final DateTimeFormatter hyphenDateFormatter =  DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    public static final DateTimeFormatter fullMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 
+    public static String formatMoney(Double amount) {
+        if (amount == null) amount = 0d;
+        BigDecimal decimalAmount = BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP);
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.FRENCH);
+        symbols.setDecimalSeparator(',');
+        DecimalFormat df = new DecimalFormat("0.00", symbols);
+        return df.format(decimalAmount);
+    }
+
+    public static byte[] convertHtmlToDoc(String htmlContent) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
@@ -23,7 +41,7 @@ public class PayrollRecordsUtils {
             builder.toStream(baos);
             builder.run();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate DOCX", e);
+            throw new RuntimeException("Failed to generate PDF", e);
         }
         return baos.toByteArray();
     }

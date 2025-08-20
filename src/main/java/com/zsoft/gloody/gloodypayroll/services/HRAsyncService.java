@@ -7,6 +7,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
+import com.zsoft.gloody.gloodypayroll.utils.CommonUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +52,7 @@ public class HRAsyncService extends EntityManagerService {
             RequestContext.initTemplates();
             Map<Long, Long> resourceContracts = hrDataRepository.getContractIdsByMonthAndResourceIdIn(month, resourceIds).stream().collect(Collectors.toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Long.class), (existing, replacement) -> existing));
             payslipDraftService.deleteAllDraftedByContractAndMonth(new HashSet<>(resourceContracts.values()), month);
-            List<Set<Long>> resourcesSplit = splitSet(resourceIds, PAGE_SIZE);
+            List<Set<Long>> resourcesSplit = CommonUtils.splitSet(resourceIds, PAGE_SIZE);
             for (Set<Long> resources : resourcesSplit) {
                 saveDraftsForEmployees(month, resources, resourceContracts);
             }
@@ -65,15 +65,7 @@ public class HRAsyncService extends EntityManagerService {
 
     }
 
-    public static List<Set<Long>> splitSet(Set<Long> originalSet, int chunkSize) {
-        List<Long> list = new ArrayList<>(originalSet);
-        return IntStream.range(0, (list.size() + chunkSize - 1) / chunkSize)
-                .mapToObj(i -> list.subList(
-                        i * chunkSize,
-                        Math.min(list.size(), (i + 1) * chunkSize)))
-                .map(HashSet::new)
-                .collect(Collectors.toList());
-    }
+
 
     public void saveDraftsForEmployees(LocalDate month, Set<Long> resourceIds, Map<Long, Long> resourceContracts) {
         PayslipController.PayslipCalculatePayload payload = new PayslipController.PayslipCalculatePayload();

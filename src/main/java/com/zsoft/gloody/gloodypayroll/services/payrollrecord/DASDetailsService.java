@@ -7,6 +7,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,7 @@ public class DASDetailsService {
                 .stream().collect(Collectors.toMap(tuple -> tuple.get(0, Long.class), tuple -> tuple.get(1, Double.class)));
     }
 
-    // todo check working days
+    // todo check working days (should be calculated according to contract dates and not 90)
     private void initQuarterWorkingDays(int year) {
         firstQuarterWorkingDays = payslipElementSettingRepository
                 .findQuarterlyWorkingDays(90d, LocalDate.of(year, 1, 1), LocalDate.of(year, 3, 1) )
@@ -170,7 +171,7 @@ public class DASDetailsService {
 
     private  void processQuarter(StringBuilder sb, DasQuarter quarter) {
         // Days worked (2 chars)
-        appendPadded(sb, String.valueOf(quarter.daysWorked()), 2);
+        appendPadded(sb, StringUtils.leftPad(String.valueOf((int) quarter.daysWorked()), 2, "0"), 2);
 
         sb.append("J");
 
@@ -180,5 +181,9 @@ public class DASDetailsService {
 
     private  String formatSalary(double amount) {
         return String.format("%.2f", amount).replace(",", "").replace(".", "");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(StringUtils.leftPad("2", 3,  "0"));
     }
 }

@@ -70,11 +70,7 @@ public class PayrollRecordService {
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
             String content = dasHeaderService.generate(year, affiliateName, affiliateAddress);
-            if(content == null || content.isEmpty()) {
-                deleteRecordFile(payrollRecord.getId());
-                return;
-            }
-            saveFile(PayrollRecordType.DAS_HEADER, content.getBytes(StandardCharsets.UTF_8), contentType, fileName);
+            saveFile(PayrollRecordType.DAS_HEADER, Objects.requireNonNullElse(content, "").getBytes(StandardCharsets.UTF_8), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
@@ -99,11 +95,7 @@ public class PayrollRecordService {
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
             byte[] content = legalLedgerService.generate(payload.getMonth(), payload.getEmployeeIds());
-            if(content == null) {
-                deleteRecordFile(payrollRecord.getId());
-                return;
-            }
-            saveFile(PayrollRecordType.LEGAL_LEDGER, content, contentType, fileName);
+            saveFile(PayrollRecordType.LEGAL_LEDGER, Objects.requireNonNullElse(content, new byte[]{}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
@@ -128,11 +120,7 @@ public class PayrollRecordService {
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
             byte[] content = form301BISService.generate(payload.getYear(), payload.getEmployeeIds());
-            if(content == null) {
-                deleteRecordFile(payrollRecord.getId());
-                return;
-            }
-            saveFile(PayrollRecordType.FORM_301BIS, content, contentType, fileName);
+            saveFile(PayrollRecordType.FORM_301BIS, Objects.requireNonNullElse(content, new byte[] {}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
@@ -151,16 +139,12 @@ public class PayrollRecordService {
         payrollRecord = payrollRecordRepository.save(payrollRecord);
         try {
             String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.PAYROLL_ELEMENTS.name().toLowerCase();
-            String contentType = "application/msword";
-            String fileName = String.format("Elements-de-paie-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+            String contentType = "application/pdf";
+            String fileName = String.format("Relevé des émoluments-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
             byte[] content = payrollElementsService.generate(payload);
-            if(content == null) {
-                deleteRecordFile(payrollRecord.getId());
-                return;
-            }
-            saveFile(PayrollRecordType.PAYROLL_ELEMENTS, content, contentType, fileName);
+            saveFile(PayrollRecordType.PAYROLL_ELEMENTS, Objects.requireNonNullElse(content, new byte[]{}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
@@ -182,12 +166,8 @@ public class PayrollRecordService {
             String fileName = String.format("DAS-detail-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
-            String content = dasDetailsService.generate(year).toString();
-            if(content == null || content.isEmpty()) {
-                deleteRecordFile(payrollRecord.getId());
-                return;
-            }
-             saveFile(PayrollRecordType.DAS_DETAILS, content.getBytes(StandardCharsets.UTF_8), contentType, fileName);
+            StringBuffer content = dasDetailsService.generate(year);
+             saveFile(PayrollRecordType.DAS_DETAILS, Objects.requireNonNullElse(content, "").toString().getBytes(StandardCharsets.UTF_8), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
@@ -206,16 +186,12 @@ public class PayrollRecordService {
         payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
         try {
             String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.DAS_INDIVIDUAL.name().toLowerCase();
-            String contentType = "application/msword";
+            String contentType = "application/pdf";
             String fileName = String.format("DAS-individuel-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
             byte[] content = dasIndividualService.generate(year, employeeId);
-            if(content == null ) {
-                deleteRecordFile(payrollRecord.getId());
-                return;
-            }
-             saveFile(PayrollRecordType.DAS_INDIVIDUAL, content, contentType, fileName);
+             saveFile(PayrollRecordType.DAS_INDIVIDUAL, Objects.requireNonNullElse(content, new byte[]{}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
