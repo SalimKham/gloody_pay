@@ -3,6 +3,7 @@ package com.zsoft.gloody.gloodypayroll.rest.controllers;
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingExportFilterDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingDTO;
 import com.zsoft.gloody.gloodypayroll.services.AccountingSettingService;
+import com.zsoft.gloody.gloodypayroll.services.payrollrecord.PayrollRecordsUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,8 +43,7 @@ public class AccountingSettingController {
 
     @GetMapping("/monthly-logs/export-plan")
     public ResponseEntity<byte[]> exportAccountingSetting() {
-        DateTimeFormatter formatter =  DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String fileName = String.format("Accounting-Plan-%s", LocalDate.now().format(formatter));
+        String fileName = String.format("Accounting-Plan-%s", LocalDate.now().format(PayrollRecordsUtils.hyphenDateFormatter));
         byte[] result  = accountingSettingService.exportAccountingSetting(fileName);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=\"" +  fileName + "\"");

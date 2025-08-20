@@ -1,6 +1,8 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
 
+import com.zsoft.gloody.gloodypayroll.models.enums.EmployeeTitle;
 import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
+import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +29,8 @@ public class EmployeeDto {
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     private Integer numberOfChildren;
+    @Column(name = "gender")
+    private EmployeeTitle employeeTitle;
     private AddressDto address;
     private String socialSecurity;
     private String paymentMode;
@@ -43,6 +47,7 @@ public class EmployeeDto {
     private String department;
     private String affiliate;
     private String office;
+    private Integer seniorityOrderNumber;
     private Double baseSalary;
     private String remunerationType;
     @NotNull
@@ -64,6 +69,6 @@ public class EmployeeDto {
     }
 
     public String getFullName() {
-        return String.format("%s%s", Objects.nonNull(firstName) ? StringUtils.capitalize(firstName) : "",  Objects.nonNull(lastName) ? StringUtils.capitalize(lastName) :"");
+        return String.format("%s%s", Objects.nonNull(firstName) ? StringUtils.capitalize(firstName) : "", Objects.nonNull(lastName) ? StringUtils.capitalize(lastName) : "");
     }
 }

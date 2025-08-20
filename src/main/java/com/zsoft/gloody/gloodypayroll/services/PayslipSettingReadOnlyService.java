@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
+import com.zsoft.gloody.gloodypayroll.models.enums.SummaryDataType;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
@@ -69,7 +70,7 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
         Long variableId = hrDataRepository
                 .findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", contractId, month)
                 .map(HRMonthlyData::getId).orElse(null);
-        hrDataRepository.save(new HRMonthlyData(variableId, resourceId, contractId, month, "TEMPLATE", templateId));
+        hrDataRepository.save(new HRMonthlyData(variableId, resourceId, contractId, SummaryDataType.TEMPLATE, month, "TEMPLATE", templateId));
     }
 
 
