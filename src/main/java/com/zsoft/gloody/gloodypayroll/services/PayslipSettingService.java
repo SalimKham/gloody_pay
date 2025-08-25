@@ -24,6 +24,10 @@ public class PayslipSettingService extends CompanySupportService {
     private final PayslipSettingReadOnlyService payslipSettingReadOnlyService;
     private final HRMonthlyDataService hrMonthlyDataService;
 
+    @CacheEvict(
+            cacheNames = "company_default_template",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
+    )
     public Optional<PayslipSettingDto> markAsDefault(Long templateId) {
         payslipSettingRepository.markAsDefault(templateId);
         return payslipSettingReadOnlyService.findById(templateId);
