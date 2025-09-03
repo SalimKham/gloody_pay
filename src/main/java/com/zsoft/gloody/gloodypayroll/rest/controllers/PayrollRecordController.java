@@ -30,6 +30,12 @@ public class PayrollRecordController {
         return  ResponseEntity.ok().build();
     }
 
+    @PostMapping("generate/payroll_journal")
+    public ResponseEntity<Void> generatePayrollJournal(@RequestBody PayrollJournalPayloadDTO payload) {
+        recordService.generatePayrollJournal(payload );
+        return  ResponseEntity.ok().build();
+    }
+
     @GetMapping("generate/das_details/{year}")
     public ResponseEntity<Void> generateDasDetails(@PathVariable int year) {
         recordService.generateDasDetails(year);

@@ -57,6 +57,7 @@ public class PayrollRecordService {
     private final DasHeaderService dasHeaderService;
     private final PayrollElementsService payrollElementsService;
     private final Form301BISService form301BISService;
+    private final PayrollJournalService payrollJournalService;
 
     @Async("payrollRecordsAsyncExecutor")
     public void generateDasHeader(int year, String affiliateName, String affiliateAddress) {
@@ -121,6 +122,30 @@ public class PayrollRecordService {
             payrollRecord.setFileName(fileName);
             byte[] content = form301BISService.generate(payload.getYear(), payload.getEmployeeIds());
             saveFile(PayrollRecordType.FORM_301BIS, Objects.requireNonNullElse(content, new byte[] {}), contentType, fileName);
+            payrollRecord.setFilePath(path);
+            payrollRecord.setFileContentType(contentType);
+            payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
+        } catch (Exception e) {
+            payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.FAILED);
+        } finally {
+            payrollRecordRepository.save(payrollRecord);
+        }
+    }
+
+    @Async("payrollRecordsAsyncExecutor")
+    public void generatePayrollJournal(PayrollJournalPayloadDTO payload) {
+
+        PayrollRecord  payrollRecord =  init(SecurityUtils.getCurrentCompanyId(), SecurityUtils.getCurrentUser().get().getId());
+        payrollRecord.setType(PayrollRecordType.PAYROLL_JOURNAL);
+        payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
+        try {
+            String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.PAYROLL_JOURNAL.name().toLowerCase();
+            String contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            String fileName = String.format("journal-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+            fileName = getFileName(fileName, contentType);
+            payrollRecord.setFileName(fileName);
+            byte[] content = payrollJournalService.generate(SecurityUtils.getCurrentCompanyId(), payload.getMonth(), payload.getEmployeeIds());
+            saveFile(PayrollRecordType.PAYROLL_JOURNAL, Objects.requireNonNullElse(content, new byte[] {}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);
             payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
