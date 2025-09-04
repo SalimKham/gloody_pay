@@ -10,6 +10,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.payrollrecords.*;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayrollRecordMapper;
 import com.zsoft.gloody.gloodypayroll.services.filestore.FileStoreProperties;
 import com.zsoft.gloody.gloodypayroll.services.filestore.FileStoreService;
+import com.zsoft.gloody.gloodypayroll.services.payrollrecord.payloads.DasIndividualPayloadDTO;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -205,7 +206,7 @@ public class PayrollRecordService {
     }
 
     @Async("payrollRecordsAsyncExecutor")
-    public void generateDasIndividual(int year, Long employeeId) {
+    public void generateDasIndividual(DasIndividualPayloadDTO payload) {
         PayrollRecord  payrollRecord =  init(SecurityUtils.getCurrentCompanyId(), SecurityUtils.getCurrentUser().get().getId());
         payrollRecord.setType(PayrollRecordType.DAS_INDIVIDUAL);
         payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
@@ -215,7 +216,7 @@ public class PayrollRecordService {
             String fileName = String.format("DAS-individuel-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
-            byte[] content = dasIndividualService.generate(year, employeeId);
+            byte[] content = dasIndividualService.generate(payload);
              saveFile(PayrollRecordType.DAS_INDIVIDUAL, Objects.requireNonNullElse(content, new byte[]{}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);

@@ -4,6 +4,8 @@ import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.payrollrecords.PayrollElementPayloadDTO;
+import com.zsoft.gloody.gloodypayroll.services.filestore.FileStoreProperties;
+import com.zsoft.gloody.gloodypayroll.services.filestore.FileStoreService;
 import jakarta.persistence.Tuple;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class PayrollElementsService {
     private final EmployeeRepository employeeRepository;
+    private final FileStoreService fileStoreService;
+    private final FileStoreProperties fileStoreProperties;
     private final PayslipElementSettingRepository payslipElementSettingRepository;
     private final List<String> sectionCodes = List.of("R_BRUT", "R_RET_SS", "R_BRUT_IMPOS", "R_RET_IRG", "R_IRG_10", "R_NET_PAYE");
 
@@ -43,6 +47,15 @@ public class PayrollElementsService {
             employee.setHireDate(employee.getHireDate() != null ? LocalDate.parse(employee.getHireDate()).format(PayrollRecordsUtils.dateFormatter) : "");
             data.setTotal(new PayrollElementTotal());
             data.setItems( new ArrayList<>());
+            if (payload.getLogoUrl() != null) {
+                try {
+                    String logo = Base64.getEncoder().encodeToString( fileStoreService.download(fileStoreProperties.getAffiliateLogoPrefix(),payload.getLogoUrl()));
+                    data.setLogo(logo);
+                } catch (Exception ignored) {
+                    ignored.printStackTrace();
+                }
+
+            }
             LocalDate startMonth = payload.getStartMonth().withDayOfMonth(1);
             LocalDate endMonth = payload.getEndMonth().withDayOfMonth(1);
 

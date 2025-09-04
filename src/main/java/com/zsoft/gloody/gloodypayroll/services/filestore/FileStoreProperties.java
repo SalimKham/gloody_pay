@@ -16,4 +16,8 @@ public class FileStoreProperties {
     public String getPayRecordPathPrefix() {
         return String.format("%s/%s", this.path, this.payRecordPrefix);
     }
+
+    public String getAffiliateLogoPrefix() {
+        return String.format("%s/%s", this.path, "affiliate-logo");
+    }
 }
