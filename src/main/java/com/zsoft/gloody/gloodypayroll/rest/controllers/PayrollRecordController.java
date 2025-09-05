@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.rest.dto.payrollrecords.*;
 import com.zsoft.gloody.gloodypayroll.services.payrollrecord.PayrollRecordService;
+import com.zsoft.gloody.gloodypayroll.services.payrollrecord.payloads.DasIndividualPayloadDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,12 @@ public class PayrollRecordController {
         return  ResponseEntity.ok().build();
     }
 
+    @PostMapping("generate/payroll_journal")
+    public ResponseEntity<Void> generatePayrollJournal(@RequestBody PayrollJournalPayloadDTO payload) {
+        recordService.generatePayrollJournal(payload );
+        return  ResponseEntity.ok().build();
+    }
+
     @GetMapping("generate/das_details/{year}")
     public ResponseEntity<Void> generateDasDetails(@PathVariable int year) {
         recordService.generateDasDetails(year);
@@ -42,9 +49,11 @@ public class PayrollRecordController {
         return  ResponseEntity.ok().build();
     }
 
-    @GetMapping("generate/das_individual/{year}")
-    public ResponseEntity<Void> generateDasIndividual(@PathVariable int year, @RequestParam("resource_id") Long resourceId) {
-        recordService.generateDasIndividual(year, resourceId);
+    @PostMapping("generate/das_individual")
+    public ResponseEntity<Void> generateDasIndividual(
+            @RequestBody DasIndividualPayloadDTO payload
+    ) {
+        recordService.generateDasIndividual(payload);
         return  ResponseEntity.ok().build();
     }
     @PostMapping("generate/payroll_elements")

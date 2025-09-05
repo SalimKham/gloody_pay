@@ -42,6 +42,7 @@ public class Employee {
     @Column(name = "employee_title")
     private EmployeeTitle employeeTitle;
     @Column(name = "family_situation")
+    @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     @Column(name = "number_of_children")
     private Integer numberOfChildren;

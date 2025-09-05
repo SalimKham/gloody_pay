@@ -5,6 +5,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.repositories.CompanyRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
+import com.zsoft.gloody.gloodypayroll.services.payrollrecord.payloads.DasIndividualPayloadDTO;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -27,12 +28,14 @@ public class DasIndividualService {
     private final PayslipElementSettingRepository payslipElementSettingRepository;
     private final CompanyRepository companyRepository;
 
-    public byte[] generate(int year, Long resourceId) throws IOException {
+    public byte[] generate(DasIndividualPayloadDTO payload) throws IOException {
         Company company = companyRepository.findById(SecurityUtils.getCurrentCompanyId()).orElse(null);
+        Long resourceId = payload.getResourceId();
         Optional<Employee> data = employeeRepository.findById(resourceId);
         if (data.isEmpty() || company == null) {
             return null;
         }
+        int year = payload.getYear();
         IndividualDasDTO individualDasDTO = new IndividualDasDTO();
         Employee employee = data.get();
         individualDasDTO.setFullName( Objects.requireNonNullElse(employee.getFullName(), "").toUpperCase());
@@ -41,10 +44,10 @@ public class DasIndividualService {
         individualDasDTO.setRange(getRange(employee));
         individualDasDTO.setAffiliate(employee.getAffiliate());
         individualDasDTO.setService(employee.getOffice());
-        individualDasDTO.setCompanyAddress(company.getAddress().toString());
+        individualDasDTO.setCompanyAddress(payload.getAffiliateAddress());
         individualDasDTO.setDeclarationType("N");
-        individualDasDTO.setMemberShip(company.getMembershipNumber());
-        individualDasDTO.setService(company.getActivitySector());
+        individualDasDTO.setMemberShip(payload.getMemberShipNumber());
+        individualDasDTO.setService(payload.getActivitySector());
         individualDasDTO.setSocialSecurity(employee.getSocialSecurity());
         double GROSS1 =  Objects.requireNonNullElse(payslipElementSettingRepository
                 .findEmployeeGrossSalary(LocalDate.of(year, 1, 1), LocalDate.of(year, 3, 1), resourceId ), 0d);

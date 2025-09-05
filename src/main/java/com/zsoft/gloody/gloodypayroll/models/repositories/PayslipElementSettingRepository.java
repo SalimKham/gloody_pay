@@ -58,6 +58,15 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
     List<Tuple> getClosedElementsByEmployeeIdAndCodeIn(@Param("resource_id") Long resourceId, @Param("codes") List<String> codes, @Param("start_month") LocalDate startMonth,   @Param("end_month") LocalDate endMonth);
 
 
+    @Query("""
+            SELECT pse.payslipSetting.employee, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
+            ORDER BY pse.payslipSetting.paymentDate ASC
+            """)
+    Page<Tuple> getClosedElementsByEmployeeIdAndCodeInAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
+
+
+
+
     @Query("SELECT pse.payslipSetting.employee, pse.payslipSetting.paymentDate, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.section.code in :codes " +
             "AND pse.value IS NOT NULL AND pse.payslipSetting.employee in :resource_ids AND pse.payslipSetting.closed AND YEAR(pse.payslipSetting.paymentDate) = :year  ORDER BY pse.payslipSetting.paymentDate ASC ")
     Page<Tuple> getClosedElementsByEmployeeInAndCodeIn(@Param("resource_ids") Set<Long> resourceIds, @Param("codes") Set<String> codes, @Param("year") int year, Pageable pageable);

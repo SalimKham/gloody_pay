@@ -14,6 +14,7 @@ import java.time.LocalDate;
 public final class PayrollElementPayloadDTO {
     private Long id;
     private String identification;
+    private String logoUrl;
     private String lastName;
     private String firstName;
     private String jobTitle;
