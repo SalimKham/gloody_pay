@@ -10,6 +10,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.payrollrecords.*;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayrollRecordMapper;
 import com.zsoft.gloody.gloodypayroll.services.filestore.FileStoreProperties;
 import com.zsoft.gloody.gloodypayroll.services.filestore.FileStoreService;
+import com.zsoft.gloody.gloodypayroll.services.payrollrecord.payloads.DasIndividualPayloadDTO;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,7 @@ public class PayrollRecordService {
     private final DasHeaderService dasHeaderService;
     private final PayrollElementsService payrollElementsService;
     private final Form301BISService form301BISService;
+    private final PayrollJournalService payrollJournalService;
 
     @Async("payrollRecordsAsyncExecutor")
     public void generateDasHeader(int year, String affiliateName, String affiliateAddress) {
@@ -132,6 +134,30 @@ public class PayrollRecordService {
     }
 
     @Async("payrollRecordsAsyncExecutor")
+    public void generatePayrollJournal(PayrollJournalPayloadDTO payload) {
+
+        PayrollRecord  payrollRecord =  init(SecurityUtils.getCurrentCompanyId(), SecurityUtils.getCurrentUser().get().getId());
+        payrollRecord.setType(PayrollRecordType.PAYROLL_JOURNAL);
+        payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
+        try {
+            String path = fileStoreProperties.getPayRecordPathPrefix() + "/" + PayrollRecordType.PAYROLL_JOURNAL.name().toLowerCase();
+            String contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            String fileName = String.format("journal-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+            fileName = getFileName(fileName, contentType);
+            payrollRecord.setFileName(fileName);
+            byte[] content = payrollJournalService.generate(SecurityUtils.getCurrentCompanyId(), payload.getMonth(), payload.getEmployeeIds());
+            saveFile(PayrollRecordType.PAYROLL_JOURNAL, Objects.requireNonNullElse(content, new byte[] {}), contentType, fileName);
+            payrollRecord.setFilePath(path);
+            payrollRecord.setFileContentType(contentType);
+            payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.DONE);
+        } catch (Exception e) {
+            payrollRecord.setStatus(PayrollRecord.GeneratedFileStatus.FAILED);
+        } finally {
+            payrollRecordRepository.save(payrollRecord);
+        }
+    }
+
+    @Async("payrollRecordsAsyncExecutor")
     public void generatePayrollElements(PayrollElementPayloadDTO payload) {
 
         PayrollRecord  payrollRecord =  init(SecurityUtils.getCurrentCompanyId(), SecurityUtils.getCurrentUser().get().getId());
@@ -180,7 +206,7 @@ public class PayrollRecordService {
     }
 
     @Async("payrollRecordsAsyncExecutor")
-    public void generateDasIndividual(int year, Long employeeId) {
+    public void generateDasIndividual(DasIndividualPayloadDTO payload) {
         PayrollRecord  payrollRecord =  init(SecurityUtils.getCurrentCompanyId(), SecurityUtils.getCurrentUser().get().getId());
         payrollRecord.setType(PayrollRecordType.DAS_INDIVIDUAL);
         payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
@@ -190,7 +216,7 @@ public class PayrollRecordService {
             String fileName = String.format("DAS-individuel-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
-            byte[] content = dasIndividualService.generate(year, employeeId);
+            byte[] content = dasIndividualService.generate(payload);
              saveFile(PayrollRecordType.DAS_INDIVIDUAL, Objects.requireNonNullElse(content, new byte[]{}), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);

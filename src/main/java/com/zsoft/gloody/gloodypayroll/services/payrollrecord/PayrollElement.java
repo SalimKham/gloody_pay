@@ -15,6 +15,7 @@ import java.util.List;
 @Data
 public  class PayrollElement implements Serializable {
         private PayrollElementPayloadDTO employee;
+        private String logo;
         private int year;
         private String printDate;
         private List<PayrollElementItem> items;

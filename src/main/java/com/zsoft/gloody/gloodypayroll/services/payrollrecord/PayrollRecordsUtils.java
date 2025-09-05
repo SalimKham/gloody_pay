@@ -5,6 +5,7 @@ import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import org.apache.poi.ss.usermodel.Sheet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,5 +59,9 @@ public class PayrollRecordsUtils {
         Handlebars handlebars = new Handlebars(loader);
         Template template = handlebars.compile(templateName);
         return template.apply(data);
+    }
+
+    public static void setColumnWidthInPixels(Sheet sheet, int pixels) {
+        sheet.setDefaultColumnWidth(20);
     }
 }
