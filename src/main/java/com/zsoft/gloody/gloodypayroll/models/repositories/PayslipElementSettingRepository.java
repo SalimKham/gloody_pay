@@ -29,9 +29,9 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
             JOIN pse.section s
             WHERE ps.closed = true
             AND pse.value IS NOT NULL
-            AND pse.payslipSetting.employee IS NOT NULL 
+            AND pse.payslipSetting.employee IS NOT NULL
             AND s.code = 'R_BRUT'
-            AND ps.paymentDate BETWEEN :start_date AND :end_date 
+            AND ps.paymentDate BETWEEN :start_date AND :end_date
             GROUP BY pse.payslipSetting.employee
             """)
     List<Tuple> findQuarterlyContribution(@Param("start_date") LocalDate startDate, @Param("end_date") LocalDate endDate);
@@ -51,7 +51,7 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
 
 
     @Query("""
-            SELECT pse.payslipSetting.paymentDate, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.section.code in :codes 
+            SELECT pse.payslipSetting.paymentDate, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.section.code in :codes
             AND pse.value IS NOT NULL AND pse.payslipSetting.employee = :resource_id AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate BETWEEN :start_month AND :end_month
             ORDER BY pse.payslipSetting.paymentDate ASC
             """)
@@ -59,8 +59,8 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
 
 
     @Query("""
-            SELECT pse.payslipSetting.employee, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
-            ORDER BY pse.payslipSetting.paymentDate ASC
+            SELECT pse.payslipSetting.employee, pse.section.code,  pse.value, pse.elementOrder  FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
+            ORDER BY pse.elementOrder ASC
             """)
     Page<Tuple> getClosedElementsByEmployeeIdAndCodeInAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
 

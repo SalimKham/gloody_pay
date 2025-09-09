@@ -19,11 +19,9 @@ public interface SectionRepository extends JpaRepository<Section, Long>, JpaSpec
     @Query("SELECT distinct new com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry(s.code,s) FROM Section s WHERE s.company = :company_id" )
     List<SectionMapEntry> findAllByCompanyAsMap(@Param("company_id") Long companyId);
 
-    List<Section> findAllByCompany(@Param("company_id") Long companyId);
-
     @Query("""
             SELECT s FROM Section s LEFT JOIN PayslipSettingElement  pse ON pse.section.id = s.id WHERE pse.value IS NOT NULL AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
-            ORDER BY pse.payslipSetting.paymentDate ASC
+            ORDER BY pse.elementOrder  ASC
             """)
     List<Section> getMonthlySection(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month);
 
