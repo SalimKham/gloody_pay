@@ -26,4 +26,17 @@
     <include file="0.0.1/add_contract_id_to_payslip_setting.xml" relativeToChangelogFile="true"/>
     <include file="0.0.1/update_payslip_setting_add_draft_column.xml" relativeToChangelogFile="true"/>
     <include file="0.0.2/hr_monthly_summary.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/update_setting_element_company.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/add_identifier_to_section.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/change_lbl_prefix_to_TOT.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/add_columns_to_employee.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/add_columns_to_company.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/add_company_id_foreign_key.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/update_contract_nature_type.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/add-summary-data-souce-type.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.3/add-payroll-record-table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add_column_employee_title.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add_column_seniority_order.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-activity-sector-to-company.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/unset-employee-marital-status.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

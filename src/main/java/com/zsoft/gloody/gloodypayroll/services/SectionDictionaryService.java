@@ -3,7 +3,6 @@ package com.zsoft.gloody.gloodypayroll.services;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.enums.PayslipRate;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @RequiredArgsConstructor
 public class SectionDictionaryService extends CompanySupportService {
-    private LinkedHashMap<String, Object> variables;
+    private LinkedHashMap<String, Object> variables =  new LinkedHashMap<>();
     private LinkedHashMap<String, Object> initialVariables = new LinkedHashMap<>();
     private boolean addElements = true;
 
@@ -35,17 +34,6 @@ public class SectionDictionaryService extends CompanySupportService {
 
     @PostConstruct
     private void initVariables() {
-        variables = new LinkedHashMap<>();
-       /* settingRepository.findAll().forEach(setting -> {
-            try {
-
-                Object result = engine.eval(setting.getFormula());
-                if (result != null) {
-                    setVariable(setting.getKey(), valueOf(result));
-                }
-            } catch (ScriptException ignored) {
-            }
-        });*/
         setVariable(IRG_YEAR, LocalDate.now().getYear());
     }
 
@@ -74,32 +62,34 @@ public class SectionDictionaryService extends CompanySupportService {
         variables.put(key, value);
     }
 
-    public void setVariables(Employee employee, PayslipSettingDto dto, Map<String, Double> monthlyValues, Period period) {
-        if (dto == null) {
-            return;
+    public void setVariableAndInitialVariable(String key, Object value) {
+        variables.put(key, value);
+        initialVariables.put(key, value);
+    }
+
+    public void setRate(PayslipRate rate) {
+        if (rate != null) {
+            setVariableAndInitialVariable(IS_DAILY_RATE, Objects.equals(rate , PayslipRate.DAILY) ? 1 : 0);
+            setVariableAndInitialVariable(IS_HOURLY_RATE, Objects.equals(rate, PayslipRate.HOURLY) ? 1 : 0);
         }
+    }
+
+    public void setPeriod(Period period) {
+        setVariableAndInitialVariable(PAYMENT_START, DateUtils.startOfMonth(period.start()));
+        setVariableAndInitialVariable(PAYMENT_END, DateUtils.endOfMonth(period.end()));
+        setVariableAndInitialVariable(IRG_YEAR, period.start().getYear());
+    }
+
+
+    public void setVariables(Employee employee,  Map<String, Double> monthlyValues,  Map<String, String> variablesMap) {
         variables = new LinkedHashMap<>(monthlyValues);
-        double totalAbsences = monthlyValues.getOrDefault("ABS_TTL", 0d);
-        double cpDays = monthlyValues.getOrDefault("ABS_CP", 0d);
-        setVariable(PAYMENT_START, DateUtils.startOfMonth(period.start()));
-        setVariable(PAYMENT_END, DateUtils.endOfMonth(period.end()));
-        setVariable(IRG_YEAR, period.start().getYear());
-        if (dto.getRate() != null) {
-            setVariable(IS_DAILY_RATE, Objects.equals(dto.getRate(), PayslipRate.DAILY) ? 1 : 0);
-            setVariable(IS_HOURLY_RATE, Objects.equals(dto.getRate(), PayslipRate.HOURLY) ? 1 : 0);
-        }
-        double countWorkingDays = findDoubleValue(DAYS_NBR) - totalAbsences;
-        double hoursByDay = findDoubleValue(HOURS_BY_WEEK) / findDoubleValue(DAYS_BY_WEEK);
-        setVariable(WORKING_DAYS_NBR, countWorkingDays - findDoubleValue(CONTRACT_OFF_DAYS));
-        setVariable(WORKING_HOURS_NBR, (countWorkingDays * hoursByDay) - findDoubleValue(ABSENCES));
-        if (Objects.equals(dto.getRate(), PayslipRate.DAILY)) {
-            setVariable(ABSENCES, totalAbsences - cpDays);
-        } else {
-            setVariable(ABSENCES, (totalAbsences - cpDays) * hoursByDay);
-        }
-        setVariable(CP, cpDays);
+        double totalAbsences = monthlyValues.getOrDefault(variablesMap.getOrDefault("ABS_TTL", "ABS_TTL"), 0d);
+        double countWorkingDays = findDoubleValue(variablesMap.getOrDefault(DAYS_NBR,  DAYS_NBR)) - totalAbsences;
+        double hoursByDay = findDoubleValue(variablesMap.getOrDefault(HOURS_BY_WEEK, HOURS_BY_WEEK )) / findDoubleValue(variablesMap.getOrDefault(DAYS_BY_WEEK, DAYS_BY_WEEK ));
+        setVariable(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR), countWorkingDays - findDoubleValue(variablesMap.getOrDefault(CONTRACT_OFF_DAYS, CONTRACT_OFF_DAYS )));
+        setVariable(variablesMap.getOrDefault(WORKING_HOURS_NBR , WORKING_HOURS_NBR), (findDoubleValue(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR)) * hoursByDay));
         if (employee != null) {
-            setVariable(BASE_SALARY, employee.getBaseSalary());
+            setVariable(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY ), employee.getBaseSalary());
         }
         initialVariables.putAll(variables);
     }

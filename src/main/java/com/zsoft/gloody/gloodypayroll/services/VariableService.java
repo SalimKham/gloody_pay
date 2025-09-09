@@ -23,8 +23,8 @@ public class VariableService extends CompanySupportService {
 
     public Page<VariableSettingDto> findAll(Pageable pageable, String query) {
         query = query != null ? query : "";
-        query = "%"+ query + "%";
-        return variableRepository.findAllByLabelLikeOrKeyLike(query, query ,pageable).map(variableMapper::toDto);
+        query = "%" + query + "%";
+        return variableRepository.findAllByLabelLikeOrKeyLike(query, query, pageable).map(variableMapper::toDto);
     }
 
 
@@ -42,18 +42,23 @@ public class VariableService extends CompanySupportService {
             key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
     )
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
-        variableRepository.saveAll(variables.stream().filter(variableSettingDto -> {
-            boolean existsBySource = false;
-            if (Objects.nonNull(variableSettingDto.getSource())) {
-                existsBySource = variableRepository.existsBySourceAndCompany(variableSettingDto.getSource(), variableSettingDto.getCompany());
-            }
-            return !existsBySource && !variableRepository.existsByKeyAndSourceAndCompany(variableSettingDto.getKey(), variableSettingDto.getSource(),variableSettingDto.getCompany());
-        })
+        variableRepository.saveAll(variables.stream().filter(variableSettingDto ->
+                {
+                    if (variableSettingDto.getId() == null) {
+                        return !variableRepository.existsByKeyAndCompany(variableSettingDto.getKey(), variableSettingDto.getCompany());
+                    }
+                    return !variableRepository.existsByKeyAndCompanyAndIdNot(variableSettingDto.getKey(), variableSettingDto.getCompany(), variableSettingDto.getId());
+                })
+                .peek(variableSettingDto -> {
+                    if (Objects.nonNull(variableSettingDto.getSource())) {
+                        variableRepository.findTopBySource(variableSettingDto.getSource()).ifPresent(v -> variableSettingDto.setId(v.getId()));
+                    }
+                })
                 .map(variableMapper::toEntity).toList());
         return findAll(pageable, query);
     }
 
-    public Page<VariableSettingDto> delete(Long variableId,  Pageable pageable, String query) {
+    public Page<VariableSettingDto> delete(Long variableId, Pageable pageable, String query) {
         variableRepository.deleteById(variableId);
         return findAll(pageable, query);
     }

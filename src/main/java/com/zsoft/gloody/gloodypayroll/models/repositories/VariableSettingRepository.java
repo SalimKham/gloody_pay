@@ -7,12 +7,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Repository
 @Transactional
 public interface VariableSettingRepository extends JpaRepository<VariableSetting, Long> {
-    boolean existsByKeyAndSourceAndCompany(String key, String source, Long company);
-    boolean existsBySourceAndCompany(String source, Long company);
+    boolean existsByKeyAndCompanyAndIdNot(String key, Long company, Long id);
+    boolean existsByKeyAndCompany(String key, Long company);
     void deleteBySource(String key);
+    Optional<VariableSetting> findTopBySource(String source);
+    Optional<VariableSetting> findTopBySourceAndCompany(String source, Long companyId);
     void deleteAllBySourceIsNotNullAndCompany(Long company);
     Page<VariableSetting> findAllByLabelLikeOrKeyLike(String label, String key, Pageable pageable);
 }

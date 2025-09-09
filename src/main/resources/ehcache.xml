@@ -11,14 +11,6 @@
         </resources>
     </cache>
 
-    <cache alias="defaultSections">
-        <key-type>java.lang.Long</key-type>
-        <value-type>com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings</value-type>
-        <resources>
-            <heap unit="entries">10</heap>
-            <offheap unit="MB">10</offheap>
-        </resources>
-    </cache>
 
     <cache alias="company_variables">
         <key-type>java.lang.Long</key-type>
@@ -34,7 +26,7 @@
         <value-type> java.util.Optional</value-type>
         <resources>
             <heap unit="entries">5</heap>
-            <offheap unit="MB">10</offheap>
+            <offheap unit="MB">2</offheap>
         </resources>
     </cache>
 

@@ -16,7 +16,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
+import static com.zsoft.gloody.gloodypayroll.configs.Constants.PAYMENT_END;
+import static com.zsoft.gloody.gloodypayroll.configs.Constants.PAYMENT_START;
 import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.dictionaryService;
 
 @AllArgsConstructor
@@ -34,25 +35,21 @@ public class TemplateHelper extends EntityManagerService {
         return messageSources.get(file);
     }
 
-    public Map<String, Object> getPayrollData(PayslipDetailDto payslipDetail, EmployeeDto employee, Locale locale) {
+    public Map<String, Object> getPayrollData(PayslipDetailDto payslipDetail, EmployeeDto employee, Locale locale, CompanyDto company) {
         Map<String, Object> data = new HashMap<>();
         data.put("payroll_start", dictionaryService().findValue(PAYMENT_START));
         data.put("payroll_end", dictionaryService().findValue(PAYMENT_END));
-
         data.put("show_employer_col", false);
         data.put("currency", getLocaleCurrency(locale));
-        double hoursNbr = dictionaryService().findDoubleValue(HOURS_NBR);
-        double baseSalary = dictionaryService().findDoubleValue(BASE_SALARY);
+        double baseSalary = employee.getBaseSalary();
         data.put("emp_base_salary", baseSalary);
-        data.put("monthly_duration", hoursNbr);
-        data.put("hourly_rate", hoursNbr > 0 ? baseSalary / hoursNbr : 0);
 
         if (payslipDetail == null) {
             data.putAll(getEmployeeData(employee, locale));
         } else {
             data.putAll(getEmployeeDataFromPayslipDetails(employee, payslipDetail, locale));
         }
-
+        data.putAll(getCompanyData(company, locale));
         return data;
     }
 
@@ -66,12 +63,8 @@ public class TemplateHelper extends EntityManagerService {
             data.put("emp_social_security_number", payslipDetailDto.getSocialSecurity());
             data.put("contract_start", payslipDetailDto.getContractDate());
             data.put("contract_end", null);
-            data.put("emp_job_classification", payslipDetailDto);
-            data.put("emp_job_category", employee.getJobCategory());
             data.put("emp_job_title", payslipDetailDto.getJobTitle());
             data.put("emp_department", payslipDetailDto.getDepartmentName());
-
-            data.putAll(getCompanyData(employee.getCompany(), locale));
         }
         return data;
     }
@@ -86,12 +79,8 @@ public class TemplateHelper extends EntityManagerService {
             data.put("emp_social_security_number", employee.getSocialSecurity());
             data.put("contract_start", employee.getHireDate());
             data.put("contract_end", null);
-            data.put("emp_job_classification", employee.getJobClassification());
-            data.put("emp_job_category", employee.getJobCategory());
             data.put("emp_job_title", employee.getJobTitle());
             data.put("emp_department", employee.getDepartment());
-
-            data.putAll(getCompanyData(employee.getCompany(), locale));
         }
         return data;
     }
@@ -101,8 +90,6 @@ public class TemplateHelper extends EntityManagerService {
         if (company != null) {
             data.put("cmp_name", company.getName());
             data.put("cmp_adr", getFormattedAddress(company.getAddress(), locale));
-            data.put("cmp_registration_number", "1231669778820");
-            data.put("cmp_tax_number", "V123321619940");
         }
         return data;
     }

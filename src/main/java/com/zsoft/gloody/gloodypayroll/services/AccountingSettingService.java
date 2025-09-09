@@ -18,6 +18,7 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingAccou
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingDTO;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.accounting.AccountingSettingMapper;
+import com.zsoft.gloody.gloodypayroll.services.payrollrecord.PayrollRecordsUtils;
 import com.zsoft.gloody.gloodypayroll.support.PayslipDetailConverter;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
@@ -33,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -292,8 +292,6 @@ public class AccountingSettingService {
 
 
     public byte[] exportAccountingData(AccountingExportFilterDto filter) {
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         XSSFWorkbook workbook = new XSSFWorkbook();
         final Sheet sheet = workbook.createSheet(filter.getFileName());
         sheet.setColumnWidth(0, 8000);
@@ -325,8 +323,8 @@ public class AccountingSettingService {
         long numberOfMonths = ChronoUnit.MONTHS.between(filter.getStartMonth().withDayOfMonth(1), filter.getEndMonth().withDayOfMonth(1)) + 1;
         List<String> months = Stream.iterate(filter.getStartMonth().withDayOfMonth(1), date -> date.plusMonths(1))
                 .limit(numberOfMonths)
-                .map(date -> date.format(formatter))
-                .collect(Collectors.toList());
+                .map(date -> date.format(PayrollRecordsUtils.dateFormatter))
+                .toList();
         int index = 0;
         for (AccountingSettingDTO accountingSetting : monthlyTotals) {
             if (accountingSetting.getGroups() == null) {

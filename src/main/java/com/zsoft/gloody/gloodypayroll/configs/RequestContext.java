@@ -2,9 +2,10 @@ package com.zsoft.gloody.gloodypayroll.configs;
 
 
 import com.zsoft.gloody.gloodypayroll.models.beans.CompanySections;
-import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.PerRequestElements;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipFunctionElement;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipSettingReadOnlyService;
 import com.zsoft.gloody.gloodypayroll.services.SectionDictionaryService;
@@ -21,11 +22,10 @@ public class RequestContext {
     private static final ThreadLocal<SectionDictionaryService> dictionaryService = new InheritableThreadLocal<>();
     private static final ThreadLocal<PerRequestElements> perRequestElements = new InheritableThreadLocal<>();
     private static final ThreadLocal<CompanySections> companySections = new InheritableThreadLocal<>();
-    private static final ThreadLocal<DefaultSectionSettings> defaultSectionSettings = new InheritableThreadLocal<>();
     private static final ThreadLocal<Map<Long, PayslipSettingDto>> templates = new InheritableThreadLocal<>();
     private static final ThreadLocal<PayslipSettingDto> defaultTemplate = new InheritableThreadLocal<>();
     private static final ThreadLocal<Map<Long, Map<String, Double>>> monthlyValues = new InheritableThreadLocal<>();
-
+    private static final ThreadLocal<Map<Long, List<PayslipFunctionElement>>> functionElements = new InheritableThreadLocal<>();
 
     public static void setDictionaryService(SectionDictionaryService ds) {
       dictionaryService.set(ds);
@@ -33,7 +33,6 @@ public class RequestContext {
 
     public static void initRequestContext() {
         initCompanySections();
-        initDefaultSectionSettings();
         initPerRequestElements();
     }
 
@@ -104,24 +103,12 @@ public class RequestContext {
     }
 
 
-    public static void setDefaultSectionSettings(DefaultSectionSettings dS) {
-        defaultSectionSettings.set(dS);
-    }
-
-    public static void initDefaultSectionSettings() {
-        setDefaultSectionSettings(SpringContextHolder.getBean(SectionService.class).findDefaultSections());
-    }
-
-    public static DefaultSectionSettings defaultSectionSettings() {
-        if (defaultSectionSettings.get() == null) {
-            initDefaultSectionSettings();
-        }
-        return defaultSectionSettings.get();
-    }
 
     public static void setMonthlyValues(Map<Long, Map<String, Double>> mv) {
         monthlyValues.set(mv);
     }
+
+
 
     public static void initMonthlyValues(Set<Long> resourceIds) {
         List<Tuple> tuples = SpringContextHolder.getBean(HRDataRepository.class).getMonthlyValues(LocalDate.now().withDayOfMonth(1), resourceIds);
@@ -142,13 +129,30 @@ public class RequestContext {
     }
 
 
+    public static void setFunctionElements(Map<Long, List<PayslipFunctionElement>> fe) {
+        functionElements.set(fe);
+    }
+
+
+
+    public static void initFunctionElements(Set<Long> resourceIds, List<String> codes) {
+        List<PayslipFunctionElement> elements = SpringContextHolder.getBean(PayslipElementSettingRepository.class).findAllByEmployeeIdAndClosed(resourceIds, codes);
+        Map<Long, List<PayslipFunctionElement>> result = elements.stream().collect(Collectors.groupingBy(PayslipFunctionElement::resourceId));
+        setFunctionElements(result);
+    }
+
+    public static Map<Long, List<PayslipFunctionElement>> functionElements() {
+        return functionElements.get();
+    }
+
+
     public static void clear() {
         dictionaryService.remove();
-        defaultSectionSettings.remove();
         perRequestElements.remove();
         defaultTemplate.remove();
         monthlyValues.remove();
         templates.remove();
         companySections.remove();
+        functionElements.remove();
     }
 }

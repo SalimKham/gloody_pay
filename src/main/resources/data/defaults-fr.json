@@ -1,113 +1,189 @@
 {
-  "default_section_codes" : [
-    {
-      "key": "BASE_SALARY",
-      "code": "R001"
-    },
-    {
-      "key": "GROSS_TOTAL",
-      "code": "R100"
-    },
-    {
-      "key": "POSITION_SALARY",
-      "code": "R101"
-    },
-    {
-      "key": "SOCIAL_CHARGE",
-      "code": "R102"
-    },
-    {
-      "key": "TAXABLE_SALARY",
-      "code": "R103"
-    },
-    {
-      "key": "NET_SALARY",
-      "code": "R104"
-    },
-    {
-      "key": "PRIMES",
-      "code": "R105"
-    },
-    {
-      "key": "SALARY",
-      "code": "R999"
-    },
-    {
-      "key": "ABSENCE",
-      "code": "R822"
-    }
-  ],
   "default-variables": [
     {
-      "key": "BASE_SALARY",
-      "label": "Salaire de base",
+      "key": "V_SALAIRE",
+      "source": "BASE_SALARY",
       "description": "Salaire de base",
+      "label": "Salaire de base",
       "formula": "0"
     },
     {
       "key": "IRG(BASE)",
-      "label": "Retenue IRG",
+      "source": "IRG(BASE)",
       "description": "Retenue IRG",
+      "label": "Retenue IRG",
       "formula": "0"
     },
     {
-      "key": "DAYS_NBR",
-      "label": "Nombre de jours",
+      "key": "V_NBR_JOUR",
+      "source": "DAYS_NBR",
       "description": "Nombre de jours",
-      "formula": "22"
+      "label": "Nombre de jours",
+      "formula": "30"
     },
     {
-      "key": "WORKING_DAYS_NBR",
-      "label": "Nombre de jours ouvrables",
+      "key": "V_NBJ_OUVRABL",
+      "source": "WORKING_DAYS_NBR",
       "description": "Nombre de jours ouvrables",
-      "formula": "22"
+      "label": "Nombre de jours ouvrables",
+      "formula": "30"
     },
     {
-      "key": "HOURS_NBR",
-      "label": "Nombre d'heures",
+      "key": "V_NBH",
+      "source": "HOURS_NBR",
       "description": "Nombre d'heures",
+      "label": "Nombre d'heures",
+      "formula": "120"
+    },
+    {
+      "key": "V_NBH_TRAV",
+      "source": "WORKING_HOURS_NBR",
       "formula": "151.67"
     },
     {
-      "key": "WORKING_HOURS_NBR",
-      "formula": "151.67"
-    },
-    {
-      "key": "IS_DAILY_RATE",
+      "key": "V_NBJ",
+      "source": "IS_DAILY_RATE",
+      "label": "estTauxJournalier",
+      "description": "Cette variable est un booléen permettant d’indiquer si le taux est exprimé en jours (true) ou non (false)",
       "formula": "0"
     },
     {
-      "key": "IS_HOURLY_RATE",
+      "key": "VB_TH",
+      "source": "IS_HOURLY_RATE",
+      "label": "estTauxHoraire",
+      "description": "Cette variable est un booléen permettant d’indiquer si le taux est exprimé en horaire (true) ou non (false)",
       "formula": "0"
     },
     {
-      "key": "DAYS_BY_WEEK",
-      "label": "Jours par semaine",
+      "key": "V_NBJ_SEM",
+      "source": "DAYS_BY_WEEK",
       "description": "Jours par semaine",
+      "label": "Jours par semaine",
       "formula": "5"
     },
     {
-      "key": "HOURS_BY_WEEK",
-      "label": "Heures par semaine",
+      "key": "V_NBH_SEM",
+      "source": "HOURS_BY_WEEK",
       "description": "Heures par semaine",
+      "label": "Heures par semaine",
       "formula": "40"
     },
     {
-      "key": "HLD",
-      "label": "Les Jours fériés",
+      "key": "V_NBJ_FRS",
+      "source": "HLD",
       "description": "Les Jours fériés",
-      "source": "HOLIDAYS",
+      "label": "Les Jours fériés",
+      "formula": "0"
+    },
+    {
+      "key": "V_PR_TOTAL",
+      "source": "ADVANCE",
+      "description": "Prêt",
+      "label": "Prêt",
+      "formula": "0"
+    },
+    {
+      "key": "V_RET_PANIER",
+      "source": "MEAL_VOUCHER",
+      "description": "La somme des Titres/Carnets Restaurant",
+      "label": "Titres/Carnets Restaurant",
+      "formula": "0"
+    },
+    {
+      "key": "V_MUTUELLE",
+      "source": "RESOURCE_MUTUAL",
+      "description": "La somme des mutuelles",
+      "label": "Mutuelle",
+      "formula": "0"
+    },
+    {
+      "key": "V_HEUR_SUP0",
+      "source": "EXTRA_HOURS_ZERO",
+      "description": "Nombres d’heures supplémentaires à 0%",
+      "label": "Heures sup 0%",
+      "formula": "0"
+    },
+    {
+      "key": "V_HEUR_SUP25",
+      "source": "EXTRA_HOURS_TWENTY_FIVE",
+      "description": "Nombres d’heures supplémentaires à 25%",
+      "label": "Heures sup 25%",
+      "formula": "0"
+    },
+    {
+      "key": "V_HEUR_SUP50",
+      "source": "EXTRA_HOURS_FIFTY",
+      "description": "Nombres d’heures supplémentaires à 50%",
+      "label": "Heures sup 50%",
+      "formula": "0"
+    },
+    {
+      "key": "V_HEUR_SUP75",
+      "source": "EXTRA_HOURS_SEVENTY_FIVE",
+      "description": "Nombres d’heures supplémentaires à 75%",
+      "label": "Heures sup 75%",
+      "formula": "0"
+    },
+    {
+      "key": "V_HEUR_SUP100",
+      "source": "EXTRA_HOURS_HUNDRED",
+      "description": "Nombres d’heures supplémentaires à 100%",
+      "label": "Heures sup 100%",
+      "formula": "0"
+    },
+    {
+      "key": "VC_ABS_CP",
+      "source": "ABS_CP",
+      "label": "absence congé payé",
+      "formula": "0"
+    },
+    {
+      "key": "VC_ABS_TTL",
+      "source": "ABS_TTL",
+      "description": "Récupère le total des absences (tous les types)",
+      "label": "Total des absences",
+      "formula": "0"
+    },
+    {
+      "key": "VC_ABS_OUVRES",
+      "source": "DAYS_NBR_RCT",
+      "label": "nombre de jours d'absence recrutement",
+      "formula": "0"
+    },
+    {
+      "key": "V_NBJ_OUVRES",
+      "source": "OPN_DAYS",
+      "description": "LE NOMBRE DE JOURS OUVREE",
+      "label": "OPEN DAYS",
+      "formula": "30"
+    },
+    {
+      "key": "VC_CG_PRIS",
+      "source": "ABS_CY",
+      "label": "nombre de jour d'absence consomé de sold N",
+      "formula": "0"
+    },
+    {
+      "key": "VC_ABS_RLQ",
+      "source": "ABS_RLQ",
+      "label": "absence reliquat",
+      "formula": "0"
+    },
+    {
+      "key": "VC_CG_RLQ",
+      "source": "ABS_PY",
+      "label": "absence consomé des solde N-1 anterieure",
       "formula": "0"
     }
   ],
   "default-categories": [
     {
       "code": "C001",
-      "name": "Imposable cotisable"
+      "name": "Absence et congés"
     },
     {
       "code": "C002",
-      "name": "Imposable non cotisable"
+      "name": "Imposable et cotisable"
     },
     {
       "code": "C003",
@@ -119,7 +195,7 @@
     },
     {
       "code": "C005",
-      "name": "charge"
+      "name": "charge et impot"
     },
     {
       "code": "C006",
@@ -127,364 +203,777 @@
     },
     {
       "code": "C007",
-      "name": "Imposition"
+      "name": " intermédiaire"
     },
     {
       "code": "C999",
-      "name": ""
+      "name": "charges - CNAS & Cacobath"
+    },
+    {
+      "code": "EXN",
+      "name": "Exonéré"
+    },
+    {
+      "code": "IMP",
+      "name": "Imposable"
+    }
+  ],
+  "default-labels": [
+    {
+      "key": "CR_COTI",
+      "label": "Cotisable"
+    },
+    {
+      "key": "CR_EXN",
+      "label": "Exonéré"
+    },
+    {
+      "key": "CR_GAIN",
+      "label": "Gain"
+    },
+    {
+      "key": "CR_HR_SUP",
+      "label": "Heure supplémentaire"
+    },
+    {
+      "key": "CR_IMP_GLB",
+      "label": "Imposable (IRG)"
+    },
+    {
+      "key": "CR_IMP",
+      "label": "Imposable BAREME",
+      "parent_id": "CR_IMP_GLB"
+    },
+    {
+      "key": "CR_IMP10",
+      "label": "Imposable 10%",
+      "parent_id": "CR_IMP_GLB"
+    },
+    {
+      "key": "CR_IMP20",
+      "label": "Imposable à 20%",
+      "parent_id": "CR_IMP_GLB"
+    },
+    {
+      "key": "CR_RET",
+      "label": "Retenue"
+    },
+    {
+      "key": "CR_PRIME",
+      "label": "Prime"
     }
   ],
   "default-sections": [
     {
-      "code": "R001",
-      "label": "Salaire de base",
-      "description": "",
-      "category": "C001",
-      "type": "SALARY",
-      "baseFormula": "IS_HOURLY_RATE ? BASE_SALARY / HOURS_NBR : BASE_SALARY / DAYS_NBR",
-      "rateFormula": "IS_HOURLY_RATE ? HOURS_NBR : DAYS_NBR",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R041",
-      "label": "Heures Supplémentaires (25%)",
-      "description": "",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "(BASE_SALARY / HOURS_NBR) * 0.25",
-      "rateFormula": "",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R042",
-      "label": "Heures Supplémentaires (50%)",
-      "description": "",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "(BASE_SALARY / HOURS_NBR) * 0.5",
-      "rateFormula": "",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R043",
-      "label": "Heures Supplémentaires (75%)",
-      "description": "",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "(BASE_SALARY / HOURS_NBR) * 0.75",
-      "rateFormula": "",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R044",
-      "label": "Heures Supplémentaires (100%)",
-      "description": "",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "(BASE_SALARY / HOURS_NBR)",
-      "rateFormula": "",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R100",
-      "label": "Total brut",
-      "description": "",
-      "category": "C999",
+      "code": "IMP_ARR",
+      "label": "imposable arrondi 10",
       "type": "INTERMEDIATE",
-      "baseFormula": null,
-      "rateFormula": null,
-      "valueFormula": "BASE_SALARY+CAT_C006"
-    },
-    {
-      "code": "R101",
-      "label": "Salaire du poste",
-      "description": "",
-      "category": "C999",
-      "type": "INTERMEDIATE",
-      "baseFormula": null,
-      "rateFormula": null,
-      "valueFormula": "R100+CAT_C001"
-    },
-    {
-      "code": "R102",
-      "label": "Charges à payer aux comptes sociaux",
-      "description": "",
-      "category": "C999",
-      "type": "INTERMEDIATE",
-      "valueFormula": "CAT_C005"
-    },
-    {
-      "code": "R103",
-      "label": "Salaire Imposable",
-      "description": "",
-      "category": "C999",
-      "type": "INTERMEDIATE",
-      "valueFormula": "R101 + CAT_C005 + CAT_C002"
-    },
-    {
-      "code": "R104",
-      "label": "Salaire net",
-      "description": "",
-      "category": "C999",
-      "type": "INTERMEDIATE",
-      "valueFormula": "R103  + CAT_C007 "
-    },
-    {
-      "code": "R105",
-      "label": "Charges et primes",
-      "description": "",
-      "category": "C999",
-      "type": "INTERMEDIATE",
-      "valueFormula": "CAT_C004"
-    },
-    {
-      "code": "R280",
-      "label": "Nuisance",
-      "description": "",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "R100",
-      "rateFormula": "0.10",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R510",
-      "label": "Retenue Securité Sociale",
-      "description": "",
-      "category": "C005",
-      "type": "DEDUCTION",
-      "baseFormula": "R101",
-      "rateFormula": "0.09",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R523",
-      "label": "Prime",
-      "description": "",
-      "category": "C004",
-      "type": "GAIN",
-      "rateFormula": "1",
-      "valueFormula": "BASE_SALARY * RATE"
-    },
-    {
-      "code": "R522",
-      "label": "Prime de panier",
-      "description": "",
-      "category": "C002",
-      "type": "GAIN",
-      "baseFormula": "150",
-      "rateFormula": "WORKING_DAYS_NBR",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R532",
-      "label": "Prime de transport",
-      "description": "",
-      "category": "C002",
-      "type": "GAIN",
-      "valueFormula": "1200"
-    },
-    {
-      "code": "R540",
-      "label": "Retenue Cacobath",
-      "description": "",
-      "category": "C005",
-      "type": "DEDUCTION",
-      "baseFormula": "R101",
-      "rateFormula": "0.375",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R541",
-      "label": "Notes de frais",
-      "description": "",
-      "category": "C004",
-      "type": "GAIN"
-    },
-    {
-      "code": "R542",
-      "label": "Prêts",
-      "description": "",
-      "category": "C004",
-      "type": "DEDUCTION"
-    },
-    {
-      "code": "R660",
-      "label": "Retenue IRG",
-      "description": "",
       "category": "C007",
+      "base_formula": "R_BRUT_IMPOS",
+      "rate_formula": "10",
+      "value_formula": "R_BRUT_IMPOS-BASE*RATE",
+      "rate_percent": true
+    },
+    {
+      "code": "IRG3",
+      "label": "Retenue IRG HRV - Used ",
       "type": "DEDUCTION",
-      "rateFormula": "IS_HOURLY_RATE ? R103 * HOURS_NBR / WORKING_HOURS_NBR : R103 * DAYS_NBR / WORKING_DAYS_NBR",
-      "valueFormula": "IS_HOURLY_RATE ? IRG(BASE) * WORKING_HOURS_NBR / HOURS_NBR : IRG(BASE) * WORKING_DAYS_NBR / DAYS_NBR"
+      "category": "C007",
+      "base_formula": "R_BRUT_IMPOS",
+      "value_formula": "IRG(BASE)*IMP_ARR/R_ABS_SABS_ARR",
+      "rate_percent": false
     },
     {
-      "code": "R713",
-      "label": "Frais déplacement",
-      "description": "",
-      "category": "C004",
-      "type": "GAIN"
-    },
-    {
-      "code": "R714",
-      "label": "Salaire unique",
-      "description": "",
-      "category": "C004",
-      "type": "GAIN"
-    },
-    {
-      "code": "R790",
-      "label": "Conge",
-      "description": "",
-      "category": "C001",
-      "type": "GAIN"
-    },
-    {
-      "code": "R822",
-      "label": "Absence",
-      "description": "",
-      "category": "C006",
-      "type": "DEDUCTION",
-      "baseFormula": "IS_HOURLY_RATE ? BASE_SALARY / HOURS_NBR : BASE_SALARY / DAYS_NBR",
-      "rateFormula": "ABSENCES",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R998",
-      "label": "Total",
-      "description": "",
-      "category": "C999",
-      "type": "TOTAL"
-    },
-    {
-      "code": "R999",
-      "label": "NET à payer",
-      "description": "",
-      "category": "C999",
-      "type": "INTERMEDIATE",
-      "valueFormula": "R104+105"
-    },
-    {
-      "code": "R261",
-      "label": "I.E.P.",
-      "description": "Indemnité d'expérience professionnel",
-      "category": "C001",
+      "code": "P_AID",
+      "label": "Prime de l'AID",
       "type": "GAIN",
-      "baseFormula": "R100",
-      "rateFormula": "0.15",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R262",
-      "label": "I.F.S.P.",
-      "description": "Indemnité forfaitaire du service permanent",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "R100",
-      "rateFormula": "0.3",
-      "valueFormula": "BASE * RATE"
-    },
-    {
-      "code": "R263",
-      "label": "I.F.R.I.",
-      "description": "Indemnité forfaitaire région isolée",
       "category": "C002",
-      "type": "GAIN",
-      "baseFormula": "R100",
-      "rateFormula": "0.02",
-      "valueFormula": "BASE * RATE"
+      "value_formula": "BNS_AID",
+     
+      "rate_percent": false
     },
     {
-      "code": "R282",
-      "label": "P.R.C.",
-      "description": "Prime de rendement collectif",
-      "category": "C001",
-      "type": "GAIN",
-      "baseFormula": "R100",
-      "rateFormula": "0.2",
-      "valueFormula": "BASE * RATE"
+      "code": "R_ABS_SABS_ARR",
+      "label": "imposable sans absence arrondi 10%",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "base_formula": "R_SAL_IMP_SABS",
+      "rate_formula": "10",
+      "value_formula": "R_SAL_IMP_SABS-BASE*RATE",
+     
+      "rate_percent": true
     },
     {
-      "code": "R281",
-      "label": "P.R.I.",
-      "category": "C001",
+      "code": "R_BRUT",
+      "label": "Salaire de poste",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "V_SALAIRE+TOT_CR_COTI",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_BRUT_IMPOS",
+      "label": "Salaire imposable",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "(V_SALAIRE+TOT_CR_IMP+TOT_CR_IMP10-R_RET_SS-R_DED_SS)",
+      "rate_percent": false
+    },
+    {
+      "code": "R_DED_SS",
+      "label": "Imposable à 10% (après déduction SS)",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "TOT_CR_IMP10-(0.09*TOT_CR_IMP10)",
+      "rate_percent": false
+    },
+    {
+      "code": "R_HEUR_SUP0",
+      "label": "Heures Supplémentaires (0%)",
       "type": "GAIN",
-      "baseFormula": "R100",
-      "rateFormula": "0.1",
-      "valueFormula": "BASE * RATE"
+      "category": "C002",
+      "base_formula": "R_SALH*0",
+      "rate_formula": "V_HEUR_SUP0",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_HEUR_SUP100",
+      "label": "Heures Supplémentaires à 100%",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "R_SALH",
+      "rate_formula": "V_HEUR_SUP100",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_HEUR_SUP25",
+      "label": "Heures Supplémentaires (25%)",
+     
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "R_SALH*0.25",
+      "rate_formula": "V_HEUR_SUP25",
+      "value_formula": "BASE*RATE",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_HEUR_SUP50",
+      "label": " Heures Supplémentaires (50%)",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "R_SALH*0.5",
+      "rate_formula": "V_HEUR_SUP50",
+      "value_formula": "BASE*RATE",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_HEUR_SUP75",
+      "label": "Heures Supplémentaires (75%)",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "R_SALH*0.75",
+      "rate_formula": "V_HEUR_SUP75",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_IMP10_SS",
+      "label": "Imposable à 10% (après déduction SS)",
+      "type": "INTERMEDIATE",
+      "category": "C005",
+      "value_formula": "TOT_CR_IMP10-(0.09*TOT_CR_IMP10)",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_IND_PANIER",
+      "label": "Indemnité de panier",
+      "type": "GAIN",
+      "category": "IMP",
+      "base_formula": "V_IND_PANIER",
+      "rate_formula": "(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_IND_TRVPOS",
+      "label": "Indemnité travail poste",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_SALAIRE-((V_NBR_JOUR-V_NBJ_OUVRABL)*V_SALAIRE/V_NBR_JOUR)",
+      "rate_formula": "V_IND_TRVPOS",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": true
+    },
+    {
+      "code": "R_IRG_10",
+      "label": "IRG à 10%",
+      "type": "DEDUCTION",
+      "category": "C005",
+      "base_formula": "R_DED_SS",
+      "rate_formula": "10",
+      "value_formula": "BASE*RATE",
+     
+      "rate_percent": true
+    },
+    {
+      "code": "R_IRG_SABS",
+      "label": "Retenue IRG Sans absences ",
+      "type": "GAIN",
+      "category": "C007",
+      "base_formula": "R_SAL_IMP_SABS",
+      "value_formula": "IRG(BASE)",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_MUTUELLE",
+      "label": "Retenue mutuelle",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_MUTUELLE",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_NET_PAYE",
+      "label": "Net à payer",
+     
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "R_SAL_NET+TOT_CR_EXN",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_DFF",
+      "label": "Déplacement Forfait Fixe",
+      "type": "GAIN",
+      "category": "EXN",
+      "base_formula": "V_PR_DFF",
+      "rate_formula": "1",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_DISPO",
+      "label": "Indemnité de disponibilité",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_PR_DISPO",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_ENC10",
+      "label": "Prime d'encadrement 10%",
+     
+      "type": "GAIN",
+      "category": "C002",
+      "value_formula": "V_PR_ENC10",
+      "label_keys": "CR_IMP10##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_COTI",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_IEP",
+      "label": "IEP",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_PR_IEP",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_IND_CP",
+      "label": "Indemnité Congés payés",
+      "type": "GAIN",
+      "category": "C001",
+      "value_formula": "V_IND_CP",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_IND_RELIQ",
+      "label": "Indemnité Congé payé reliquat",
+      "type": "GAIN",
+      "category": "C001",
+      "value_formula": "V_IND_RELIQ",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_INTERIM",
+      "label": "Prime d'intérim",
+     
+      "type": "GAIN",
+      "category": "C002",
+      "value_formula": "V_PR_INTERIM",
+      "label_keys": "CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_NUISANC",
+      "label": "Prime de nuisances",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "R_SALJ*V_NBJ_OUVRABL",
+      "rate_formula": "V_PR_NUISANC",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_PRIME",
+      "rate_percent": true
+    },
+    {
+      "code": "R_PR_NUIT",
+      "label": "Prime de nuit",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_PR_NUIT",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_OBJ10",
+      "label": "Prime d'objectif 10%",
+      "type": "GAIN",
+      "category": "C002",
+      "value_formula": "V_PR_OBJ10",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP10##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_OBJECT",
+      "label": "Prime d'objectif",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_PR_OBJECT",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_PRESENT",
+      "label": "Prime de présentation",
+      "type": "GAIN",
+      "category": "IMP",
+      "base_formula": "V_PR_PRESENT",
+      "rate_formula": "(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_QUALITE",
+      "label": "Prime de qualité",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_PR_QUALITE",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_RD",
+      "label": "Prime de Recherche et Dévelop.",
+      "type": "GAIN",
+      "category": "C002",
+      "value_formula": "V_PR_RD",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_RESP",
+      "label": "Ind. de responsabilité (Mt)",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_PR_RESP",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_RINDIV",
+      "label": "Prime de Rendement Individuel",
+      "type": "GAIN",
+      "category": "C002",
+      "base_formula": "V_SALAIRE-((V_NBR_JOUR-V_NBJ_OUVRABL)*V_SALAIRE/V_NBR_JOUR)",
+      "rate_formula": "V_PR_RINDIV",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_PRIME",
+      "rate_percent": true
+    },
+    {
+      "code": "R_PR_TRSP",
+      "label": "Prime de transport",
+      "type": "GAIN",
+      "category": "IMP",
+      "base_formula": "V_PR_TRSP",
+      "rate_formula": "(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_VEH_PERSO",
+      "label": "Indemnité véhicule personnel",
+      "type": "GAIN",
+      "category": "IMP",
+      "base_formula": "V_PR_VEH_PERSO",
+      "rate_formula": "V_NBJ_OUVRABL/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_PR_VEH_SOC",
+      "label": "Indemnité véhicule société",
+      "type": "GAIN",
+      "category": "EXN",
+      "base_formula": "V_PR_VEH_SOC",
+      "rate_formula": "(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_REMB_DEP",
+      "label": "Remboursement Frais de dépalcement",
+     
+      "type": "GAIN",
+      "category": "EXN",
+      "value_formula": "V_REMB_DEP",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_CONGE",
+      "label": " Retenue Congé payé",
+      "type": "DEDUCTION",
+      "category": "C001",
+      "base_formula": "VB_TH?R_SALJ_OUV/V_NBH:R_SALJ_OUV/V_NBJ_OUVRES",
+      "rate_formula": "VB_TH?VC_CG_PRIS*8:VC_CG_PRIS",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_IRG",
+      "label": "Retenue IRG",
+      "type": "DEDUCTION",
+      "category": "C007",
+      "base_formula": "R_BRUT_IMPOS",
+      "value_formula": "IRG(BASE)*(V_NBJ_OUVRABL+VC_ABS_CP)/V_NBR_JOUR",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_MAL",
+      "label": "Retenue Jours Maladie",
+      "type": "DEDUCTION",
+      "category": "C001",
+      "base_formula": "(V_SALAIRE/V_NBR_JOUR)",
+      "rate_formula": "V_ABS_MAL",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_IMP",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_MOIS_INC",
+      "label": "retenue mois incomplet",
+      "type": "DEDUCTION",
+      "category": "C001",
+      "base_formula": "VB_TH?V_SALAIRE/V_NBH:V_SALAIRE/V_NBR_JOUR",
+      "rate_formula": "VC_ABS_OUVRES",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_PANIER",
+      "label": "Retenue Prime panier",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_RET_PANIER",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_PRET",
+      "label": "Retenue prêt social 1",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_RET_PRET",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_PRET_02",
+      "label": "Retenue prêt social_002",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_RET_PRET_02",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_PRET_1",
+      "label": "Retenue prêt social 2",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_RET_PRET_1",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_PRET_2",
+      "label": "Retenue prêt social 3",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_RET_PRET_2",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_PRET_AUT",
+      "label": "Retenue Avance autre 01",
+      "type": "DEDUCTION",
+      "category": "EXN",
+      "value_formula": "V_RET_PRET_AUT",
+      "label_keys": "CR_EXN",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_RELIQUAT",
+      "label": " Retenue congé payé reliquat",
+      "type": "DEDUCTION",
+      "category": "C001",
+      "base_formula": "V_SALAIRE/V_NBR_JOUR",
+      "rate_formula": "VC_CG_RLQ",
+      "value_formula": "BASE*RATE",
+      "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
+      "rate_percent": false
+    },
+    {
+      "code": "R_RET_SS",
+      "label": "Retenue sécurité social",
+      "type": "DEDUCTION",
+      "category": "C999",
+      "base_formula": "R_BRUT",
+      "rate_formula": "9",
+      "value_formula": "BASE*RATE",
+      "rate_percent": true
+    },
+    {
+      "code": "R_SALAIRE",
+      "label": "Salaire de base",
+      "type": "SALARY",
+      "category": "C002",
+      "base_formula": "V_SALAIRE/V_NBR_JOUR",
+      "rate_formula": "V_NBR_JOUR",
+      "value_formula": "BASE*RATE",
+     
+      "rate_percent": false
+    },
+    {
+      "code": "R_SALH",
+      "label": "Salaire de base horaire",
+     
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "V_SALAIRE/V_NBH",
+      "rate_percent": false
+    },
+    {
+      "code": "R_SALJ",
+      "label": "Salaire par jour",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "V_SALAIRE/V_NBR_JOUR",
+      "rate_percent": false
+    },
+    {
+      "code": "R_SALJ_OUV",
+      "label": "salaire de base ouvrier",
+      "description": "le salaire de base réel ",
+      "type": "SALARY",
+      "category": "C002",
+      "base_formula": "V_SALAIRE/V_NBJ_OUVRES",
+      "rate_formula": "V_NBJ_OUVRES",
+      "value_formula": "BASE*RATE",
+      "rate_percent": false
+    },
+    {
+      "code": "R_SAL_IMP_SABS",
+      "label": "Salaire imposable sans absences ",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "R_BRUT+R_RET_SS+TOT_CR_IMP-TOT_CR_COTI",
+      "rate_percent": false
+    },
+    {
+      "code": "R_SAL_NET",
+      "label": "Salaire net",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "R_BRUT_IMPOS-R_RET_IRG+(R_IMP10_SS-R_IRG_10)",
+      "rate_percent": false
+    },
+    {
+      "code": "R_NBJ_TRAV",
+      "label": "Jours travaillés",
+      "type": "INTERMEDIATE",
+      "category": "C007",
+      "value_formula": "V_NBJ_OUVRABL",
+      "rate_percent": false
     }
   ],
-"default-templates": [
-  {
-    "name": "Modèle par défaut",
-    "isDefault": true,
-    "elements": [
+  "default-templates": [
     {
-      "sectionCode": "R001"
-    },
-    {
-      "sectionCode": "R822"
-    },
-    {
-      "sectionCode": "R100"
-    },
-    {
-      "sectionCode": "R280"
-    },
-    {
-      "sectionCode": "R281"
-    },
-    {
-      "sectionCode": "R282"
-    },
-    {
-      "sectionCode": "R261"
-    },
-    {
-      "sectionCode": "R101"
-    },
-    {
-      "sectionCode": "R510"
-    },
-    {
-      "sectionCode": "R540"
-    },
-    {
-      "sectionCode": "R102"
-    },
-    {
-      "sectionCode": "R263"
-    },
-    {
-      "sectionCode": "R522"
-    },
-    {
-      "sectionCode": "R532"
-    },
-    {
-      "sectionCode": "R103"
-    },
-    {
-      "sectionCode": "R660"
-    },
-    {
-      "sectionCode": "R104"
-    },
-    {
-      "sectionCode": "R714"
-    },
-    {
-      "sectionCode": "R713"
-    },
-    {
-      "sectionCode": "R105"
-    },
-    {
-      "sectionCode": "R998"
-    },
-    {
-      "sectionCode": "R999"
+      "name": "Modèle par défaut",
+      "isDefault": true,
+      "elements": [
+        {
+          "sectionCode": "R_SALAIRE"
+        },
+        {
+          "sectionCode": "R_PR_IND_CP"
+        },
+        {
+          "sectionCode": "R_PR_IND_RELIQ"
+        },
+        {
+          "sectionCode": "R_RET_CONGE"
+        },
+        {
+          "sectionCode": "R_RET_RELIQUAT"
+        },
+        {
+          "sectionCode": "R_PR_RESP"
+        },
+        {
+          "sectionCode": "R_PR_IEP"
+        },
+        {
+          "sectionCode": "R_PR_DISPO"
+        },
+        {
+          "sectionCode": "R_PR_NUISANC"
+        },
+        {
+          "sectionCode": "R_PR_RINDIV"
+        },
+        {
+          "sectionCode": "R_BRUT"
+        },
+        {
+          "sectionCode": "R_RET_SS"
+        },
+        {
+          "sectionCode": "R_IND_PANIER"
+        },
+        {
+          "sectionCode": "R_PR_VEH_SOC"
+        },
+        {
+          "sectionCode": "R_BRUT_IMPOS"
+        },
+        {
+          "sectionCode": "R_RET_IRG"
+        },
+        {
+          "sectionCode": "R_SAL_NET"
+        },
+        {
+          "sectionCode": "R_MUTUELLE"
+        },
+        {
+          "sectionCode": "R_NET_PAYE"
+        },
+        {
+          "sectionCode": "R_PR_OBJECT"
+        },
+        {
+          "sectionCode": "R_PR_PRESENT"
+        },
+        {
+          "sectionCode": "R_IND_TRVPOS"
+        },
+        {
+          "sectionCode": "R_PR_NUIT"
+        },
+        {
+          "sectionCode": "R_PR_TRSP"
+        },
+        {
+          "sectionCode": "R_HEUR_SUP100"
+        },
+        {
+          "sectionCode": "R_RET_MOIS_INC"
+        },
+        {
+          "sectionCode": "R_REMB_DEP"
+        },
+        {
+          "sectionCode": "R_PR_DFF"
+        },
+        {
+          "sectionCode": "R_PR_VEH_PERSO"
+        },
+        {
+          "sectionCode": "R_RET_PRET_1"
+        },
+        {
+          "sectionCode": "R_RET_PRET"
+        },
+        {
+          "sectionCode": "R_RET_PANIER"
+        },
+        {
+          "sectionCode": "R_RET_PRET_2"
+        },
+        {
+          "sectionCode": "R_PR_INTERIM"
+        },
+        {
+          "sectionCode": "R_PR_OBJ10"
+        },
+        {
+          "sectionCode": "R_PR_ENC10"
+        },
+        {
+          "sectionCode": "R_IRG_10"
+        },
+        {
+          "sectionCode": "R_PR_QUALITE"
+        },
+        {
+          "sectionCode": "R_RET_MAL"
+        },
+        {
+          "sectionCode": "R_PR_RD"
+        },
+        {
+          "sectionCode": "R_RET_PRET_AUT"
+        }
+      ]
     }
   ]
-}
-]
 }

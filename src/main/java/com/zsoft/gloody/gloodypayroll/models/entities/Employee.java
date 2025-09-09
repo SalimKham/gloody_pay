@@ -1,6 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
-import com.zsoft.gloody.gloodypayroll.models.enums.*;
+import com.zsoft.gloody.gloodypayroll.models.enums.EmployeeTitle;
+import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
+import com.zsoft.gloody.gloodypayroll.models.enums.PaymentMethod;
+import com.zsoft.gloody.gloodypayroll.models.enums.SalaryProfile;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -35,10 +38,11 @@ public class Employee {
     private String firstName;
     @Column(name = "middle_name")
     private String middleName;
-    @Column(name = "gender")
     @Enumerated(EnumType.STRING)
-    private Gender gender;
+    @Column(name = "employee_title")
+    private EmployeeTitle employeeTitle;
     @Column(name = "family_situation")
+    @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     @Column(name = "number_of_children")
     private Integer numberOfChildren;
@@ -60,8 +64,14 @@ public class Employee {
 
     @Column(name = "entered_date")
     private LocalDate hireDate;
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+    @Column(name = "seniority_date")
+    private LocalDate seniority_date;
+    @Column(name = "exit_date")
+    private LocalDate exitDate;
     @Column(name = "contract_nature")
-    private ContractNature contractNature;
+    private String contractNature;
     @Column(name = "job_classification")
     private String jobClassification;
     @Column(name = "job_category")
@@ -70,11 +80,18 @@ public class Employee {
     private String jobTitle;
     @Column(name = "department")
     private String department;
+    @Column(name = "affiliate")
+    private String affiliate;
+    @Column(name = "office")
+    private String office;
     @Column(name = "base_salary")
     private Double baseSalary;
     @Column(name = "salary_profile")
     @Enumerated(EnumType.STRING)
     private SalaryProfile remunerationType;
+
+    @Column(name = "seniority_order_number")
+    private Integer seniorityOrderNumber;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

@@ -21,8 +21,15 @@ public class Company  {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "membership_number")
+    private String membershipNumber;
+
+    @Column(name = "activity_sector")
+    private String activitySector;
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     @ToString.Exclude
     private Address address;
+
 }

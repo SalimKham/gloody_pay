@@ -3,13 +3,14 @@ package com.zsoft.gloody.gloodypayroll.models.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 
 @Builder
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @Entity
 @Table(name = "address")
 public class Address {
@@ -30,4 +31,8 @@ public class Address {
     private String postalCode;
     @Column(name = "country_code")
     private String countryCode;
+
+    public String toString() {
+        return  String.format("%s%s%s", Objects.nonNull(addressLine1) ? addressLine1 + ", " : "",  Objects.nonNull(addressLine2) ? addressLine2 + ", " : "", Objects.nonNull(city) ? city : "");
+    }
 }

@@ -25,6 +25,8 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @EntityGraph(value = "PayslipSetting.elements")
     List<PayslipSetting> findAllByDraftIsFalseAndClosedIsFalse();
 
+    Boolean existsByCompanyAndByDefaultIsTrue(Long company);
+
     @Override
     @EntityGraph(value = "PayslipSetting.elements", type = EntityGraph.EntityGraphType.LOAD)
     @Query("SELECT ps FROM PayslipSetting ps  WHERE ps.id = :id AND (ps.draft IS NULL OR NOT ps.draft)")
@@ -36,31 +38,48 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     @Nonnull
     @EntityGraph(value = "PayslipSetting.elements")
-    Optional<PayslipSetting> findTopByByDefaultOrderByIdAsc(boolean template);
+    Optional<PayslipSetting> findTopByTemplateAndByDefaultOrderByIdAsc(boolean template, boolean byDefault);
+
+    @Nonnull
+    @EntityGraph(value = "PayslipSetting.elements")
+    Optional<PayslipSetting> findTopByCompanyAndTemplateAndByDefaultOrderByIdAsc(Long companyId, boolean template, boolean byDefault);
 
     @Modifying
     @Query("UPDATE PayslipSetting  p SET p.byDefault = CASE WHEN p.id =:template_id THEN true ELSE false END")
     void markAsDefault(@Param("template_id") Long templateId);
 
+    @EntityGraph(value = "PayslipSetting.elements")
     Page<PayslipSetting> findAllByNameLikeAndTemplateIsTrue(String query, Pageable pageable);
 
-    @EntityGraph(value = "PayslipSetting.elements")
-    @Query("SELECT ps FROM PayslipSetting ps where ps.employee = :employee_id  AND not ps.draft AND MONTH(ps.paymentDate) = MONTH(:current_month ) AND YEAR(ps.paymentDate) = YEAR (:current_month ) order by ps.id desc ")
-    List<PayslipSetting> findByEmployeeAndCurrentMonth(@Param("employee_id") Long employeeId, @Param("current_month") LocalDate currentMonth);
-
     @Modifying
-    void deleteByContractAndPaymentDate(Long contractId, LocalDate paymentDate);
+    void deleteByContractAndPaymentDateAndIdNot(Long contractId, LocalDate paymentDate, Long id);
+
+    Optional<PayslipSetting> findTopByContractAndPaymentDateAndByDefaultOrderByIdDesc(Long contractId, LocalDate paymentDate, Boolean byDefault);
+
+    Optional<PayslipSetting> findTopByContractAndPaymentDateOrderByIdDesc(Long contractId, LocalDate paymentDate);
 
     @Query("SELECT ps.contract FROM PayslipSetting ps WHERE ps.closed OR ps.draft AND ps.paymentDate = :month")
     Set<Long> getAllClosedContracts(@Param("month") LocalDate month);
 
-    @Query("SELECT ps.employee FROM PayslipSetting ps WHERE ps.closed OR ps.draft AND ps.paymentDate = :month")
+    @Query("SELECT ps.employee FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month")
     Set<Long> getAllClosedPayslipResources(@Param("month") LocalDate month);
 
+    @Query("SELECT ps.employee FROM PayslipSetting ps WHERE (ps.closed OR ps.draft) AND ps.paymentDate = :month")
+    Set<Long> getAllClosedOrDraftPayslipResources(@Param("month") LocalDate month);
+
+    @Query("SELECT ps.contract FROM PayslipSetting ps WHERE  ps.draft AND ps.paymentDate = :month")
+    Set<Long> getAllDraftPayslipResources(@Param("month") LocalDate month);
+
     @Query("SELECT EXISTS(SELECT ps.id FROM PayslipSetting ps WHERE ps.closed And ps.contract = :contract_id AND ps.paymentDate = :month)")
-    Boolean isClosedPayslip(@Param("month") LocalDate month,@Param("contract_id") Long contractId);
+    Boolean isClosedPayslip(@Param("month") LocalDate month, @Param("contract_id") Long contractId);
 
     @Modifying
-    @Query(value = "DELETE FROM payslip_setting  WHERE contract_id in :contract_ids AND payment_date = :payment_date", nativeQuery = true)
-    void deleteAllByContractInAndPaymentDateAndDraftIsTrue(@Param("contract_ids") Collection<Long> contractIds,@Param("payment_date") LocalDate paymentDate);
+    void deleteAllByContractInAndPaymentDateAndDraftIsTrue(Collection<Long> contractIds, LocalDate paymentDate);
+
+
+    @Query("SELECT ps FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month AND (:employee_ids IS NULL OR ps.employee IN :employee_ids)")
+    Page<PayslipSetting> findAllClosed(@Param("month") LocalDate month,  @Param("employee_ids") Set<Long> employeeIds, Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT ps.employee) FROM PayslipSetting ps LEFT JOIN Employee e on e.id  = ps.employee WHERE ps.closed AND e.affiliate = :affiliate AND ps.paymentDate BETWEEN :start_date AND :end_date ")
+    Long countAllClosed(@Param("start_date") LocalDate startDate, @Param("end_date") LocalDate endDate,  @Param("affiliate") String affiliate);
 }

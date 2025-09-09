@@ -83,4 +83,7 @@ public class PayslipSetting extends CompanySupport {
     @Column(name = "draft")
     private Boolean draft;
 
+    @Formula("(SELECT is_default OR EXISTS(SELECT 1 FROM hr_monthly_data hr Where hr.hr_variable = 'TEMPLATE' AND hr.hr_value = id))")
+    private Boolean referenced;
+
 }

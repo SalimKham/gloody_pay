@@ -1,18 +1,16 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
-import com.zsoft.gloody.gloodypayroll.models.beans.DefaultSectionSettings;
 import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
-import com.zsoft.gloody.gloodypayroll.models.entities.SectionSetting;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.SectionSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.SectionMapper;
 import com.zsoft.gloody.gloodypayroll.utils.FieldAccessorUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SectionListUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -34,11 +32,18 @@ public class SectionService extends CompanySupportService {
     private final SectionRepository sectionRepository;
     private final SectionMapper sectionMapper;
     private final CacheService cacheService;
-    private final SectionSettingRepository sectionSettingRepository;
 
     public Optional<SectionDto> findByCode(String code) {
-        return this.sectionRepository.findByCode(code)
+        return this.sectionRepository.findByCodeAndCompany(code, SecurityUtils.getCurrentCompanyId())
                 .map(this.sectionMapper::toDto);
+    }
+
+    public Boolean existByIdentifier(Integer identifier) {
+        return this.sectionRepository.existsByIdentifierAndCompany(identifier, SecurityUtils.getCurrentCompanyId());
+    }
+
+    public Integer getNextIdentifier() {
+        return this.sectionRepository.findTopByCompanyOrderByIdentifierDesc(SecurityUtils.getCurrentCompanyId()).map(section -> section.getIdentifier() + 1).orElse(9999);
     }
 
     public List<SectionDto> findAll() {
@@ -118,9 +123,14 @@ public class SectionService extends CompanySupportService {
     }
 
     @Transactional
+    @CacheEvict( cacheNames = "sectionMap",
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()")
     public SectionDto save(SectionDto dto) {
         try {
             Section section = this.sectionMapper.toEntity(dto);
+            if(section.getIdentifier() == null) {
+                section.setIdentifier(getNextIdentifier());
+            }
             section = this.sectionRepository.save(section);
             cacheService.updateSectionMapCache();
             return this.sectionMapper.toDto(section);
@@ -129,12 +139,4 @@ public class SectionService extends CompanySupportService {
         }
     }
 
-    @Cacheable(
-            cacheNames = "defaultSections",
-            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
-    )
-    public DefaultSectionSettings findDefaultSections() {
-        DefaultSectionSettings defaultSectionSettings  =  new DefaultSectionSettings(sectionSettingRepository.findAllByCompany(SecurityUtils.getCurrentCompanyId()).stream().collect(Collectors.toMap(SectionSetting::getKey, sectionSetting -> sectionSetting)));
-        return defaultSectionSettings;
-    }
 }
