@@ -44,8 +44,8 @@ public class PayrollRecordController {
     }
 
     @GetMapping("generate/das_header/{year}")
-    public ResponseEntity<Void> generateDasHeader(@PathVariable int year, @RequestParam("activity_sector") String activitySector,  @RequestParam("address") String address) {
-        recordService.generateDasHeader(year, activitySector, address);
+    public ResponseEntity<Void> generateDasHeader(@PathVariable int year, @RequestParam("affiliate_name") String affiliateName, @RequestParam("activity_sector") String activitySector,  @RequestParam("address") String address) {
+        recordService.generateDasHeader(year, affiliateName,  activitySector, address);
         return  ResponseEntity.ok().build();
     }
 

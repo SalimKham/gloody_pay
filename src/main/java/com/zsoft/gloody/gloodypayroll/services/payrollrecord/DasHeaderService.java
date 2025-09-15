@@ -22,7 +22,7 @@ public class DasHeaderService {
     private final PayslipElementSettingRepository payslipElementSettingRepository;
     private final PayslipSettingRepository payslipSettingRepository;
 
-    public String generate(int year, String affiliate, String affiliateAddress) {
+    public String generate(int year, String affiliate, String activitySector,  String affiliateAddress) {
         Company company =  companyRepository.findById(SecurityUtils.getCurrentCompanyId()).orElse(null);
         if (company == null) {
             return null;
@@ -34,7 +34,7 @@ public class DasHeaderService {
         Double secondQuarter =  Objects.requireNonNullElse(payslipElementSettingRepository.sumQuarterContribution(LocalDate.of(year, 4, 1), LocalDate.of(year, 6, 1), affiliate), 0d);
         Double thirdQuarter =  Objects.requireNonNullElse(payslipElementSettingRepository.sumQuarterContribution(LocalDate.of(year, 7, 1), LocalDate.of(year, 9, 1), affiliate), 0d);
         Double forthQuarter =  Objects.requireNonNullElse(payslipElementSettingRepository.sumQuarterContribution(LocalDate.of(year, 10, 1), LocalDate.of(year, 12, 1), affiliate), 0d);
-        return buildDasCode(company.getMembershipNumber(), year, affiliate,  affiliateAddress, firstQuarter, secondQuarter, thirdQuarter, forthQuarter, totalEmployee);
+        return buildDasCode(company.getMembershipNumber(), year, activitySector,  affiliateAddress, firstQuarter, secondQuarter, thirdQuarter, forthQuarter, totalEmployee);
     }
 
     private String buildDasCode(
