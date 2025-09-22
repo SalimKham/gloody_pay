@@ -2,10 +2,11 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
-import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.entities.accounting.AccountingSetting;
 import com.zsoft.gloody.gloodypayroll.models.enums.AccountingSettingAccountType;
-import com.zsoft.gloody.gloodypayroll.models.repositories.*;
+import com.zsoft.gloody.gloodypayroll.models.repositories.AccountingSettingRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeAccountMonthValueDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.EmployeeDto;
@@ -18,6 +19,7 @@ import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.accounting.AccountingSettingMapper;
 import com.zsoft.gloody.gloodypayroll.services.payrollrecord.PayrollRecordsUtils;
 import com.zsoft.gloody.gloodypayroll.support.PayslipDetailConverter;
+import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -51,11 +53,9 @@ public class AccountingSettingService {
     private final PayslipDetailConverter payslipDetailConverter;
     private final PayslipSettingRepository payslipSettingRepository;
     private final CacheService cacheService;
-    private final HRDataRepository hrDataRepository;
     private static final Locale locale = Locale.getDefault();
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
-    private final SectionRepository sectionRepository;
 
     public AccountingSettingDTO save(AccountingSettingDTO validationModelDTO) {
         AccountingSetting accountingSetting = accountingSettingMapper.toEntity(validationModelDTO);
@@ -145,15 +145,12 @@ public class AccountingSettingService {
         List<AccountingSettingDTO> result = new ArrayList<>();
         LocalDate startMonth = filter.getStartMonth().withDayOfMonth(1);
         LocalDate endMonth = filter.getEndMonth().withDayOfMonth(1);
-        Map<String, Long> sectionToAccountingMap = sectionRepository.findAllByAccountingIsNotNull().stream().collect(Collectors.toMap(Section::getCode, section -> section.getAccounting().getId()));
         try {
             while (!startMonth.isAfter(endMonth)) {
                 LocalDate date = startMonth;
                 //Map<Long, Long> contractResourceMap = hrDataRepository.getContractsByMonth(date).stream().collect(Collectors.toMap(t -> t.get(0, Long.class), t -> t.get(1, Long.class)));
-                Set<Long> calculatedPayslipsContracts = payslipSettingRepository.getAllClosedContracts(date);
-                if (Objects.nonNull(calculatedPayslipsContracts) && !calculatedPayslipsContracts.isEmpty()) {
-
-                    List<AccountingSettingAccountDTO> employeeAccountingList = calculateDraftedPayslips(sectionToAccountingMap, calculatedPayslipsContracts, date);
+                if (payslipSettingRepository.hasClosedPayslips(date)) {
+                    List<AccountingSettingAccountDTO> employeeAccountingList = calculateDraftedPayslips(date);
                     //  contractResourceMap.keySet().removeAll(calculatedPayslipsContracts);
                     // todo for now we include only closed payslips
                     // calculateUnDraftedPayslips(sectionToAccountingMap, contractResourceMap, employeeAccountingList, date);
@@ -175,16 +172,17 @@ public class AccountingSettingService {
 
 
     // todo check the case when we have more than one contract for the employee
-    private List<AccountingSettingAccountDTO> calculateDraftedPayslips(Map<String, Long> sectionToAccountingMap, Set<Long> calculatedPayslipsContracts, LocalDate date) {
-        List<Object[]> closedPayslipAccounting = accountingSettingRepository.getAccountingSectionsMonthlyTotalByContracts(date, calculatedPayslipsContracts);
+    private List<AccountingSettingAccountDTO> calculateDraftedPayslips(LocalDate date) {
+        List<Tuple> closedPayslipAccounting = accountingSettingRepository.getAccountingSectionsMonthlyTotalByContracts(date);
         List<AccountingSettingAccountDTO> closedEmployeeAccountingList = new ArrayList<>();
         Map<Long, List<EmployeeAccountMonthValueDto>> monthlyValues = closedPayslipAccounting != null ? closedPayslipAccounting.stream()
-                .collect(Collectors.groupingBy(ob -> (Long) ob[0], Collectors.mapping(o -> new EmployeeAccountMonthValueDto((Long) o[0], payslipDetailConverter.convertToEntityAttribute((String) o[1]), (Double) o[2]), Collectors.toList())))
+                .collect(Collectors.groupingBy(tuple -> tuple.get(0, Long.class), Collectors.mapping(tuple -> new EmployeeAccountMonthValueDto(tuple.get(0, Long.class), payslipDetailConverter.convertToEntityAttribute(tuple.get(1, String.class)), tuple.get(2, Double.class), tuple.get(4, Boolean.class)), Collectors.toList())))
                 : Collections.emptyMap();
 
-        sectionToAccountingMap.values().forEach(accountId -> {
-            if (monthlyValues.containsKey(accountId)) {
-                List<AccountingSettingAccountDTO> accounts = monthlyValues.get(accountId).stream().map(acc -> {
+        monthlyValues.forEach((accountId, values) -> {
+            Boolean detailedByEmployee = values.get(0).getDetailedByEmployee();
+            if (detailedByEmployee) {
+                List<AccountingSettingAccountDTO> accounts = values.stream().map(acc -> {
                     try {
                         AccountingSettingAccountDTO accountingSettingAccountDTO = new AccountingSettingAccountDTO();
                         accountingSettingAccountDTO.setId(accountId);
@@ -194,9 +192,14 @@ public class AccountingSettingService {
                     } catch (Exception ignore) {
                     }
                     return null;
-
                 }).filter(Objects::nonNull).toList();
-                    closedEmployeeAccountingList.addAll(accounts);
+                closedEmployeeAccountingList.addAll(accounts);
+            } else {
+                Double sum = values.stream().mapToDouble(EmployeeAccountMonthValueDto::getValue).sum();
+                AccountingSettingAccountDTO accountingSettingAccountDTO = new AccountingSettingAccountDTO();
+                accountingSettingAccountDTO.setId(accountId);
+                accountingSettingAccountDTO.setMonthlyTotal(sum);
+                closedEmployeeAccountingList.add(accountingSettingAccountDTO);
             }
         });
         return closedEmployeeAccountingList;

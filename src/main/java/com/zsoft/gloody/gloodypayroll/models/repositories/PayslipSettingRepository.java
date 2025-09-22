@@ -58,8 +58,8 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     Optional<PayslipSetting> findTopByContractAndPaymentDateOrderByIdDesc(Long contractId, LocalDate paymentDate);
 
-    @Query("SELECT ps.contract FROM PayslipSetting ps WHERE ps.closed OR ps.draft AND ps.paymentDate = :month")
-    Set<Long> getAllClosedContracts(@Param("month") LocalDate month);
+    @Query("SELECT EXISTS(SELECT ps.contract FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month)")
+    Boolean hasClosedPayslips(@Param("month") LocalDate month);
 
     @Query("SELECT ps.employee FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month")
     Set<Long> getAllClosedPayslipResources(@Param("month") LocalDate month);
