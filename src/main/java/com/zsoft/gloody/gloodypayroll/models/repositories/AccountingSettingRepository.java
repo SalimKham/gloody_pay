@@ -17,29 +17,31 @@ public interface AccountingSettingRepository extends JpaRepository<AccountingSet
     Optional<AccountingSetting> findTopOrderByIdDesc();
 
     @Query(value = "SELECT  acc.id, SUM(e.value) FROM payslip_setting ps " +
-                   "LEFT JOIN payslip_setting_element e ON e.payslip_setting_id = ps.id  " +
-                   "LEFT JOIN section s ON s.id = e.section " +
-                   "LEFT join accounting_setting_account acc On s.accounting_id = acc.id " +
-                   "WHERE ps.closed AND  s.accounting_id IS  NOT NULL " +
-                   "AND  MONTH(ps.payment_date) = MONTH(:current_month) " +
-                   "AND YEAR(ps.payment_date) = YEAR (:current_month) AND ps.company_id = :company_id group by acc.id", nativeQuery = true)
+            "LEFT JOIN payslip_setting_element e ON e.payslip_setting_id = ps.id  " +
+            "LEFT JOIN section s ON s.id = e.section " +
+            "LEFT join accounting_setting_account acc On s.accounting_id = acc.id " +
+            "WHERE ps.closed AND  s.accounting_id IS  NOT NULL " +
+            "AND  MONTH(ps.payment_date) = MONTH(:current_month) " +
+            "AND YEAR(ps.payment_date) = YEAR (:current_month) AND ps.company_id = :company_id group by acc.id", nativeQuery = true)
     List<Object[]> getAccountingSectionsMonthlyTotal(@Param("current_month") LocalDate month, @Param("company_id") Long companyId);
 
     @Query(value = "SELECT  acc.id, ps.payslip_detail, SUM(e.value) FROM payslip_setting ps " +
-                   "LEFT JOIN payslip_setting_element e ON e.payslip_setting_id = ps.id  " +
-                   "LEFT JOIN section s ON s.id = e.section " +
-                   "LEFT join accounting_setting_account acc On s.accounting_id = acc.id " +
-                   "WHERE ps.closed AND  s.accounting_id IS  NOT NULL " +
-                   "AND  MONTH(ps.payment_date) = MONTH(:current_month) " +
-                   "AND YEAR(ps.payment_date) = YEAR (:current_month) AND ps.company_id = :company_id group by acc.id, ps.id", nativeQuery = true)
+            "LEFT JOIN payslip_setting_element e ON e.payslip_setting_id = ps.id  " +
+            "LEFT JOIN section s ON s.id = e.section " +
+            "LEFT join accounting_setting_account acc On s.accounting_id = acc.id " +
+            "WHERE ps.closed AND  s.accounting_id IS  NOT NULL " +
+            "AND  MONTH(ps.payment_date) = MONTH(:current_month) " +
+            "AND YEAR(ps.payment_date) = YEAR (:current_month) AND ps.company_id = :company_id group by acc.id, ps.id", nativeQuery = true)
     List<Object[]> getAccountingSectionsMonthlyTotalByEmployee(@Param("current_month") LocalDate month, @Param("company_id") Long companyId);
 
-    @Query(value = "SELECT  acc.id, ps.payslip_detail, SUM(e.value),  ps.contract_id  FROM payslip_setting ps " +
-                   "LEFT JOIN payslip_setting_element e ON e.payslip_setting_id = ps.id  " +
-                   "LEFT JOIN section s ON s.id = e.section " +
-                   "LEFT join accounting_setting_account acc On s.accounting_id = acc.id " +
-                   "WHERE ps.draft AND  s.accounting_id IS  NOT NULL " +
-                   "AND  MONTH(ps.updated_at) = MONTH(:current_month) " +
-                   "AND YEAR(ps.updated_at) = YEAR (:current_month) AND ps.employee_id in :contract_ids group by acc.id, ps.id", nativeQuery = true)
+    @Query(value = """
+            SELECT  acc.id, ps.payslip_detail, SUM(e.value),  ps.contract_id  FROM payslip_setting ps 
+            LEFT JOIN payslip_setting_element e ON e.payslip_setting_id = ps.id  
+            LEFT JOIN section s ON s.id = e.section 
+            LEFT join accounting_setting_account acc On s.accounting_id = acc.id 
+            WHERE ps.closed AND  s.accounting_id IS  NOT NULL 
+            AND  payment_date = :current_month 
+            AND ps.contract_id in :contract_ids group by acc.id, ps.id
+            """, nativeQuery = true)
     List<Object[]> getAccountingSectionsMonthlyTotalByContracts(@Param("current_month") LocalDate month, @Param("contract_ids") Set<Long> contractIds);
 }
