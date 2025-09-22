@@ -172,7 +172,7 @@ public class PayslipService {
         }
     }
 
-    public String print(PayslipController.PayslipCalculatePayload payload) {
+    public PayslipPrintDTO print(PayslipController.PayslipCalculatePayload payload) {
         EmployeeDto employeeDto = employeeRepository.findById(payload.getResourceId()).map(employeeMapper::toDto).orElse(null);
         if (employeeDto == null) {
             throw new ApiRuntimeException("error.employee.required");
@@ -187,7 +187,14 @@ public class PayslipService {
         context.setVariable("locale", locale);
         context.setVariable("elements", calculatedPayslip.calculatedElements());
         templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
-        return templateEngine.process("payslip/template", context);
+        String content =  templateEngine.process("payslip/template", context);
+        PayslipPrintDTO result = new PayslipPrintDTO();
+        result.setContent(content);
+        if (Objects.nonNull(calculatedPayslip.template())) {
+            result.setShowIntermediate(calculatedPayslip.template().isShowZero());
+            result.setShowIntermediate(calculatedPayslip.template().isShowIntermediate());
+        }
+        return result;
     }
 
     private PayslipSettingDto mergeTempTemplate(PayslipSettingDto template, PayslipSettingDto tempTemplate) {

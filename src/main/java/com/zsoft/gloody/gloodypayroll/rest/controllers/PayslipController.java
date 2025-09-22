@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipDetailDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipPrintDTO;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.PayslipService;
 import lombok.*;
@@ -18,8 +19,8 @@ public class PayslipController {
     private final PayslipService payslipService;
 
     @PostMapping("/print")
-    public ResponseEntity<String> print(@RequestBody PayslipCalculatePayload payload) {
-        String result = payslipService.print(payload);
+    public ResponseEntity<PayslipPrintDTO> print(@RequestBody PayslipCalculatePayload payload) {
+        PayslipPrintDTO result = payslipService.print(payload);
         return ResponseEntity.ok().body(result);
     }
 
