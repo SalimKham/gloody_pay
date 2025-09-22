@@ -61,7 +61,7 @@ public class PayrollRecordService {
     private final PayrollJournalService payrollJournalService;
 
     @Async("payrollRecordsAsyncExecutor")
-    public void generateDasHeader(int year, String affiliateName, String affiliateAddress) {
+    public void generateDasHeader(int year, String affiliateName, String activitySector,  String affiliateAddress) {
         PayrollRecord  payrollRecord =  init(SecurityUtils.getCurrentCompanyId(), SecurityUtils.getCurrentUser().get().getId());
         payrollRecord.setType(PayrollRecordType.DAS_HEADER);
         payrollRecord = payrollRecordRepository.saveAndFlush(payrollRecord);
@@ -71,7 +71,7 @@ public class PayrollRecordService {
             String fileName = String.format("DAS_Entête-%s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
             fileName = getFileName(fileName, contentType);
             payrollRecord.setFileName(fileName);
-            String content = dasHeaderService.generate(year, affiliateName, affiliateAddress);
+            String content = dasHeaderService.generate(year, affiliateName, activitySector, affiliateAddress);
             saveFile(PayrollRecordType.DAS_HEADER, Objects.requireNonNullElse(content, "").getBytes(StandardCharsets.UTF_8), contentType, fileName);
             payrollRecord.setFilePath(path);
             payrollRecord.setFileContentType(contentType);

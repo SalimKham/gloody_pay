@@ -7,6 +7,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipCalculatePayload;
 import com.zsoft.gloody.gloodypayroll.utils.CommonUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,7 @@ public class HRAsyncService extends EntityManagerService {
 
 
     public void saveDraftsForEmployees(LocalDate month, Set<Long> resourceIds, Map<Long, Long> resourceContracts) {
-        PayslipController.PayslipCalculatePayload payload = new PayslipController.PayslipCalculatePayload();
+        PayslipCalculatePayload payload = new PayslipCalculatePayload();
         payload.setMonth(month);
         Map<Long, Employee> employeeMap = employeeRepository.findAllById(resourceIds).stream().collect(Collectors.toMap(Employee::getId, em -> em));
         AtomicInteger i = new AtomicInteger();
