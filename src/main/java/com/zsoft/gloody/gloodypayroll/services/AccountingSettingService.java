@@ -146,18 +146,20 @@ public class AccountingSettingService {
         try {
             while (!startMonth.isAfter(endMonth)) {
                 LocalDate date = startMonth;
-                Map<Long, Long> contractResourceMap = hrDataRepository.getContractsByMonth(date).stream().collect(Collectors.toMap(t -> t.get(0, Long.class), t -> t.get(1, Long.class)));
+                //Map<Long, Long> contractResourceMap = hrDataRepository.getContractsByMonth(date).stream().collect(Collectors.toMap(t -> t.get(0, Long.class), t -> t.get(1, Long.class)));
                 Set<Long> calculatedPayslipsContracts = payslipSettingRepository.getAllClosedContracts(date);
-                Set<Long> draftedContracts = hrDataRepository.getDraftedTemplateIds(date).stream().map(tuple -> tuple.get(0, Long.class)).collect(Collectors.toSet());
-                calculatedPayslipsContracts.addAll(draftedContracts);
-                Map<String, AccountingSettingAccountDTO> sectionToAccountingMap = companySections().getSections().values().stream().filter(sectionDto -> Objects.nonNull(sectionDto.getAccounting()))
-                        .collect(Collectors.toMap(SectionDto::getCode, SectionDto::getAccounting));
-                List<AccountingSettingAccountDTO> employeeAccountingList = calculateDraftedPayslips(sectionToAccountingMap, calculatedPayslipsContracts, date);
-                contractResourceMap.keySet().removeAll(calculatedPayslipsContracts);
-                calculateUnDraftedPayslips(sectionToAccountingMap, contractResourceMap, employeeAccountingList, date);
-                AccountingSettingDTO accountingSettingDTO = mapMonthlyResult(employeeAccountingList, filter.isDetailedByEmployee());
-                if (accountingSettingDTO != null) {
-                    result.add(accountingSettingDTO);
+                if (Objects.nonNull(calculatedPayslipsContracts) && !calculatedPayslipsContracts.isEmpty()) {
+
+                    Map<String, AccountingSettingAccountDTO> sectionToAccountingMap = companySections().getSections().values().stream().filter(sectionDto -> Objects.nonNull(sectionDto.getAccounting()))
+                            .collect(Collectors.toMap(SectionDto::getCode, SectionDto::getAccounting));
+                    List<AccountingSettingAccountDTO> employeeAccountingList = calculateDraftedPayslips(sectionToAccountingMap, calculatedPayslipsContracts, date);
+                    //  contractResourceMap.keySet().removeAll(calculatedPayslipsContracts);
+                    // todo for now we include only closed payslips
+                    // calculateUnDraftedPayslips(sectionToAccountingMap, contractResourceMap, employeeAccountingList, date);
+                    AccountingSettingDTO accountingSettingDTO = mapMonthlyResult(employeeAccountingList, filter.isDetailedByEmployee());
+                    if (accountingSettingDTO != null) {
+                        result.add(accountingSettingDTO);
+                    }
                 }
                 startMonth = startMonth.plusMonths(1);
             }
@@ -171,6 +173,7 @@ public class AccountingSettingService {
     }
 
 
+    // todo check the case when we have more than one contract for the employee
     private List<AccountingSettingAccountDTO> calculateDraftedPayslips(Map<String, AccountingSettingAccountDTO> sectionToAccountingMap, Set<Long> calculatedPayslipsContracts, LocalDate date) {
         List<Object[]> closedPayslipAccounting = accountingSettingRepository.getAccountingSectionsMonthlyTotalByContracts(date, calculatedPayslipsContracts);
         List<AccountingSettingAccountDTO> closedEmployeeAccountingList = new ArrayList<>();
@@ -202,6 +205,7 @@ public class AccountingSettingService {
         return closedEmployeeAccountingList;
     }
 
+    // todo ignored for now
     private void calculateUnDraftedPayslips(Map<String, AccountingSettingAccountDTO> sectionToAccountingMap, Map<Long, Long> contractResourceMap, List<AccountingSettingAccountDTO> employeeAccountingList, LocalDate date) {
         PayslipController.PayslipCalculatePayload calculatePayload = new PayslipController.PayslipCalculatePayload();
         calculatePayload.setMonth(date);
