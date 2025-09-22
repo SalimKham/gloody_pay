@@ -191,7 +191,7 @@ public class PayslipService {
         PayslipPrintDTO result = new PayslipPrintDTO();
         result.setContent(content);
         if (Objects.nonNull(calculatedPayslip.template())) {
-            result.setShowIntermediate(calculatedPayslip.template().isShowZero());
+            result.setShowIntermediate(calculatedPayslip.template().getShowZero());
             result.setShowIntermediate(calculatedPayslip.template().isShowIntermediate());
         }
         return result;
@@ -204,7 +204,7 @@ public class PayslipService {
         try {
             PayslipSettingDto newTemplate = (PayslipSettingDto) template.clone();
             newTemplate.setRate(Objects.requireNonNullElse(tempTemplate.getRate(), template.getRate()));
-            newTemplate.setShowZero(tempTemplate.isShowZero());
+            newTemplate.setShowZero(Objects.requireNonNullElse(tempTemplate.getShowZero(), template.getShowZero()));
             if (tempTemplate.getElements() != null && !tempTemplate.getElements().isEmpty()) {
                 newTemplate.setElements(tempTemplate.getElements());
             }
@@ -295,7 +295,7 @@ public class PayslipService {
         perRequestElements().setCalculatedElements(new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2))));
         perRequestElements().setSettingsElements(template.getElements());
         perRequestElements().setShowIntermediate(template.isShowIntermediate());
-        perRequestElements().setShowZero(template.isShowZero());
+        perRequestElements().setShowZero(template.getShowZero());
         perRequestElements().setEmployeeId(template.getEmployee().getId());
         perRequestElements().setCurrentDate(template.getPaymentDate());
         if (RequestContext.functionElements() == null) {
@@ -320,7 +320,7 @@ public class PayslipService {
         if (payload.getTempTemplate().getId() != null) {
             return true;
         }
-        if (!Objects.equals(template.isShowZero(), payload.getTempTemplate().isShowZero())) {
+        if (!Objects.equals(template.getShowZero(), payload.getTempTemplate().getShowZero())) {
             return true;
         }
 
