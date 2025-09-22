@@ -101,7 +101,7 @@ public class PayslipService {
         this.initFunctionElements(contracts.keySet());
         Set<Long> closedContractIds = new HashSet<>();
         Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
-        PayslipController.PayslipCalculatePayload payload = new PayslipController.PayslipCalculatePayload();
+        PayslipCalculatePayload payload = new PayslipCalculatePayload();
         // todo ignore only closed, for draft once they need to be marked as closed
         Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
        // Set<Long> draftIds = payslipSettingRepository.getAllDraftPayslipResources(month);
@@ -172,7 +172,7 @@ public class PayslipService {
         }
     }
 
-    public PayslipPrintDTO print(PayslipController.PayslipCalculatePayload payload) {
+    public PayslipPrintDTO print(PayslipCalculatePayload payload) {
         EmployeeDto employeeDto = employeeRepository.findById(payload.getResourceId()).map(employeeMapper::toDto).orElse(null);
         if (employeeDto == null) {
             throw new ApiRuntimeException("error.employee.required");
@@ -230,7 +230,7 @@ public class PayslipService {
                 ));
     }
 
-    public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipController.PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate, boolean isTemporary) {
+    public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate, boolean isTemporary) {
         return null;
         // todo uncomment this later
       /*  LinkedHashSet<PayslipElementDto> calculatedElements = new LinkedHashSet<>();
@@ -254,7 +254,7 @@ public class PayslipService {
         return calculatedElements;*/
     }
 
-    private Map<String, Double> getMonthlyValues(PayslipController.PayslipCalculatePayload payload, Employee employee) {
+    private Map<String, Double> getMonthlyValues(PayslipCalculatePayload payload, Employee employee) {
         initDictionaryService();
         LocalDate month = Objects.requireNonNullElse(payload.getMonth(), LocalDate.now()).withDayOfMonth(1);
         Map<String, Double> monthlyValues = RequestContext.monthlyValues() != null && RequestContext.monthlyValues().containsKey(payload.getContractId()) ? RequestContext.monthlyValues().get(payload.getContractId())
@@ -313,7 +313,7 @@ public class PayslipService {
         RequestContext.initFunctionElements(resourceIds, inFunctionsCodes);
     }
 
-    private boolean isTemp(PayslipController.PayslipCalculatePayload payload, PayslipSettingDto template) {
+    private boolean isTemp(PayslipCalculatePayload payload, PayslipSettingDto template) {
         if (payload.getTempTemplate() == null) {
             return false;
         }
@@ -330,7 +330,7 @@ public class PayslipService {
         return payload.getTempTemplate().getElements() != null && !payload.getTempTemplate().getElements().isEmpty();
     }
 
-    public PayslipController.CalculatedPayslip calculate(PayslipController.PayslipCalculatePayload payload, Employee employee, boolean saveAsDraft, boolean clearContext) {
+    public PayslipController.CalculatedPayslip calculate(PayslipCalculatePayload payload, Employee employee, boolean saveAsDraft, boolean clearContext) {
 
         try {
 
@@ -721,7 +721,7 @@ public class PayslipService {
         }
     }
 
-    public PayslipDetailDto getPayslipDetails(PayslipController.PayslipCalculatePayload payload) {
+    public PayslipDetailDto getPayslipDetails(PayslipCalculatePayload payload) {
         if (payslipSettingRepository.isClosedPayslip(payload.getMonth().withDayOfMonth(1), payload.getContractId())) {
             Long templateId = hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", payload.getContractId(), payload.getMonth().withDayOfMonth(1)).map(HRMonthlyData::getValue).orElse(-1d).longValue();
             PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false, false) : getTemplate(templateId, false, true);

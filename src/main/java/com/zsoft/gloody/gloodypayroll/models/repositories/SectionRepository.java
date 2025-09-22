@@ -38,4 +38,6 @@ public interface SectionRepository extends JpaRepository<Section, Long>, JpaSpec
     boolean existsByCode(String code);
 
     void deleteByCode(String code);
+
+    List<Section> findAllByAccountingIsNotNull();
 }
