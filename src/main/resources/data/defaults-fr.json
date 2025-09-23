@@ -76,7 +76,7 @@
       "formula": "0"
     },
     {
-      "key": "V_PR_TOTAL",
+      "key": "V_PRET_TOTAL",
       "source": "ADVANCE",
       "description": "Prêt",
       "label": "Prêt",

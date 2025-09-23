@@ -12,6 +12,7 @@ public class VariableSettingDto {
     private Long company;
     private Long id;
     private String key;
+    private String fallBackKey;
     private String source;
     private String formula;
     private String label;
