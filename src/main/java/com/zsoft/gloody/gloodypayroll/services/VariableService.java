@@ -36,25 +36,35 @@ public class VariableService extends CompanySupportService {
         return variableRepository.findAll().stream().map(variableMapper::toDto).toList();
     }
 
+    private void save(VariableSettingDto variable) {
+        if (Objects.isNull(variable.getId())) {
+            if (variableRepository.existsByKeyAndCompany(variable.getKey(), variable.getCompany())) {
+                variable.setKey(variable.getFallBackKey());
+            }
+            if (variableRepository.existsByKeyAndCompany(variable.getKey(), variable.getCompany())) {
+                return;
+            }
+            if (Objects.nonNull(variable.getSource())) {
+                variableRepository.findTopBySource(variable.getSource()).ifPresent(v -> {
+                    variable.setId(v.getId());
+                    variable.setKey(v.getKey());
+                });
+            }
+        } else {
+            if(variableRepository.existsByKeyAndCompanyAndIdNot(variable.getKey(), variable.getCompany(), variable.getId())) {
+                return;
+            }
+        }
+        variableRepository.save(variableMapper.toEntity(variable));
+    }
+
 
     @CacheEvict(
             cacheNames = "company_variables",
             key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
     )
     public Page<VariableSettingDto> save(List<VariableSettingDto> variables, Pageable pageable, String query) {
-        variableRepository.saveAll(variables.stream().filter(variableSettingDto ->
-                {
-                    if (variableSettingDto.getId() == null) {
-                        return !variableRepository.existsByKeyAndCompany(variableSettingDto.getKey(), variableSettingDto.getCompany());
-                    }
-                    return !variableRepository.existsByKeyAndCompanyAndIdNot(variableSettingDto.getKey(), variableSettingDto.getCompany(), variableSettingDto.getId());
-                })
-                .peek(variableSettingDto -> {
-                    if (Objects.nonNull(variableSettingDto.getSource())) {
-                        variableRepository.findTopBySource(variableSettingDto.getSource()).ifPresent(v -> variableSettingDto.setId(v.getId()));
-                    }
-                })
-                .map(variableMapper::toEntity).toList());
+        variables.forEach(this::save);
         return findAll(pageable, query);
     }
 
