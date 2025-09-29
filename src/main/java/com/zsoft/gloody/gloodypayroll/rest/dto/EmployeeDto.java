@@ -35,7 +35,7 @@ public class EmployeeDto {
     private String socialSecurity;
     private String paymentMode;
     private String bankName;
-    private String iban;
+    private String accountNumber;
     private LocalDate hireDate;
     private LocalDate birthDate;
     private LocalDate seniority_date;

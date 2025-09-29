@@ -61,7 +61,7 @@ public class Employee {
     @Column(name = "bank_name")
     private String bankName;
     @Column(name = "account_number")
-    private String iban;
+    private String accountNumber;
 
     @Column(name = "entered_date")
     private LocalDate hireDate;
@@ -103,6 +103,6 @@ public class Employee {
     private Long company = 1L;
 
     public String getFullName() {
-        return StringUtils.capitalize(Objects.requireNonNullElse(firstName, "")).concat(" ").concat(StringUtils.capitalize(Objects.requireNonNullElse(lastName, "")));
+        return String.format("%s %s", Objects.requireNonNullElse(this.lastName, "").toUpperCase(), StringUtils.capitalize(Objects.requireNonNullElse(this.firstName, "").toLowerCase()));
     }
 }
