@@ -104,7 +104,6 @@ public class PayslipService {
         PayslipCalculatePayload payload = new PayslipCalculatePayload();
         // todo ignore only closed, for draft once they need to be marked as closed
         Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
-       // Set<Long> draftIds = payslipSettingRepository.getAllDraftPayslipResources(month);
         resourceIds.removeAll(closedIds);
         for (Long resourceId : resourceIds) {
             try {
@@ -169,6 +168,13 @@ public class PayslipService {
                     : 0);
             templateElement.setBaseValue(calculatedElement.getBase() != null ? calculatedElement.getBase().doubleValue() : 0.0);
             templateElement.setRateValue(calculatedElement.getRate() != null ? calculatedElement.getRate().doubleValue() : 0.0);
+            if (Objects.nonNull(calculatedElement.getBackPayments())) {
+                calculatedElement.getBackPayments().forEach(p -> {
+                    p.setElementId(null);
+                    p.setId(null);
+                });
+                templateElement.setBackPayments(calculatedElement.getBackPayments());
+            }
         }
     }
 
@@ -486,12 +492,29 @@ public class PayslipService {
                 (!perRequestElements().isShowZero() && element.isZero());
     }
 
+    private void adjustBackPayments(PayslipSettingElementDto element) {
+        if (Objects.isNull(element) || Objects.isNull(element.getBackPayments())) {
+            return;
+        }
+        double backPayments = element.getBackPayments().stream().mapToDouble(BackPaymentDto::getValue).sum();
+        double currentValue = dictionaryService().findDoubleValue(element.getSection());
+        dictionaryService().setVariable(element.getSection(), currentValue + backPayments);
+    }
+
     public void addCalculatedElement(PayslipElementDto element) {
         EMPTY_SETTING_ELEMENT.setSection(element.getCode());
         if (!perRequestElements().getSettingsElements().contains(EMPTY_SETTING_ELEMENT)) {
             return;
         }
+        PayslipSettingElementDto settingElementDto = perRequestElements().getSettingsElements().stream().filter(el -> el.getSection().equals(element.getCode())).findFirst().orElse(null);
+        if (settingElementDto == null) {
+            return;
+        }
+        if (!element.isTotal()) {
+            adjustBackPayments(settingElementDto);
+        }
         if (!isHidden(element)) {
+            element.setBackPayments(settingElementDto.getBackPayments());
             perRequestElements().getCalculatedElements().add(element);
         }
     }
@@ -517,6 +540,7 @@ public class PayslipService {
         } else {
             sectionValue = BigDecimal.valueOf(value);
         }
+
         if (sectionValue == null) {
             return elementDto.get();
         }

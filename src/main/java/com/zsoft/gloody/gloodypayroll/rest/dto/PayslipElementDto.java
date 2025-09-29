@@ -3,6 +3,7 @@ package com.zsoft.gloody.gloodypayroll.rest.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -23,9 +24,21 @@ public class PayslipElementDto {
     private boolean ratePercent;
     @Builder.Default
     private boolean total = false;
+    private List<BackPaymentDto> backPayments;
 
     public boolean isZero() {
         return (gain == null || gain.doubleValue() == 0d) && (deduction == null || deduction.doubleValue() == 0d);
+    }
+
+    public Double getValueWithBackPayments() {
+        if (backPayments == null || backPayments.isEmpty()) {
+            return null;
+        }
+        if (gain == null && deduction == null) {
+            return null;
+        }
+        return Objects.requireNonNullElse(gain, deduction).doubleValue() + backPayments.stream().map(BackPaymentDto::getValue).reduce(Double::sum).orElse(0d);
+
     }
 
     @Override

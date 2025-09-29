@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.rest.dto;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.Objects;
 
 
@@ -21,6 +22,7 @@ public class PayslipSettingElementDto implements Cloneable{
     private Double rateValue;
     private boolean fix;
     private int elementOrder;
+    private List<BackPaymentDto> backPayments;
 
     @Override
     public boolean equals(Object o) {

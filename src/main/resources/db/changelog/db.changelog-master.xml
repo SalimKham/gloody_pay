@@ -40,4 +40,5 @@
     <include file="0.0.4/add-activity-sector-to-company.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/unset-employee-marital-status.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/update_maritalstatus-column-type.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-back-payment.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
