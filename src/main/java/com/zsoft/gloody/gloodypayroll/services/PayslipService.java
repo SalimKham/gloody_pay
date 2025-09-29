@@ -2,10 +2,7 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
-import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
-import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
-import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
-import com.zsoft.gloody.gloodypayroll.models.entities.Period;
+import com.zsoft.gloody.gloodypayroll.models.entities.*;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.CompanyRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
@@ -260,6 +257,17 @@ public class PayslipService {
         return calculatedElements;*/
     }
 
+    private double getCustomFieldValue(String source, Employee employee) {
+        if (source == null || source.isEmpty()) {
+            return 0d;
+        }
+        if (employee == null || employee.getCustomFields() == null ) {
+            return 0d;
+        }
+        CustomField customField =  employee.getCustomFields().stream().filter(c -> Objects.equals(c.getCode(), source)).findFirst().orElse(null);
+        return Objects.nonNull(customField) ? customField.getValue() : 0d;
+    }
+
     private Map<String, Double> getMonthlyValues(PayslipCalculatePayload payload, Employee employee) {
         initDictionaryService();
         LocalDate month = Objects.requireNonNullElse(payload.getMonth(), LocalDate.now()).withDayOfMonth(1);
@@ -278,7 +286,11 @@ public class PayslipService {
             try {
                 if (!variables.containsKey(variable.getKey())) {
                     if (variable.getSource() != null) {
-                        variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), variable.getFormula()  == null ? 0 :  Double.parseDouble(variable.getFormula() )));
+                        if (variable.getSource().contains("CUSTOM_FIELD")) {
+                            variables.put(variable.getKey(),getCustomFieldValue(variable.getSource(), employee));
+                        } else {
+                            variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), variable.getFormula()  == null ? 0 :  Double.parseDouble(variable.getFormula() )));
+                        }
                         monthlyValues.remove(variable.getSource());
                     } else {
                         variables.put(variable.getKey(), Double.valueOf(variable.getFormula()));

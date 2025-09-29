@@ -10,6 +10,7 @@ import lombok.*;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -26,6 +27,7 @@ public class EmployeeDto {
     private String firstName;
     private String middleName;
     private String title;
+    private boolean disabled;
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     private Integer numberOfChildren;
@@ -52,6 +54,7 @@ public class EmployeeDto {
     private String remunerationType;
     @NotNull
     private Long company;
+    List<CustomFieldDto> customFields;
 
     @Override
     public boolean equals(Object o) {

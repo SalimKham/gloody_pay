@@ -88,9 +88,8 @@ public class SectionDictionaryService extends CompanySupportService {
         double hoursByDay = findDoubleValue(variablesMap.getOrDefault(HOURS_BY_WEEK, HOURS_BY_WEEK )) / findDoubleValue(variablesMap.getOrDefault(DAYS_BY_WEEK, DAYS_BY_WEEK ));
         setVariable(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR), countWorkingDays - findDoubleValue(variablesMap.getOrDefault(CONTRACT_OFF_DAYS, CONTRACT_OFF_DAYS )));
         setVariable(variablesMap.getOrDefault(WORKING_HOURS_NBR , WORKING_HOURS_NBR), (findDoubleValue(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR)) * hoursByDay));
-        if (employee != null) {
-            setVariable(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY ), employee.getBaseSalary());
-        }
+        setVariable(variablesMap.getOrDefault(HANDICAP , HANDICAP), employee.isDisabled() ? 1 : 0);
+        setVariable(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY), employee.getBaseSalary());
         initialVariables.putAll(variables);
     }
 
