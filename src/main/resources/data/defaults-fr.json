@@ -22,6 +22,13 @@
       "formula": "30"
     },
     {
+      "key": "HANDICAP",
+      "source": "HANDICAP",
+      "description": "",
+      "label": "Travailleur handicapé",
+      "formula": "0"
+    },
+    {
       "key": "V_NBJ_OUVRABL",
       "source": "WORKING_DAYS_NBR",
       "description": "Nombre de jours ouvrables",

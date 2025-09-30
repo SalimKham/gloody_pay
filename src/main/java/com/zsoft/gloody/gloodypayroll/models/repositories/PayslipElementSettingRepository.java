@@ -62,7 +62,19 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
             SELECT pse.payslipSetting.employee, pse.section.code,  pse.value, pse.elementOrder  FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
             ORDER BY pse.elementOrder ASC
             """)
-    Page<Tuple> getClosedElementsByEmployeeIdAndCodeInAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
+    Page<Tuple> getClosedElementsByEmployeeIdAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
+
+
+
+    @Query("""
+            SELECT pse.payslipSetting.employee, pse.section.code,  SUM(pse.value), pse.elementOrder  FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL
+             AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed
+              AND  pse.payslipSetting.paymentDate = :selected_month
+              AND pse.section.code IN :codes
+            GROUP BY  pse.payslipSetting.employee
+            """)
+    Page<Tuple> getClosedElementsByEmployeeIdAndCodeAndMonth(@Param("resource_ids") Set<Long> resourceIds , @Param("codes") List<String> codes, @Param("selected_month") LocalDate month, Pageable pageable);
+
 
 
 
