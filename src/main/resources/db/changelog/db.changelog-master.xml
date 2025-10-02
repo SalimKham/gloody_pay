@@ -42,5 +42,6 @@
     <include file="0.0.4/update_maritalstatus-column-type.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add-back-payment.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add-custom-fields.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-handicap-column.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

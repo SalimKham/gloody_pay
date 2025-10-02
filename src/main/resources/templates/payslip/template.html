@@ -411,7 +411,7 @@
                         <td class="align-right"></td>
                         <td th:text="${element?.gain >= 0 ? #numbers.formatDecimal(backPayment.value, 2, 2) : ''}"
                             class="align-right"></td>
-                        <td th:text="${element?.deduction > 0 ? #numbers.formatDecimal(backPayment.value, 2, 2) : ''}"
+                        <td th:text="${element?.deduction >= 0 ? #numbers.formatDecimal(backPayment.value, 2, 2) : ''}"
                             class="align-right"></td>
                         <td th:if="${show_employer_col}" class="align-right"></td>
                     </tr>
