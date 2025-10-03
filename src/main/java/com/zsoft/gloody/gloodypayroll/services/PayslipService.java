@@ -452,15 +452,15 @@ public class PayslipService {
             if (el.isTotal() || section.isSalary()) {
                 continue;
             }
-            updateTotal(prefix, label, el.getGain(), el.getDeduction());
+            updateTotal(prefix, label, section.isGain(), BigDecimal.valueOf(dictionaryService().findDoubleValue(section.getCode())));
         }
-        updateTotal(prefix, label, BigDecimal.ZERO, BigDecimal.ZERO);
+        updateTotal(prefix, label, true , BigDecimal.ZERO);
     }
 
-    private void updateTotal(String prefix, String label, BigDecimal gain, BigDecimal deduction) {
+    private void updateTotal(String prefix, String label, boolean gain, BigDecimal value) {
         String key = String.format(prefix + "%s", label);
         BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService().findDoubleValue(key));
-        dictionaryService().setVariable(key, recentTotal.add((gain != null ? gain : BigDecimal.ZERO)).subtract((deduction != null ? deduction : BigDecimal.ZERO)));
+        dictionaryService().setVariable(key, gain ? recentTotal.add(value) : recentTotal.subtract(value));
     }
 
     private PayslipElementDto getTotalElement(String label) {
@@ -505,7 +505,7 @@ public class PayslipService {
     }
 
     private void adjustBackPayments(PayslipSettingElementDto element) {
-        if (Objects.isNull(element) || Objects.isNull(element.getBackPayments())) {
+        if (Objects.isNull(element) || Objects.isNull(element.getBackPayments()) || element.getBackPayments().isEmpty()) {
             return;
         }
         double backPayments = element.getBackPayments().stream().mapToDouble(BackPaymentDto::getValue).sum();
