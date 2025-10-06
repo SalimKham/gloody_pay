@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.successMsg;
 
@@ -34,7 +37,20 @@ public class EmployeeService extends CompanySupportService {
     }
 
     public void saveBulk(List<EmployeeDto> dtos) {
-       dtos.forEach(this::save);
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        Set<Long> ids = dtos.stream().map(EmployeeDto::getId).collect(Collectors.toSet());
+        Map<Long, Long> addresses = employeeRepository.getAddresses(ids).stream().collect(Collectors.toMap(t ->t.get(0, Long.class), t -> t.get(1, Long.class)));
+        List<Employee> employees = dtos.stream().map(dto -> {
+            Employee entity = this.employeeMapper.toEntity(dto);
+            if(addresses.containsKey(entity.getId())) {
+                entity.getAddress().setId(addresses.get(entity.getId()));
+            }
+            return entity;
+        }).toList();
+        employeeRepository.saveAll(employees);
+        log.info(successMsg("BULK UPDATING EMPLOYEE"));
     }
     public EmployeeDto update(EmployeeDto dto) {
         this.save(dto);
