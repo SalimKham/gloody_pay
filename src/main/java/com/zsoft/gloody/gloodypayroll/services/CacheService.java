@@ -2,7 +2,7 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
-import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.SectionMapper;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;

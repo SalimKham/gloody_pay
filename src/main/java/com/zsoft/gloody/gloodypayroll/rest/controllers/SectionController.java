@@ -1,6 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
-import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
 import com.zsoft.gloody.gloodypayroll.services.SectionService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
