@@ -14,4 +14,5 @@ public class LabelSettingDto {
     private String label;
     private String color;
     private String description;
+    private Boolean referenced;
 }
