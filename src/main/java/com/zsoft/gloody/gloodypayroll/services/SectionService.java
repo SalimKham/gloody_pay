@@ -4,7 +4,7 @@ import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
 import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
-import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.SectionMapper;
 import com.zsoft.gloody.gloodypayroll.utils.FieldAccessorUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SectionListUtils;
