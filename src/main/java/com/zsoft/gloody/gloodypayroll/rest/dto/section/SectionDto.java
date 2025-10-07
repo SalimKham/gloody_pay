@@ -1,11 +1,14 @@
-package com.zsoft.gloody.gloodypayroll.rest.dto;
+package com.zsoft.gloody.gloodypayroll.rest.dto.section;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
+import com.zsoft.gloody.gloodypayroll.rest.dto.SectionCategoryDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.SectionVariableDto;
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingAccountDTO;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +36,8 @@ public class SectionDto {
     private Long company;
     private Boolean referenced;
     private AccountingSettingAccountDTO accounting;
-    private List<SectionVariableDto> variables;
+    @Builder.Default
+    private List<SectionVariableDto> variables = new ArrayList<>();
 
     public boolean isSalary() {
         return type != null && type.equals(SectionType.SALARY);
