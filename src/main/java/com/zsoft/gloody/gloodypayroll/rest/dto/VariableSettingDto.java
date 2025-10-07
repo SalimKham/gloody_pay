@@ -17,4 +17,5 @@ public class VariableSettingDto {
     private String formula;
     private String label;
     private String description;
+    private Boolean referenced;
 }

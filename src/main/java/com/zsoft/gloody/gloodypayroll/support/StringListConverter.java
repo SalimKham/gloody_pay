@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Converter
 public class StringListConverter implements AttributeConverter<List<String>, String> {
-    private static final String SPLIT_CHAR = "##UNIQUE_LIST_SEPARATOR##";
+    public static final String SPLIT_CHAR = "##UNIQUE_LIST_SEPARATOR##";
 
     @Override
     public String convertToDatabaseColumn(List<String> stringList) {
