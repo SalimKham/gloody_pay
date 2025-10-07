@@ -32,12 +32,11 @@ public interface SectionRepository extends JpaRepository<Section, Long>, JpaSpec
 
     Boolean existsByCodeAndCompany(String code, Long company_id);
 
-    @Query("SELECT s FROM Section  s WHERE s.code LIKE :code AND s.company = :companyId")
+    @Query("SELECT s FROM Section  s WHERE s.code = :code AND s.company = :companyId")
     Optional<Section> findByCodeAndCompany(@Param("code")  String  code, @Param("companyId") Long CompanyId);
 
     boolean existsByCode(String code);
 
     void deleteByCode(String code);
 
-    List<Section> findAllByAccountingIsNotNull();
 }
