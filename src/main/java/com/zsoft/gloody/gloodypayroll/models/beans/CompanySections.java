@@ -1,6 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.models.beans;
 
-import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

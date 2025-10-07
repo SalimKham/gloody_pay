@@ -4,7 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.entities.SectionCategory;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.SectionCategoryDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.accounting.AccountingSettingAccountMapper;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import org.mapstruct.Mapper;
