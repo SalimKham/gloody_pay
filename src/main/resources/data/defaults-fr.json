@@ -29,6 +29,13 @@
       "formula": "0"
     },
     {
+      "key": "SENIORITY",
+      "source": "SENIORITY",
+      "description": "",
+      "label": "Ancienneté",
+      "formula": "0"
+    },
+    {
       "key": "V_NBJ_OUVRABL",
       "source": "WORKING_DAYS_NBR",
       "description": "Nombre de jours ouvrables",
