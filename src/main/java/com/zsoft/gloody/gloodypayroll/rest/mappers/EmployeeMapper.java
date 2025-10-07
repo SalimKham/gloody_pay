@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.time.LocalDate;
 
-@Mapper(uses = {AddressMapper.class})
+@Mapper(uses = {AddressMapper.class, CustomFieldMapper.class})
 public interface EmployeeMapper {
 
     EmployeeDto toDto(Employee employee);

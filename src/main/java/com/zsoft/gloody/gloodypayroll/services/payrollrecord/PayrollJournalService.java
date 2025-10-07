@@ -5,7 +5,6 @@ import com.zsoft.gloody.gloodypayroll.models.entities.Section;
 import com.zsoft.gloody.gloodypayroll.models.enums.MaritalStatus;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipElementSettingRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.SectionRepository;
 import com.zsoft.gloody.gloodypayroll.utils.CommonUtils;
 import jakarta.persistence.Tuple;
@@ -34,7 +33,6 @@ import static com.zsoft.gloody.gloodypayroll.services.payrollrecord.PayrollRecor
 public class PayrollJournalService {
     private final EmployeeRepository employeeRepository;
     private final PayslipElementSettingRepository payslipElementSettingRepository;
-    private final PayslipSettingRepository payslipSettingRepository;
     private final SectionRepository sectionRepository;
     private Map<String, Section> sections;
 
@@ -57,7 +55,7 @@ public class PayrollJournalService {
         List<Set<Long>> employeeIdsList = CommonUtils.splitSet(ids, PAGE_SIZE);
 
         for (Set<Long> employeeIds : employeeIdsList) {
-            Page<Tuple> data = payslipElementSettingRepository.getClosedElementsByEmployeeIdAndCodeInAndMonth(employeeIds, month.withDayOfMonth(1), Pageable.unpaged());
+            Page<Tuple> data = payslipElementSettingRepository.getClosedElementsByEmployeeIdAndMonth(employeeIds, month.withDayOfMonth(1), Pageable.unpaged());
             Map<Long, Map<String, Double>> employeeSectionValues = data.getContent().stream()
                     .collect(Collectors.groupingBy(
                             tuple -> tuple.get(0, Long.class),

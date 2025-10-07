@@ -55,16 +55,42 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
             AND pse.value IS NOT NULL AND pse.payslipSetting.employee = :resource_id AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate BETWEEN :start_month AND :end_month
             ORDER BY pse.payslipSetting.paymentDate ASC
             """)
-    List<Tuple> getClosedElementsByEmployeeIdAndCodeIn(@Param("resource_id") Long resourceId, @Param("codes") List<String> codes, @Param("start_month") LocalDate startMonth,   @Param("end_month") LocalDate endMonth);
+    List<Tuple> getClosedElementsByEmployeeIdAndCodeIn(@Param("resource_id") Long resourceId, @Param("codes") List<String> codes, @Param("start_month") LocalDate startMonth, @Param("end_month") LocalDate endMonth);
 
 
     @Query("""
             SELECT pse.payslipSetting.employee, pse.section.code,  pse.value, pse.elementOrder  FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
             ORDER BY pse.elementOrder ASC
             """)
-    Page<Tuple> getClosedElementsByEmployeeIdAndCodeInAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
+    Page<Tuple> getClosedElementsByEmployeeIdAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
 
 
+    @Query("""
+                SELECT
+                    section,
+                    SUM(pse.baseValue),
+                    SUM(pse.rateValue),
+                    SUM(pse.value),
+                    COUNT(section)
+                FROM PayslipSettingElement pse
+                JOIN pse.section section
+                JOIN pse.payslipSetting ps
+                WHERE ps.employee IN :employee_ids
+                  AND ps.closed
+                  AND ps.paymentDate = :selected_month
+                GROUP BY section
+                ORDER BY MIN(pse.elementOrder)
+            """)
+    Page<Tuple> sumElementsByEmployeeIdAndMonth(@Param("employee_ids") Set<Long> employeeIds, @Param("selected_month") LocalDate month,Pageable pageable);
+
+    @Query("""
+            SELECT pse.payslipSetting.employee, pse.section.code,  SUM(pse.value), pse.elementOrder  FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL
+             AND pse.payslipSetting.employee IN :resource_ids AND pse.payslipSetting.closed
+              AND  pse.payslipSetting.paymentDate = :selected_month
+              AND pse.section.code IN :codes
+            GROUP BY  pse.payslipSetting.employee
+            """)
+    Page<Tuple> getClosedElementsByEmployeeIdAndCodeAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("codes") List<String> codes, @Param("selected_month") LocalDate month, Pageable pageable);
 
 
     @Query("SELECT pse.payslipSetting.employee, pse.payslipSetting.paymentDate, pse.section.code,  pse.value FROM PayslipSettingElement  pse WHERE pse.section.code in :codes " +

@@ -22,5 +22,7 @@ public enum PayrollRecordType {
     DAS_INDIVIDUAL,
 
     /** French supplementary payroll tax form (301BIS) */
-    FORM_301BIS;
+    FORM_301BIS,
+
+    PAYROLL_TRANSFER
 }

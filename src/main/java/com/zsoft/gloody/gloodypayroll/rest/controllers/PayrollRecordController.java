@@ -37,6 +37,12 @@ public class PayrollRecordController {
         return  ResponseEntity.ok().build();
     }
 
+    @PostMapping("generate/payroll_transfer")
+    public ResponseEntity<Void> generatePayrollJournal(@RequestBody PayrollTransferPayloadDTO payload) {
+        recordService.generatePayrollTransfer(payload );
+        return  ResponseEntity.ok().build();
+    }
+
     @GetMapping("generate/das_details/{year}")
     public ResponseEntity<Void> generateDasDetails(@PathVariable int year) {
         recordService.generateDasDetails(year);
