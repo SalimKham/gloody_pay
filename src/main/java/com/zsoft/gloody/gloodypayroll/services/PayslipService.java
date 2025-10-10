@@ -4,13 +4,11 @@ import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
 import com.zsoft.gloody.gloodypayroll.models.entities.*;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
-import com.zsoft.gloody.gloodypayroll.models.repositories.CompanyRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.*;
 import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.mappers.BackPaymentMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
@@ -42,6 +40,7 @@ import java.util.stream.DoubleStream;
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.*;
 
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -62,6 +61,7 @@ public class PayslipService {
     private final HRDataRepository hrDataRepository;
     private final VariableService variableService;
     private final EmployeeMapper employeeMapper;
+    private final BackPaymentMapper backPaymentMapper;
     private final CompanyMapper companyMapper;
     // TODO CHECK IF THIS STILL NEEDED
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
@@ -75,6 +75,7 @@ public class PayslipService {
     private final EmployeeRepository employeeRepository;
     private final PayslipDraftService payslipDraftService;
     private final CompanyRepository companyRepository;
+    private final BackPaymentsRepository backPaymentsRepository;
 
 
     public Set<Long> getClosedPayslips(LocalDate month) {
@@ -166,39 +167,44 @@ public class PayslipService {
                     : 0);
             templateElement.setBaseValue(calculatedElement.getBase() != null ? calculatedElement.getBase().doubleValue() : 0.0);
             templateElement.setRateValue(calculatedElement.getRate() != null ? calculatedElement.getRate().doubleValue() : 0.0);
-            if (Objects.nonNull(calculatedElement.getBackPayments())) {
+           /* if (Objects.nonNull(calculatedElement.getBackPayments())) {
                 calculatedElement.getBackPayments().forEach(p -> {
                     p.setElementId(null);
                     p.setId(null);
                 });
                 templateElement.setBackPayments(calculatedElement.getBackPayments());
-            }
+            }*/
         }
     }
 
     public PayslipPrintDTO print(PayslipCalculatePayload payload) {
-        EmployeeDto employeeDto = employeeRepository.findById(payload.getResourceId()).map(employeeMapper::toDto).orElse(null);
-        if (employeeDto == null) {
-            throw new ApiRuntimeException("error.employee.required");
+        try {
+            EmployeeDto employeeDto = employeeRepository.findById(payload.getResourceId()).map(employeeMapper::toDto).orElse(null);
+            if (employeeDto == null) {
+                throw new ApiRuntimeException("error.employee.required");
+            }
+            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false, false);
+            if (calculatedPayslip == null || calculatedPayslip.template() == null) {
+                return null;
+            }
+            CompanyDto companyDto  = companyRepository.findById(SecurityUtils.getCurrentCompanyId()).map(companyMapper::toDto).orElse(null);
+            Locale locale = Locale.getDefault();
+            Context context = new Context(locale);
+            context.setVariable("locale", locale);
+            context.setVariable("elements", calculatedPayslip.calculatedElements());
+            templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
+            String content =  templateEngine.process("payslip/template", context);
+            PayslipPrintDTO result = new PayslipPrintDTO();
+            result.setContent(content);
+            if (Objects.nonNull(calculatedPayslip.template())) {
+                result.setShowIntermediate(calculatedPayslip.template().getShowZero());
+                result.setShowIntermediate(calculatedPayslip.template().isShowIntermediate());
+            }
+            return result;
+        }catch (Exception e) {
+            e.printStackTrace();
         }
-        PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false, false);
-        if (calculatedPayslip == null || calculatedPayslip.template() == null) {
-            return null;
-        }
-        CompanyDto companyDto  = companyRepository.findById(SecurityUtils.getCurrentCompanyId()).map(companyMapper::toDto).orElse(null);
-        Locale locale = Locale.getDefault();
-        Context context = new Context(locale);
-        context.setVariable("locale", locale);
-        context.setVariable("elements", calculatedPayslip.calculatedElements());
-        templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
-        String content =  templateEngine.process("payslip/template", context);
-        PayslipPrintDTO result = new PayslipPrintDTO();
-        result.setContent(content);
-        if (Objects.nonNull(calculatedPayslip.template())) {
-            result.setShowIntermediate(calculatedPayslip.template().getShowZero());
-            result.setShowIntermediate(calculatedPayslip.template().isShowIntermediate());
-        }
-        return result;
+     return null;
     }
 
     private PayslipSettingDto mergeTempTemplate(PayslipSettingDto template, PayslipSettingDto tempTemplate) {
@@ -234,29 +240,6 @@ public class PayslipService {
                 ));
     }
 
-    public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate, boolean isTemporary) {
-        return null;
-        // todo uncomment this later
-      /*  LinkedHashSet<PayslipElementDto> calculatedElements = new LinkedHashSet<>();
-        if (payslipTemplate.isClosed()) {
-            payslipTemplate.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
-        } else {
-            if (isTemporary) {
-                return null;
-            }
-            if (!monthlyValues.containsKey("DRAFT_ID")) {
-                return null;
-            }
-            Long draftId = monthlyValues.get("DRAFT_ID").longValue();
-            PayslipSettingDto template = getTemplate(draftId, true, false);
-            if (template == null) {
-                return null;
-            }
-            template.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
-        }
-
-        return calculatedElements;*/
-    }
 
     private double getCustomFieldValue(String source, Employee employee) {
         if (source == null || source.isEmpty()) {
@@ -332,23 +315,6 @@ public class PayslipService {
         RequestContext.initFunctionElements(resourceIds, inFunctionsCodes);
     }
 
-    private boolean isTemp(PayslipCalculatePayload payload, PayslipSettingDto template) {
-        if (payload.getTempTemplate() == null) {
-            return false;
-        }
-        if (payload.getTempTemplate().getId() != null) {
-            return true;
-        }
-        if (!Objects.equals(template.getShowZero(), payload.getTempTemplate().getShowZero())) {
-            return true;
-        }
-
-        if (!Objects.equals(template.getRate(), payload.getTempTemplate().getRate())) {
-            return true;
-        }
-        return payload.getTempTemplate().getElements() != null && !payload.getTempTemplate().getElements().isEmpty();
-    }
-
     public PayslipController.CalculatedPayslip calculate(PayslipCalculatePayload payload, Employee employee, boolean saveAsDraft, boolean clearContext) {
 
         try {
@@ -369,30 +335,36 @@ public class PayslipService {
                 return null;
             }
             dictionaryService().setRate(template.getRate());
-            boolean isTemporary = isTemp(payload, template);
-            LinkedHashSet<PayslipElementDto> calculatedElements = loadDraftedIfPresent(payload, monthlyValues, template, isTemporary);
-            if (calculatedElements != null) {
-                return new PayslipController.CalculatedPayslip(template, calculatedElements);
-            }
             initRequestContext();
             template = mergeTempTemplate(template, payload.getTempTemplate());
+            setBackPayments(template, payload.getContractId(), payload.getMonth().withDayOfMonth(1), payload.getBackPayment());
             engine.setBindings(new SimpleBindings(dictionaryService().getAllVariables()), ScriptContext.GLOBAL_SCOPE);
             dictionaryService().setAddElements(true);
             initPerRequestElements(template, payload.getResourceId());
-
+            perRequestElements().setAdjustBackPayments(payload.isAdjustBackPayments());
             for (PayslipSettingElementDto elementDto : template.getElements()) {
+                if (payload.isReCalculate()) {
+                    resetValues(elementDto);
+                }
                 calculateSection(elementDto);
             }
-          /*  if (saveAsDraft && !isTemporary) {
-                payslipDraftService.saveAsDraftAsync(SecurityUtils.getCurrentCompanyId(), template, perRequestElements().getCalculatedElements(), payload.getContractId(), payload.getResourceId(), employee, month);
-            }*/
             return new PayslipController.CalculatedPayslip(template, perRequestElements().getCalculatedElements());
-        } finally {
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
+        finally {
             if (clearContext) {
                 RequestContext.clear();
             }
         }
+        return null;
 
+    }
+
+    private static void resetValues(PayslipSettingElementDto elementDto) {
+        elementDto.setValue(null);
+        elementDto.setBaseValue(null);
+        elementDto.setRateValue(null);
     }
 
     private int indexOf(PayslipElementDto elementDto) {
@@ -506,6 +478,9 @@ public class PayslipService {
     }
 
     private void adjustBackPayments(PayslipSettingElementDto element) {
+        if(!perRequestElements().isAdjustBackPayments()) {
+            return;
+        }
         if (Objects.isNull(element) || Objects.isNull(element.getBackPayments()) || element.getBackPayments().isEmpty()) {
             return;
         }
@@ -783,6 +758,29 @@ public class PayslipService {
         } else {
             return payslipSettingService.findDraftById(id).orElse(null);
         }
+    }
+
+
+    private void setBackPayment(PayslipSettingDto template, BackPaymentDto backPaymentDto) {
+        if (template == null || template.getElements() == null || backPaymentDto == null) {
+            return;
+        }
+        template.getElements().forEach(element -> {
+            element.setBackPayments(null);
+        });
+        template.getElements().stream().filter(el -> Objects.equals(el.getSection(), backPaymentDto.getSectionCode())).forEach(element -> element.setBackPayments(List.of(backPaymentDto)));
+    }
+    
+    public void setBackPayments(PayslipSettingDto template, Long contractId, LocalDate month, BackPaymentDto backPaymentDto) {
+        if (template == null || template.getElements() == null) {
+            return;
+        }
+        setBackPayment(template, backPaymentDto);
+        Map<String, List<BackPaymentDto>> backPayments = backPaymentsRepository.findAllByContractIdAndMonthAndSectionCodeIsNotNullAndSourceIsNotNull(contractId, month).stream().map(backPaymentMapper::toDto).collect(Collectors.groupingBy(BackPaymentDto::getSectionCode));
+        if (backPayments.isEmpty()) {
+            return;
+        }
+        template.getElements().forEach(element -> element.setBackPayments(backPayments.getOrDefault(element.getSection(), null)));
     }
 
 }

@@ -1,9 +1,11 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
+import com.zsoft.gloody.gloodypayroll.models.entities.VariableSetting;
 import com.zsoft.gloody.gloodypayroll.models.enums.SummaryDataType;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.VariableSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.dto.HRMonthlySummaryDTO;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.HRSummaryMapper;
@@ -13,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.successMsg;
@@ -26,11 +25,10 @@ import static com.zsoft.gloody.gloodypayroll.utils.LogUtility.successMsg;
 @Transactional
 @Slf4j
 public class HRMonthlyDataService extends CompanySupportService {
-    public static final String TEMPLATE = "TEMPLATE";
     private final HRDataRepository hrDataRepository;
     private final HRSummaryMapper mapper;
     private final PayslipSettingRepository payslipSettingRepository;
-    private final HRAsyncService asyncService;
+    private final VariableSettingRepository variableSettingRepository;
 
 
     public void save(List<HRMonthlySummaryDTO> summaryDTOS) {
@@ -40,8 +38,8 @@ public class HRMonthlyDataService extends CompanySupportService {
         HRMonthlySummaryDTO summaryDTO = summaryDTOS.get(0);
         LocalDate month = summaryDTO.month().withDayOfMonth(1);
         Set<Long> contractIds = summaryDTOS.stream().map(HRMonthlySummaryDTO::contractId).collect(Collectors.toSet());
-        Set<SummaryDataType> sourceTypes = summaryDTOS.stream().map(HRMonthlySummaryDTO::type).collect(Collectors.toSet());
-        if (contractIds.isEmpty() || sourceTypes.isEmpty())  {
+        Set<SummaryDataType> sourceTypes = summaryDTOS.stream().map(HRMonthlySummaryDTO::type).filter(Objects::nonNull).collect(Collectors.toSet());
+        if (contractIds.isEmpty() || sourceTypes.isEmpty()) {
             return;
         }
         hrDataRepository.deleteByContractIdInAndTypeInAndMonth(contractIds, sourceTypes, month);
@@ -73,6 +71,76 @@ public class HRMonthlyDataService extends CompanySupportService {
         payslipSettingRepository.deleteAllByContractInAndPaymentDateAndDraftIsTrue(resourceContracts.values(), month);
     }
 
+    public List<HRMonthlySummaryDTO> getMonthlyValues(Long contractId, LocalDate month) {
+        Map<String, HRMonthlyData> monthlyValues = hrDataRepository.findAllByContractIdAndMonth(contractId, month.withDayOfMonth(1)).stream()
+                .collect(Collectors.toMap(HRMonthlyData::getVariable, v -> v));
+        List<HRMonthlySummaryDTO> result = new ArrayList<>();
+        List<HRMonthlySummaryDTO> variables = variableSettingRepository.findAll()
+                .stream()
+                .filter(this::isUpdatableVariable).map(variableSetting -> {
+                    String key = Objects.requireNonNullElse(variableSetting.getSource(), variableSetting.getKey());
+                    Long id = monthlyValues.containsKey(key) ? monthlyValues.get(key).getId() : null;
+                    double value = monthlyValues.containsKey(key) ? monthlyValues.get(key).getValue() : Double.valueOf(Objects.requireNonNullElse(variableSetting.getFormula(), "0"));
+                    return new HRMonthlySummaryDTO(id, null,
+                            contractId, getVariableType(variableSetting.getSource()),
+                            month.withDayOfMonth(1), variableSetting.getKey(),
+                            value
+                            , false, variableSetting.getLabel());
+                }).toList();
+        result.addAll(variables);
+        return result;
+    }
+
+    public boolean isUpdatableVariable(VariableSetting variableSetting) {
+        return Objects.nonNull(getVariableType(variableSetting.getSource())) &&Objects.nonNull(variableSetting.getLabel()) && !variableSetting.getKey().startsWith("VC")  && !Objects.requireNonNullElse(variableSetting.getSource(), "").startsWith("CUSTOM_FIELD")
+                && !List.of("BASE_SALARY", "IRG(BASE)").contains(Objects.requireNonNullElse(variableSetting.getSource(), ""));
+    }
+
+    public void saveMonthlyValues(List<HRMonthlySummaryDTO> variables) {
+        if (variables == null || variables.isEmpty()) {
+            return;
+        }
+        Map<String, VariableSetting> variableSettingMap = variableSettingRepository.findAll().stream().collect(Collectors.toMap(VariableSetting::getKey, variableSetting -> variableSetting));
+        if (variables.stream().anyMatch((v -> Objects.equals(v.type(), SummaryDataType.TEMPLATE)))) {
+            hrDataRepository.deleteByContractIdInAndTypeInAndMonth(Set.of(variables.get(0).contractId()), Set.of(SummaryDataType.TEMPLATE), variables.get(0).month().withDayOfMonth(1));
+        }
+        hrDataRepository.saveAll(variables.stream().map(variable -> {
+            HRMonthlyData entity = mapper.toEntity(variable);
+            if (variableSettingMap.containsKey(entity.getVariable()) && variableSettingMap.get(entity.getVariable()).getSource() != null) {
+                entity.setVariable(variableSettingMap.get(entity.getVariable()).getSource());
+            }
+            return entity;
+        }).toList());
+    }
+
+    private SummaryDataType getVariableType(String source) {
+        if (source == null || source.isEmpty()) {
+            return null;
+        }
+        if (source.startsWith("ABSENCE")) {
+            return SummaryDataType.ABSENCE;
+        }
+        if (source.startsWith("ADVANCE")) {
+            return SummaryDataType.SALARY_ADVANCE;
+        }
+        if (source.startsWith("EXPENSE")) {
+            return SummaryDataType.EXPENSE;
+        }
+        if (source.startsWith("BONUS")) {
+            return SummaryDataType.SALARY_BONUS;
+        }
+        if (source.startsWith("EXTRA_HOURS")) {
+            return SummaryDataType.EXTRA_HOURS;
+        }
+        if (source.startsWith("MEAL_VOUCHER")) {
+            return SummaryDataType.MEAL_VOUCHER;
+        }
+        if (source.startsWith("RESOURCE_MUTUAL")) {
+            return SummaryDataType.RESOURCE_MUTUAL;
+        }
+        return null;
+    }
+
     public void saveDrafts(Set<Long> resourceIds, LocalDate month) {
         // todo uncomment this
        /* deleteDrafts(resourceIds, month);
@@ -92,11 +160,10 @@ public class HRMonthlyDataService extends CompanySupportService {
 
     public void updateHrTemplate(Long resourceId, Long contractId, LocalDate month, Long templateId) {
         hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month);
-        hrDataRepository.save(new HRMonthlyData(null, resourceId, contractId, SummaryDataType.TEMPLATE,  month, "TEMPLATE", templateId));
+        hrDataRepository.save(new HRMonthlyData(null, resourceId, contractId, SummaryDataType.TEMPLATE, month, "TEMPLATE", templateId));
         log.info(successMsg("TEMPLATE UPDATED | CONTRACT: %s | MONTH: %s", contractId, month));
         saveDrafts(Set.of(resourceId), month);
     }
-
 
 
 }

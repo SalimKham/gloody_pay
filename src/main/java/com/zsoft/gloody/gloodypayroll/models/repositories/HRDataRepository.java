@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.models.repositories;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.enums.SummaryDataType;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -66,6 +67,11 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
             AND hr2.month = :current_month  AND hr2.variable = 'TEMPLATE'))
             """)
     Set<Long> findAllResourcesByDefaultTemplate(@Param("current_month") LocalDate month);
+
+
+    @Nullable
+    @Query(value = "SELECT hr.value FROM hr_monthly_data hr where hr.contract_id = :contract_id AND hr.pay_month = :month AND hr.source_type = 'TEMPLATE' ", nativeQuery = true)
+    Double findTemplateId(@Param("contract_id") Long contractId, @Param("month") LocalDate month);
 
     void deleteByContractIdInAndTypeInAndMonth(Set<Long> contractIds, Set<SummaryDataType> types, LocalDate month);
 

@@ -24,6 +24,21 @@ public class HrSummaryController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/monthly_values")
+    public ResponseEntity<Void> saveMonthlyVariables(@RequestBody List<HRMonthlySummaryDTO> payload) {
+        service.saveMonthlyValues(payload);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{contract_id}/{month}")
+    public ResponseEntity<List<HRMonthlySummaryDTO>> getMonthlyVariables(@PathVariable(name = "contract_id") Long contractId,
+                                                                           @PathVariable(name = "month") LocalDate month
+
+    ) {
+        return ResponseEntity.ok().body(service.getMonthlyValues(contractId, month));
+    }
+
+
     @GetMapping("/contracts/{resource_id}/{month}")
     public ResponseEntity<List<Long>> getSummaryContracts(@PathVariable(name = "resource_id") Long resourceId,
                                                           @PathVariable(name = "month") LocalDate month
@@ -38,6 +53,8 @@ public class HrSummaryController {
         return ResponseEntity.ok().body(service.getAllMonthlyContracts(month, company));
     }
 
+
+
     @PostMapping("/save_drafts/{month}")
     public ResponseEntity<Void> saveSummaryData(@RequestBody Set<Long> resourceIds,@PathVariable LocalDate month) {
         service.saveDrafts(resourceIds, month);
@@ -50,5 +67,6 @@ public class HrSummaryController {
         service.deleteDrafts(resourceIds, month);
         return ResponseEntity.ok().build();
     }
+
 
 }

@@ -34,11 +34,15 @@ public class PayslipElementDto {
         if (backPayments == null || backPayments.isEmpty()) {
             return null;
         }
-        if (gain == null && deduction == null) {
-            return null;
-        }
-        return Objects.requireNonNullElse(gain, deduction).doubleValue() + backPayments.stream().map(BackPaymentDto::getValue).reduce(Double::sum).orElse(0d);
+        return getValue() + backPayments.stream().map(BackPaymentDto::getValue).reduce(Double::sum).orElse(0d);
 
+    }
+
+    public Double getValue() {
+        if (gain == null && deduction == null) {
+            return 0d;
+        }
+        return Objects.requireNonNullElse(gain, deduction).doubleValue();
     }
 
     @Override

@@ -19,13 +19,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RequestContext {
-    private static final ThreadLocal<SectionDictionaryService> dictionaryService = new InheritableThreadLocal<>();
-    private static final ThreadLocal<PerRequestElements> perRequestElements = new InheritableThreadLocal<>();
-    private static final ThreadLocal<CompanySections> companySections = new InheritableThreadLocal<>();
-    private static final ThreadLocal<Map<Long, PayslipSettingDto>> templates = new InheritableThreadLocal<>();
-    private static final ThreadLocal<PayslipSettingDto> defaultTemplate = new InheritableThreadLocal<>();
-    private static final ThreadLocal<Map<Long, Map<String, Double>>> monthlyValues = new InheritableThreadLocal<>();
-    private static final ThreadLocal<Map<Long, List<PayslipFunctionElement>>> functionElements = new InheritableThreadLocal<>();
+    private static final ThreadLocal<SectionDictionaryService> dictionaryService = new ThreadLocal<>();
+    private static final ThreadLocal<PerRequestElements> perRequestElements = new ThreadLocal<>();
+    private static final ThreadLocal<CompanySections> companySections = new ThreadLocal<>();
+    private static final ThreadLocal<Map<Long, PayslipSettingDto>> templates = new ThreadLocal<>();
+    private static final ThreadLocal<PayslipSettingDto> defaultTemplate = new ThreadLocal<>();
+    private static final ThreadLocal<Map<Long, Map<String, Double>>> monthlyValues = new ThreadLocal<>();
+    private static final ThreadLocal<Map<Long, List<PayslipFunctionElement>>> functionElements = new ThreadLocal<>();
 
     public static void setDictionaryService(SectionDictionaryService ds) {
       dictionaryService.set(ds);
