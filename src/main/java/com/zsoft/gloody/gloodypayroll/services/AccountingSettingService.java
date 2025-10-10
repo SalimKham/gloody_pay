@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class AccountingSettingService {
+public class AccountingSettingService  extends EntityManagerService  {
     private final AccountingSettingRepository accountingSettingRepository;
     private final AccountingSettingMapper accountingSettingMapper;
     private final MessageSource messageSource;

@@ -1,9 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -34,4 +34,19 @@ public class VariableSetting extends CompanySupport {
 
     @Column(name = "description")
     private String description;
+
+    @Formula("""
+            (
+            SELECT EXISTS (
+              SELECT 1
+              FROM section s
+              WHERE CONCAT(
+                      COALESCE(s.base_formula, ''),
+                      COALESCE(s.rate_formula, ''),
+                      COALESCE(s.value_formula, '')
+                    ) rlike CONCAT('(^|[^A-Z0-9_])', `key`, '([^A-Z0-9_]|$)')
+            )
+            )
+            """)
+    private Boolean referenced;
 }

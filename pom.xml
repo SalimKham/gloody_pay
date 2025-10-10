@@ -305,6 +305,22 @@
             </activation>
         </profile>
         <profile>
+            <id>preprod</id>
+            <properties>
+                <spring.profiles.active>preprod</spring.profiles.active>
+                <packageApp>war</packageApp>
+                <nameAppWar>gloody-payroll-preprod</nameAppWar>
+                <org.apache.maven.fork>false</org.apache.maven.fork>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>preprod</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
             <id>uat</id>
             <properties>
                 <spring.profiles.active>uat</spring.profiles.active>
