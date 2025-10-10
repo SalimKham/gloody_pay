@@ -45,6 +45,7 @@ public class HRMonthlyDataService extends CompanySupportService {
         hrDataRepository.deleteByContractIdInAndTypeInAndMonth(contractIds, sourceTypes, month);
         if (summaryDTO.empty()) {
             log.info(successMsg("HR VARIABLE CLEARED: %s | CONTRACT: %s | MONTH: %s", summaryDTO.variable(), summaryDTO.contractId(), summaryDTO.month().withDayOfMonth(1)));
+            return;
         }
         Set<HRMonthlyData> data = summaryDTOS.stream().map(mapper::toEntity).peek(d -> d.setMonth(d.getMonth().withDayOfMonth(1))).collect(Collectors.toSet());
         hrDataRepository.saveAllAndFlush(data);
