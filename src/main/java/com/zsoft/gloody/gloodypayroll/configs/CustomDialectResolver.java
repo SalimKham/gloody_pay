@@ -15,6 +15,7 @@ public class CustomDialectResolver extends MariaDBDialect {
         registerKeyword("cte");
         registerKeyword("combinedFormula");
         registerKeyword("rlike");
+        registerKeyword("COALESCE");
         registerKeyword("activities_status");
         registerKeyword("temp_table");
         registerKeyword("current_date");

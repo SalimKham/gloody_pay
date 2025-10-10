@@ -13,6 +13,7 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -104,10 +105,11 @@ public class Employee {
     @Builder.Default
     private Long company = 1L;
 
+    @Builder.Default
     @OneToMany(targetEntity = CustomField.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "employee_id", nullable = false)
     @ToString.Exclude
-    private List<CustomField> customFields;
+    private List<CustomField> customFields = new ArrayList();
 
     public String getFullName() {
         return String.format("%s %s", Objects.requireNonNullElse(this.lastName, "").toUpperCase(), StringUtils.capitalize(Objects.requireNonNullElse(this.firstName, "").toLowerCase()));

@@ -3,6 +3,7 @@ package com.zsoft.gloody.gloodypayroll.models.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Formula;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -33,4 +34,24 @@ public class LabelSetting extends CompanySupport {
 
     @Column(name = "description")
     private String description;
+
+    @Formula("""
+            (
+            SELECT EXISTS (
+                SELECT 1
+                FROM section s
+                WHERE CONCAT(
+                              COALESCE(s.base_formula, ''),
+                              ',',
+                              COALESCE(s.rate_formula, ''),
+                              ',',
+                              COALESCE(s.label_keys, ''),
+                              ',',
+                              COALESCE(s.value_formula, '')
+                      ) rlike CONCAT('(^|[^A-Z0-9_])', `key`, '([^A-Z0-9_]|$)')
+            )
+            OR EXISTS(SELECT 1 FROM label_setting ls WHERE ls.parent_id = id)
+            )
+            """)
+    private Boolean referenced;
 }

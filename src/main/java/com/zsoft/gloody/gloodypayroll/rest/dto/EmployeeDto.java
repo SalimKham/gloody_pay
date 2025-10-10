@@ -10,6 +10,7 @@ import lombok.*;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,7 +55,8 @@ public class EmployeeDto {
     private String remunerationType;
     @NotNull
     private Long company;
-    List<CustomFieldDto> customFields;
+    @Builder.Default
+    List<CustomFieldDto> customFields  = new ArrayList();
 
     @Override
     public boolean equals(Object o) {
