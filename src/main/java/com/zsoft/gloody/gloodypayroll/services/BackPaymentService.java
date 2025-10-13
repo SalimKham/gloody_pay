@@ -12,8 +12,6 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.BackPaymentMapper;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,15 +30,6 @@ public class BackPaymentService extends CompanySupportService {
     private final PayslipElementSettingRepository payslipElementSettingRepository;
     private final SectionRepository sectionRepository;
 
-    @Caching(evict = {
-            @CacheEvict(
-                    cacheNames = "company_template_by_id"
-            ),
-            @CacheEvict(
-                    cacheNames = "company_default_template",
-                    key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
-            )
-    })
     public void saveBackPayment(BackPaymentDto dto) {
         dto.setMonth(dto.getMonth().withDayOfMonth(1));
         Map<String, Double> backPaymentsMap = getBackPaymentsAsMap(dto);
@@ -69,16 +58,6 @@ public class BackPaymentService extends CompanySupportService {
             }
         });
     }
-
-    @Caching(evict = {
-            @CacheEvict(
-                    cacheNames = "company_template_by_id"
-            ),
-            @CacheEvict(
-                    cacheNames = "company_default_template",
-                    key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
-            )
-    })
 
     public void deleteBackPayment(Long backPaymentId) {
         repository.deleteById(backPaymentId);

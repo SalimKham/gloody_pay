@@ -23,6 +23,7 @@ public class PerRequestElements {
     private boolean showZero;
     private Long employeeId;
     private boolean adjustBackPayments = false;
+    private boolean resetElementValues = false;
     private List<PayslipSettingElementDto> settingsElements = new ArrayList<>();
     private List<PayslipFunctionElement> functionElements = new ArrayList<>();
     private TreeSet<PayslipElementDto> calculatedElements = new TreeSet<>() {

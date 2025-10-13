@@ -168,13 +168,6 @@ public class PayslipService {
                     : 0);
             templateElement.setBaseValue(calculatedElement.getBase() != null ? calculatedElement.getBase().doubleValue() : 0.0);
             templateElement.setRateValue(calculatedElement.getRate() != null ? calculatedElement.getRate().doubleValue() : 0.0);
-           /* if (Objects.nonNull(calculatedElement.getBackPayments())) {
-                calculatedElement.getBackPayments().forEach(p -> {
-                    p.setElementId(null);
-                    p.setId(null);
-                });
-                templateElement.setBackPayments(calculatedElement.getBackPayments());
-            }*/
         }
     }
 
@@ -294,13 +287,15 @@ public class PayslipService {
         return variables;
     }
 
-    private void initPerRequestElements(PayslipSettingDto template, Long resourceId) {
+    private void initPerRequestElements(PayslipCalculatePayload payload, PayslipSettingDto template, Long resourceId) {
         perRequestElements().setCalculatedElements(new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2))));
         perRequestElements().setSettingsElements(template.getElements());
         perRequestElements().setShowIntermediate(template.isShowIntermediate());
         perRequestElements().setShowZero(template.getShowZero());
         perRequestElements().setEmployeeId(template.getEmployee().getId());
         perRequestElements().setCurrentDate(template.getPaymentDate());
+        perRequestElements().setAdjustBackPayments(payload.isAdjustBackPayments());
+        perRequestElements().setResetElementValues(payload.isReCalculate());
         if (RequestContext.functionElements() == null) {
             this.initFunctionElements(Set.of(resourceId));
         }
@@ -331,7 +326,7 @@ public class PayslipService {
             if (payload.getTempTemplate() != null && payload.getTempTemplate().getId() != null) {
                 templateId = payload.getTempTemplate().getId();
             }
-            PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false) : getTemplate(templateId,  true);
+            PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false) : getTemplate(templateId, true);
             if (template == null) {
                 return null;
             }
@@ -341,30 +336,25 @@ public class PayslipService {
             setBackPayments(template, payload.getContractId(), payload.getMonth().withDayOfMonth(1), payload.getBackPayment());
             engine.setBindings(new SimpleBindings(dictionaryService().getAllVariables()), ScriptContext.GLOBAL_SCOPE);
             dictionaryService().setAddElements(true);
-            initPerRequestElements(template, payload.getResourceId());
-            perRequestElements().setAdjustBackPayments(payload.isAdjustBackPayments());
+            initPerRequestElements(payload, template, payload.getResourceId());
             for (PayslipSettingElementDto elementDto : template.getElements()) {
-                if (payload.isReCalculate()) {
-                    resetValues(elementDto);
-                }
                 calculateSection(elementDto);
             }
             return new PayslipController.CalculatedPayslip(template, perRequestElements().getCalculatedElements());
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             if (clearContext) {
                 RequestContext.clear();
             }
         }
-        return null;
 
     }
 
-    private static void resetValues(PayslipSettingElementDto elementDto) {
-        elementDto.setValue(null);
-        elementDto.setBaseValue(null);
-        elementDto.setRateValue(null);
+    private void resetValues(PayslipSettingElementDto elementDto) {
+        if (perRequestElements().isResetElementValues()) {
+            elementDto.setValue(null);
+            elementDto.setBaseValue(null);
+            elementDto.setRateValue(null);
+        }
     }
 
     private int indexOf(PayslipElementDto elementDto) {
@@ -422,6 +412,9 @@ public class PayslipService {
                 continue;
             }
             PayslipElementDto el = calculateSection(element);
+            if (Objects.isNull(el)) {
+                return;
+            }
             if (el.isTotal() || section.isSalary()) {
                 continue;
             }
@@ -465,6 +458,7 @@ public class PayslipService {
                     return alreadyExistsElement;
                 }
             }
+            resetValues(element);
             return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
         } catch (Exception e) {
             log.error("ERROR WHILE CALCULATING ELEMENT {}", element.getSection(), e);
@@ -763,9 +757,7 @@ public class PayslipService {
         if (template == null || template.getElements() == null || backPaymentDto == null) {
             return;
         }
-        template.getElements().forEach(element -> {
-            element.setBackPayments(null);
-        });
+        template.getElements().forEach(element -> element.setBackPayments(null));
         template.getElements().stream().filter(el -> Objects.equals(el.getSection(), backPaymentDto.getSectionCode())).forEach(element -> element.setBackPayments(List.of(backPaymentDto)));
     }
 
