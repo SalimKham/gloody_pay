@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,7 +29,7 @@ public class AccountingSettingGroup {
     @JoinColumn(name = "accounting_setting_group_id", nullable = false)
     @ToString.Exclude
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private List<AccountingSettingAccount> accounts = Collections.emptyList();
+    private List<AccountingSettingAccount> accounts = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "accounting_setting_id", nullable = false, insertable = false, updatable = false)
