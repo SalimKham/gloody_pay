@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -27,5 +26,5 @@ public class AccountingSetting extends CompanySupport {
     @JoinColumn(name = "accounting_setting_id", nullable = false)
     @ToString.Exclude
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Set<AccountingSettingGroup> groups = new HashSet<>();
+    private Set<AccountingSettingGroup> groups = null;
 }
