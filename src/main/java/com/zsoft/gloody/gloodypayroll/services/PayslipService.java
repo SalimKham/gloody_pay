@@ -2,7 +2,10 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
-import com.zsoft.gloody.gloodypayroll.models.entities.*;
+import com.zsoft.gloody.gloodypayroll.models.entities.CustomField;
+import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
+import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
+import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
@@ -11,7 +14,6 @@ import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.BackPaymentMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
-import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
@@ -54,7 +56,6 @@ public class PayslipService {
     private final SpringTemplateEngine templateEngine;
     private final ScriptEngine engine;
     private final PayslipSettingRepository payslipSettingRepository;
-    private final PayslipSettingMapper payslipSettingMapper;
     private static final List<String> defaultFunctionCodes = List.of("irg(base)", "int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
     private final PayslipSettingReadOnlyService payslipSettingService;
@@ -73,85 +74,12 @@ public class PayslipService {
         }
     };
     private final EmployeeRepository employeeRepository;
-    private final PayslipDraftService payslipDraftService;
     private final CompanyRepository companyRepository;
     private final BackPaymentsRepository backPaymentsRepository;
 
 
     public Set<Long> getClosedPayslips(LocalDate month) {
         return payslipSettingRepository.getAllClosedPayslipResources(month.withDayOfMonth(1));
-    }
-
-    public Set<Long> closePayslips(Set<Long> resourceIds, LocalDate month) {
-        log.info("CLOSING PAYSLIPS FOR EMPLOYEES {} | MONTH {}", resourceIds, month);
-        List<PayslipSettingDto> result = new ArrayList<>();
-        Set<Long> failed = new HashSet<>();
-        month = month.withDayOfMonth(1);
-        if (resourceIds.isEmpty()) {
-            return Collections.emptySet();
-        }
-        Map<Long, List<Long>> contracts = loadContracts(resourceIds, month);
-        if (contracts.isEmpty()) {
-            return Collections.emptySet();
-        }
-        if (contracts.size() > 20) {
-            RequestContext.initTemplates();
-        }
-        RequestContext.initMonthlyValues(contracts.keySet());
-        this.initFunctionElements(contracts.keySet());
-        Set<Long> closedContractIds = new HashSet<>();
-        Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
-        PayslipCalculatePayload payload = new PayslipCalculatePayload();
-        // todo ignore only closed, for draft once they need to be marked as closed
-        Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
-        resourceIds.removeAll(closedIds);
-        for (Long resourceId : resourceIds) {
-            try {
-                if (contracts.containsKey(resourceId)) {
-                    Set<Long> resourceContracts = new HashSet<>(contracts.get(resourceId));
-                    for (Long contractId : resourceContracts) {
-                        payload.setValues(resourceId, contractId, month);
-                        PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, employeeMap.getOrDefault(resourceId, null), false, false);
-                        PayslipSettingDto payslip = calculatedPayslip.template();
-                        Long payslipId = payslip.getId();
-                        boolean isDefault = payslip.isTemplate() || payslip.isByDefault();
-                        if (isDefault) {
-                            payslip = (PayslipSettingDto) payslip.clone();
-                            payslip.setId(null);
-                        }
-                        Map<String, PayslipElementDto> calculatedElementsMap = calculatedPayslip.calculatedElements() != null ? calculatedPayslip.calculatedElements().stream().collect(Collectors.toMap(PayslipElementDto::getCode, el -> el)) : Collections.emptyMap();
-                        payslip.setElements(payslip.getElements().stream().peek(e -> {
-                            PayslipElementDto element = calculatedElementsMap.getOrDefault(e.getSection(), null);
-                            calculatedElementToTemplateElement(e, element);
-                            e.setPayslipSettingId(isDefault ? null : payslipId);
-                            e.setId(isDefault ? null : e.getId());
-                        }).toList());
-
-                        payslip.setClosed(true);
-                        payslip.setTemplate(false);
-                        payslip.setDraft(false);
-                        payslip.setContract(ContractDto.builder().id(contractId).build());
-                        payslip.setByDefault(false);
-                        payslip.setName(String.format("%s-%s-%s", resourceId, contractId, month));
-                        payslip.setPaymentDate(month);
-                        payslip.setEmployee(EmployeeDto.builder().id(resourceId).build());
-                        if (payslip.getPayslipDetail() == null) {
-                            payslip.setPayslipDetail(employeeMapper.employeeToPayslipDetails(employeeMap.getOrDefault(resourceId, null), contractId, month));
-                        }
-                        result.add(payslip);
-                        closedContractIds.add(contractId);
-                    }
-                }
-            } catch (Exception e) {
-                failed.add(resourceId);
-            }
-        }
-        RequestContext.clear();
-        List<PayslipSetting> closedPayslips = payslipSettingRepository.saveAll(result.stream().map(payslipSettingMapper::toEntity).toList());
-        hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", closedContractIds, month);
-        hrDataRepository.bulkInsertClosedTemplateIds(month, closedPayslips.stream().map(PayslipSetting::getId).toList());
-        payslipDraftService.deleteAllDraftedByContractAndMonth(closedContractIds, month);
-        return failed;
     }
 
 
@@ -217,21 +145,6 @@ public class PayslipService {
         }
         return template;
 
-    }
-
-    private Map<Long, List<Long>> loadContracts(Set<Long> resourceIds, LocalDate month) {
-        if (resourceIds == null || resourceIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        return hrDataRepository.getContractIdsByMonthAndResourceIdIn(month.withDayOfMonth(1), resourceIds)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(0, Long.class),
-                        Collectors.mapping(
-                                tuple -> tuple.get(1, Long.class),
-                                Collectors.toCollection(ArrayList::new)
-                        )
-                ));
     }
 
 

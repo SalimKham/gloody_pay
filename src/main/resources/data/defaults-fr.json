@@ -674,7 +674,7 @@
      
       "type": "GAIN",
       "category": "EXN",
-      "value_formula": "V_REMB_DEP",
+      "value_formula": "V_FR_REMB_DEP",
       "label_keys": "CR_EXN",
       "rate_percent": false
     },
@@ -864,129 +864,47 @@
       "name": "Modèle par défaut",
       "isDefault": true,
       "elements": [
-        {
-          "sectionCode": "R_SALAIRE"
-        },
-        {
-          "sectionCode": "R_PR_IND_CP"
-        },
-        {
-          "sectionCode": "R_PR_IND_RELIQ"
-        },
-        {
-          "sectionCode": "R_RET_CONGE"
-        },
-        {
-          "sectionCode": "R_RET_RELIQUAT"
-        },
-        {
-          "sectionCode": "R_PR_RESP"
-        },
-        {
-          "sectionCode": "R_PR_IEP"
-        },
-        {
-          "sectionCode": "R_PR_DISPO"
-        },
-        {
-          "sectionCode": "R_PR_NUISANC"
-        },
-        {
-          "sectionCode": "R_PR_RINDIV"
-        },
-        {
-          "sectionCode": "R_BRUT"
-        },
-        {
-          "sectionCode": "R_RET_SS"
-        },
-        {
-          "sectionCode": "R_IND_PANIER"
-        },
-        {
-          "sectionCode": "R_PR_VEH_SOC"
-        },
-        {
-          "sectionCode": "R_BRUT_IMPOS"
-        },
-        {
-          "sectionCode": "R_RET_IRG"
-        },
-        {
-          "sectionCode": "R_SAL_NET"
-        },
-        {
-          "sectionCode": "R_MUTUELLE"
-        },
-        {
-          "sectionCode": "R_NET_PAYE"
-        },
-        {
-          "sectionCode": "R_PR_OBJECT"
-        },
-        {
-          "sectionCode": "R_PR_PRESENT"
-        },
-        {
-          "sectionCode": "R_IND_TRVPOS"
-        },
-        {
-          "sectionCode": "R_PR_NUIT"
-        },
-        {
-          "sectionCode": "R_PR_TRSP"
-        },
-        {
-          "sectionCode": "R_HEUR_SUP100"
-        },
-        {
-          "sectionCode": "R_RET_MOIS_INC"
-        },
-        {
-          "sectionCode": "R_REMB_DEP"
-        },
-        {
-          "sectionCode": "R_PR_DFF"
-        },
-        {
-          "sectionCode": "R_PR_VEH_PERSO"
-        },
-        {
-          "sectionCode": "R_RET_PRET_1"
-        },
-        {
-          "sectionCode": "R_RET_PRET"
-        },
-        {
-          "sectionCode": "R_RET_PANIER"
-        },
-        {
-          "sectionCode": "R_RET_PRET_2"
-        },
-        {
-          "sectionCode": "R_PR_INTERIM"
-        },
-        {
-          "sectionCode": "R_PR_OBJ10"
-        },
-        {
-          "sectionCode": "R_PR_ENC10"
-        },
-        {
-          "sectionCode": "R_IRG_10"
-        },
-        {
-          "sectionCode": "R_PR_QUALITE"
-        },
-        {
-          "sectionCode": "R_RET_MAL"
-        },
-        {
-          "sectionCode": "R_PR_RD"
-        },
-        {
-          "sectionCode": "R_RET_PRET_AUT"
-        }
+        { "sectionCode": "R_SALAIRE" },
+        { "sectionCode": "R_PR_IND_CP" },
+        { "sectionCode": "R_PR_IND_RELIQ" },
+        { "sectionCode": "R_RET_CONGE" },
+        { "sectionCode": "R_RET_RELIQUAT" },
+        { "sectionCode": "R_PR_RESP" },
+        { "sectionCode": "R_PR_IEP" },
+        { "sectionCode": "R_PR_DISPO" },
+        { "sectionCode": "R_PR_NUISANC" },
+        { "sectionCode": "R_PR_RINDIV" },
+        { "sectionCode": "R_PR_OBJECT" },
+        { "sectionCode": "R_PR_NUIT" },
+        { "sectionCode": "R_HEUR_SUP100" },
+        { "sectionCode": "R_RET_MOIS_INC" },
+        { "sectionCode": "R_REMB_DEP" },
+        { "sectionCode": "R_PR_INTERIM" },
+        { "sectionCode": "R_PR_OBJ10" },
+        { "sectionCode": "R_PR_ENC10" },
+        { "sectionCode": "R_PR_QUALITE" },
+        { "sectionCode": "R_IND_TRVPOS" },
+        { "sectionCode": "R_PR_PRESENT" },
+        { "sectionCode": "R_RET_MAL" },
+        { "sectionCode": "R_PR_RD" },
+        { "sectionCode": "R_BRUT" },
+        { "sectionCode": "R_RET_SS" },
+        { "sectionCode": "R_IND_PANIER" },
+        { "sectionCode": "R_PR_TRSP" },
+        { "sectionCode": "R_PR_VEH_PERSO" },
+        { "sectionCode": "R_BRUT_IMPOS" },
+        { "sectionCode": "R_RET_IRG" },
+        { "sectionCode": "R_IRG_10" },
+        { "sectionCode": "R_SAL_NET" },
+        { "sectionCode": "R_RET_PANIER" },
+        { "sectionCode": "R_MUTUELLE" },
+        { "sectionCode": "R_RET_PRET_AUT" },
+        { "sectionCode": "R_RET_PRET_2" },
+        { "sectionCode": "R_RET_PRET_1" },
+        { "sectionCode": "R_RET_PRET" },
+        { "sectionCode": "R_PR_VEH_SOC" },
+        { "sectionCode": "R_PR_DFF" },
+        { "sectionCode": "R_NET_PAYE" }
       ]
     }
   ]
