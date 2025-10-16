@@ -322,7 +322,7 @@
       "label": "Salaire de poste",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "V_SALAIRE+TOT_CR_COTI",
+      "value_formula": "R_SALAIRE+TOT_CR_COTI",
      
       "rate_percent": false
     },
@@ -331,7 +331,7 @@
       "label": "Salaire imposable",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "(V_SALAIRE+TOT_CR_IMP+TOT_CR_IMP10-R_RET_SS-R_DED_SS)",
+      "value_formula": "(R_SALAIRE+TOT_CR_IMP+TOT_CR_IMP10-R_RET_SS-R_DED_SS)",
       "rate_percent": false
     },
     {
@@ -423,7 +423,7 @@
       "label": "Indemnité travail poste",
       "type": "GAIN",
       "category": "C002",
-      "base_formula": "V_SALAIRE-((V_NBR_JOUR-V_NBJ_OUVRABL)*V_SALAIRE/V_NBR_JOUR)",
+      "base_formula": "R_SALAIRE-((V_NBR_JOUR-V_NBJ_OUVRABL)*R_SALAIRE/V_NBR_JOUR)",
       "rate_formula": "V_IND_TRVPOS",
       "value_formula": "BASE*RATE",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
@@ -629,7 +629,7 @@
       "label": "Prime de Rendement Individuel",
       "type": "GAIN",
       "category": "C002",
-      "base_formula": "V_SALAIRE-((V_NBR_JOUR-V_NBJ_OUVRABL)*V_SALAIRE/V_NBR_JOUR)",
+      "base_formula": "R_SALAIRE-((V_NBR_JOUR-V_NBJ_OUVRABL)*R_SALAIRE/V_NBR_JOUR)",
       "rate_formula": "V_PR_RINDIV",
       "value_formula": "BASE*RATE",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_PRIME",
@@ -703,7 +703,7 @@
       "label": "Retenue Jours Maladie",
       "type": "DEDUCTION",
       "category": "C001",
-      "base_formula": "(V_SALAIRE/V_NBR_JOUR)",
+      "base_formula": "(R_SALAIRE/V_NBR_JOUR)",
       "rate_formula": "V_ABS_MAL",
       "value_formula": "BASE*RATE",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB##UNIQUE_LIST_SEPARATOR##CR_IMP",
@@ -714,7 +714,7 @@
       "label": "retenue mois incomplet",
       "type": "DEDUCTION",
       "category": "C001",
-      "base_formula": "VB_TH?V_SALAIRE/V_NBH:V_SALAIRE/V_NBR_JOUR",
+      "base_formula": "VB_TH?R_SALAIRE/V_NBH:R_SALAIRE/V_NBR_JOUR",
       "rate_formula": "VC_ABS_OUVRES",
       "value_formula": "BASE*RATE",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
@@ -779,7 +779,7 @@
       "label": " Retenue congé payé reliquat",
       "type": "DEDUCTION",
       "category": "C001",
-      "base_formula": "V_SALAIRE/V_NBR_JOUR",
+      "base_formula": "R_SALAIRE/V_NBR_JOUR",
       "rate_formula": "VC_CG_RLQ",
       "value_formula": "BASE*RATE",
       "label_keys": "CR_COTI##UNIQUE_LIST_SEPARATOR##CR_IMP##UNIQUE_LIST_SEPARATOR##CR_IMP_GLB",
@@ -812,7 +812,7 @@
      
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "V_SALAIRE/V_NBH",
+      "value_formula": "R_SALAIRE/V_NBH",
       "rate_percent": false
     },
     {
@@ -820,7 +820,7 @@
       "label": "Salaire par jour",
       "type": "INTERMEDIATE",
       "category": "C007",
-      "value_formula": "V_SALAIRE/V_NBR_JOUR",
+      "value_formula": "R_SALAIRE/V_NBR_JOUR",
       "rate_percent": false
     },
     {
@@ -829,7 +829,7 @@
       "description": "le salaire de base réel ",
       "type": "SALARY",
       "category": "C002",
-      "base_formula": "V_SALAIRE/V_NBJ_OUVRES",
+      "base_formula": "R_SALAIRE/V_NBJ_OUVRES",
       "rate_formula": "V_NBJ_OUVRES",
       "value_formula": "BASE*RATE",
       "rate_percent": false
