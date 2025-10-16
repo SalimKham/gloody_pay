@@ -393,7 +393,7 @@
                     <td th:text="${#numbers.formatDecimal(element.getDeduction(), 2, 2)}" class="align-right"></td>
                     <td th:if="${show_employer_col}" class="align-right"></td>
                 </tr>
-                <th:block th:if="${element.backPayments != null}">
+                <th:block th:if="${!element.total && element.backPayments != null}">
                     <tr th:each="backPayment: ${element.backPayments}" class="back-payment-row">
                         <td th:text="${backPayment.code}" class="align-center"></td>
                         <td class="align-left">
