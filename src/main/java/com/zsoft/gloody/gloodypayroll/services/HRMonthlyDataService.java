@@ -93,7 +93,10 @@ public class HRMonthlyDataService extends CompanySupportService {
     }
 
     public boolean isUpdatableVariable(VariableSetting variableSetting) {
-        return Objects.nonNull(getVariableType(variableSetting.getSource())) &&Objects.nonNull(variableSetting.getLabel()) && !variableSetting.getKey().startsWith("VC")  && !Objects.requireNonNullElse(variableSetting.getSource(), "").startsWith("CUSTOM_FIELD")
+        return Objects.nonNull(getVariableType(variableSetting.getSource())) &&Objects.nonNull(variableSetting.getLabel())
+                && !variableSetting.getKey().startsWith("VC")
+                && !Objects.requireNonNullElse(variableSetting.getSource(), "").startsWith("CUSTOM_FIELD")
+                && !Objects.requireNonNullElse(variableSetting.getSource(), "").startsWith("BASE_SALARY")
                 && !List.of("BASE_SALARY", "IRG(BASE)").contains(Objects.requireNonNullElse(variableSetting.getSource(), ""));
     }
 

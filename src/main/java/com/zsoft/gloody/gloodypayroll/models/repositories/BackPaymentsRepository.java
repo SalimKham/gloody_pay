@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface BackPaymentsRepository extends JpaRepository<BackPayment, Long> {
     List<BackPayment> findAllByContractIdAndMonthAndSectionCodeIsNotNullAndSourceIsNotNull(Long contractId, LocalDate month);
-     List<BackPayment> findAllByMonthAndSectionCodeIsNullAndSourceIsNull(LocalDate month);
+     List<BackPayment> findAllByMonthAndResourceIdAndSectionCodeIsNullAndSourceIsNull(LocalDate month, Long resourceId);
 }

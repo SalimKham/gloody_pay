@@ -26,8 +26,8 @@ public class BackPaymentController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{month}")
-    public ResponseEntity<List<BackPaymentDto>> save(@PathVariable LocalDate month) {
-        return ResponseEntity.ok(service.getBackPayments(month));
+    @GetMapping("/{resource_id}/{month}")
+    public ResponseEntity<List<BackPaymentDto>> save(@PathVariable("resource_id") Long resourceId, @PathVariable LocalDate month) {
+        return ResponseEntity.ok(service.getBackPayments(month, resourceId));
     }
 }

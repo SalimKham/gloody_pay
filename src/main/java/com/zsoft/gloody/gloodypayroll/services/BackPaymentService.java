@@ -63,8 +63,8 @@ public class BackPaymentService extends CompanySupportService {
         repository.deleteById(backPaymentId);
     }
 
-    public List<BackPaymentDto> getBackPayments(LocalDate month) {
-        return repository.findAllByMonthAndSectionCodeIsNullAndSourceIsNull(month.withDayOfMonth(1)).stream().map(mapper::toDto).toList();
+    public List<BackPaymentDto> getBackPayments(LocalDate month, Long resourceId) {
+        return repository.findAllByMonthAndResourceIdAndSectionCodeIsNullAndSourceIsNull(month.withDayOfMonth(1), resourceId).stream().map(mapper::toDto).toList();
     }
 
     private Map<String, Double> getBackPaymentsAsMap(BackPaymentDto backPaymentDto) {
@@ -104,7 +104,7 @@ public class BackPaymentService extends CompanySupportService {
         if (calculatedPayslip == null || calculatedPayslip.calculatedElements() == null) {
             return Collections.emptyMap();
         }
-        return calculatedPayslip.calculatedElements().stream().collect(Collectors.toMap(PayslipElementDto::getCode, payslipElementDto -> Objects.requireNonNullElse(payslipElementDto.getValueWithBackPayments(), payslipElementDto.getValue())));
+        return calculatedPayslip.calculatedElements().stream().collect(Collectors.toMap(PayslipElementDto::getCode, payslipElementDto -> Objects.requireNonNullElse( payslipElementDto.getValue(), 0d)));
 
     }
 }

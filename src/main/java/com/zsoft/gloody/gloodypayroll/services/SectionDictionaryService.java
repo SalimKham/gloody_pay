@@ -17,7 +17,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 
 @RequiredArgsConstructor
 public class SectionDictionaryService extends CompanySupportService {
-    private LinkedHashMap<String, Object> variables =  new LinkedHashMap<>();
+    private LinkedHashMap<String, Object> variables = new LinkedHashMap<>();
     private LinkedHashMap<String, Object> initialVariables = new LinkedHashMap<>();
     private boolean addElements = true;
 
@@ -70,7 +70,7 @@ public class SectionDictionaryService extends CompanySupportService {
 
     public void setRate(PayslipRate rate) {
         if (rate != null) {
-            setVariableAndInitialVariable(IS_DAILY_RATE, Objects.equals(rate , PayslipRate.DAILY) ? 1 : 0);
+            setVariableAndInitialVariable(IS_DAILY_RATE, Objects.equals(rate, PayslipRate.DAILY) ? 1 : 0);
             setVariableAndInitialVariable(IS_HOURLY_RATE, Objects.equals(rate, PayslipRate.HOURLY) ? 1 : 0);
         }
     }
@@ -82,24 +82,26 @@ public class SectionDictionaryService extends CompanySupportService {
     }
 
 
-    public void setVariables(Employee employee,  Map<String, Double> monthlyValues,  Map<String, String> variablesMap) {
+    public void setVariables(Employee employee, Map<String, Double> monthlyValues, Map<String, String> variablesMap) {
         variables = new LinkedHashMap<>(monthlyValues);
         double totalAbsences = monthlyValues.getOrDefault(variablesMap.getOrDefault("ABS_TTL", "ABS_TTL"), 0d);
-        double countWorkingDays = findDoubleValue(variablesMap.getOrDefault(DAYS_NBR,  DAYS_NBR)) - totalAbsences;
-        double hoursByDay = findDoubleValue(variablesMap.getOrDefault(HOURS_BY_WEEK, HOURS_BY_WEEK )) / findDoubleValue(variablesMap.getOrDefault(DAYS_BY_WEEK, DAYS_BY_WEEK ));
-        setVariable(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR), countWorkingDays - findDoubleValue(variablesMap.getOrDefault(CONTRACT_OFF_DAYS, CONTRACT_OFF_DAYS )));
-        setVariable(variablesMap.getOrDefault(WORKING_HOURS_NBR , WORKING_HOURS_NBR), (findDoubleValue(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR)) * hoursByDay));
-        setVariable(variablesMap.getOrDefault(HANDICAP , HANDICAP), employee.isDisabled() ? 1 : 0);
-        setVariable(variablesMap.getOrDefault(SENIORITY , SENIORITY), Objects.nonNull(employee.getSeniority_date()) ? employee.getSeniority_date().until(LocalDate.now(), ChronoUnit.YEARS) : 0);
-        setVariable(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY), employee.getBaseSalary());
+        double salaryBase = monthlyValues.getOrDefault(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY), employee.getBaseSalary());
+        double countWorkingDays = findDoubleValue(variablesMap.getOrDefault(DAYS_NBR, DAYS_NBR)) - totalAbsences;
+        double hoursByDay = findDoubleValue(variablesMap.getOrDefault(HOURS_BY_WEEK, HOURS_BY_WEEK)) / findDoubleValue(variablesMap.getOrDefault(DAYS_BY_WEEK, DAYS_BY_WEEK));
+        setVariable(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR), countWorkingDays - findDoubleValue(variablesMap.getOrDefault(CONTRACT_OFF_DAYS, CONTRACT_OFF_DAYS)));
+        setVariable(variablesMap.getOrDefault(WORKING_HOURS_NBR, WORKING_HOURS_NBR), (findDoubleValue(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR)) * hoursByDay));
+        setVariable(variablesMap.getOrDefault(HANDICAP, HANDICAP), employee.isDisabled() ? 1 : 0);
+        setVariable(variablesMap.getOrDefault(SENIORITY, SENIORITY), Objects.nonNull(employee.getSeniority_date()) ? employee.getSeniority_date().until(LocalDate.now(), ChronoUnit.YEARS) : 0);
+        setVariable(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY), salaryBase);
+
         initialVariables.putAll(variables);
     }
 
-    public void clearAllVariables(){
-        if (variables != null){
+    public void clearAllVariables() {
+        if (variables != null) {
             variables.clear();
         }
-        if(initialVariables != null){
+        if (initialVariables != null) {
             initialVariables.clear();
         }
     }

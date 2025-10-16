@@ -1,9 +1,12 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
+import com.zsoft.gloody.gloodypayroll.configs.Constants;
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
+import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipClose;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
+import com.zsoft.gloody.gloodypayroll.models.enums.SummaryDataType;
 import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipCloseRepository;
@@ -93,6 +96,8 @@ public class PayslipCloseService {
                                     ).toList()
                             );
                             // save new Payslip
+                            assert employeeMap.containsKey(resourceId);
+                            Employee employee = employeeMap.get(resourceId);
                             PayslipSetting closedPayslip = payslipSettingRepository.saveAndFlush(PayslipSetting.
                                     builder()
                                     .name(String.format("%s-%s-%s", resourceId, contractId, month))
@@ -111,6 +116,7 @@ public class PayslipCloseService {
                                     .payslipDetail(employeeMapper.employeeToPayslipDetails(employeeMap.getOrDefault(resourceId, null), contractId, month))
                                     .build()
                             );
+                            hrDataRepository.save(HRMonthlyData.builder().variable(Constants.BASE_SALARY).value(employee.getBaseSalary()).month(month).contractId(contractId).resourceId(resourceId).type(SummaryDataType.SALARY).build());
                             payslipSettingRepository.insertClosedPayslip(calculatedPayslip.template().getId(), closedPayslip.getId(), month, contractId);
                             payslipSettingRepository.deleteByContractAndPaymentDateAndIdNot(contractId, finalMonth, closedPayslip.getId());
                             closedPayslips.add(closedPayslip.getId());

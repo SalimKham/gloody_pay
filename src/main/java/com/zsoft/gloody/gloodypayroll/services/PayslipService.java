@@ -384,16 +384,18 @@ public class PayslipService {
                 (!perRequestElements().isShowZero() && element.isZero());
     }
 
-    private void adjustBackPayments(PayslipSettingElementDto element) {
-        if (!perRequestElements().isAdjustBackPayments()) {
-            return;
-        }
+    private void adjustBackPayments(PayslipSettingElementDto element, PayslipElementDto dto) {
+
         if (Objects.isNull(element) || Objects.isNull(element.getBackPayments()) || element.getBackPayments().isEmpty()) {
             return;
         }
         double backPayments = element.getBackPayments().stream().mapToDouble(BackPaymentDto::getValue).sum();
         double currentValue = dictionaryService().findDoubleValue(element.getSection());
-        dictionaryService().setVariable(element.getSection(), currentValue + backPayments);
+        dto.setValue(currentValue + backPayments);
+        if (perRequestElements().isAdjustBackPayments() && !dto.isTotal()) {
+            dictionaryService().setVariable(element.getSection(), currentValue + backPayments);
+        }
+
     }
 
     public void addCalculatedElement(PayslipElementDto element) {
@@ -405,9 +407,7 @@ public class PayslipService {
         if (settingElementDto == null) {
             return;
         }
-        if (!element.isTotal()) {
-            adjustBackPayments(settingElementDto);
-        }
+        adjustBackPayments(settingElementDto, element);
         if (!isHidden(element)) {
             element.setBackPayments(settingElementDto.getBackPayments());
             perRequestElements().getCalculatedElements().add(element);

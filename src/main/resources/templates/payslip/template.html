@@ -389,8 +389,8 @@
                     </td>
                     <td th:text="${#numbers.formatDecimal(element.base, 2, 2)}" class="align-right"></td>
                     <td th:text="${#numbers.formatDecimal(element.rate, 1, 3)}" class="align-right"></td>
-                    <td th:text="${#numbers.formatDecimal(element.gain, 2, 2)}" class="align-right"></td>
-                    <td th:text="${#numbers.formatDecimal(element.deduction, 2, 2)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.getGain(), 2, 2)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.getDeduction(), 2, 2)}" class="align-right"></td>
                     <td th:if="${show_employer_col}" class="align-right"></td>
                 </tr>
                 <th:block th:if="${element.backPayments != null}">
