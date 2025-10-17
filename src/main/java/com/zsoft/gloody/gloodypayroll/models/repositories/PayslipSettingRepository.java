@@ -86,7 +86,7 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @Modifying
     @Query(value = """
             INSERT INTO payslip_setting_element( payslip_setting_id, section, base_value, rate_value, value, fix, element_order, created_by, created_at, updated_by, updated_at, company_id)
-            SELECT :payslip_id, s.id, pc.base_value, pc.rate_value, pc.value, el.fix, el.element_order, null , now(), null, now() , s.company_id FROM payslip_setting_element el left join section s on s.id = el.section
+            SELECT :payslip_id, s.id, pc.base_value, pc.rate_value, pc.value, true, el.element_order, null , now(), null, now() , s.company_id FROM payslip_setting_element el left join section s on s.id = el.section
             left join payslip_close pc on pc.code = s.code where el.payslip_setting_id = :template_id and  pc.contract_id = :contract_id and pc.month = :month
             """, nativeQuery = true)
     void insertClosedPayslip(@Param("template_id") Long templateId, @Param("payslip_id") Long payslipId, @Param("month") LocalDate month, @Param("contract_id") Long contractId);

@@ -391,7 +391,9 @@ public class PayslipService {
         }
         double backPayments = element.getBackPayments().stream().mapToDouble(BackPaymentDto::getValue).sum();
         double currentValue = dictionaryService().findDoubleValue(element.getSection());
-        dto.setValue(currentValue + backPayments);
+        if (!element.isFix() || perRequestElements().isAdjustBackPayments()) {
+            dto.setValue(currentValue + backPayments);
+        }
         if (perRequestElements().isAdjustBackPayments() && !dto.isTotal()) {
             dictionaryService().setVariable(element.getSection(), currentValue + backPayments);
         }
