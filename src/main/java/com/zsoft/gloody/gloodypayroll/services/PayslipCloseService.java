@@ -79,7 +79,7 @@ public class PayslipCloseService {
                     Set<Long> resourceContracts = new HashSet<>(contracts.get(resourceId));
                     for (Long contractId : resourceContracts) {
                         payload.setValues(resourceId, contractId, month);
-                        PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(payload, employeeMap.getOrDefault(resourceId, null), false, false);
+                        PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(payload, employeeMap.getOrDefault(resourceId, null), false);
                         if (calculatedPayslip != null) {
                             LocalDate finalMonth = month;
                             payslipCloseRepository.deleteByContractIdAndMonth(contractId, month);
@@ -107,6 +107,7 @@ public class PayslipCloseService {
                                     .showIntermediate(true)
                                     .byDefault(false)
                                     .draft(false)
+                                    .showZero(calculatedPayslip.template().getShowZero())
                                     .rate(calculatedPayslip.template().getRate())
                                     .contract(contractId)
                                     .elements(null)

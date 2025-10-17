@@ -105,7 +105,7 @@ public class PayslipService {
             if (employeeDto == null) {
                 throw new ApiRuntimeException("error.employee.required");
             }
-            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false, false);
+            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false);
             if (calculatedPayslip == null || calculatedPayslip.template() == null) {
                 return null;
             }
@@ -212,7 +212,7 @@ public class PayslipService {
         if (RequestContext.functionElements() == null) {
             this.initFunctionElements(Set.of(resourceId));
         }
-        RequestContext.functionElements().getOrDefault(resourceId, Collections.emptyList());
+        perRequestElements().setFunctionElements(RequestContext.functionElements().getOrDefault(resourceId, Collections.emptyList()));
     }
 
     public void initFunctionElements(Set<Long> resourceIds) {
@@ -224,7 +224,7 @@ public class PayslipService {
         RequestContext.initFunctionElements(resourceIds, inFunctionsCodes);
     }
 
-    public PayslipController.CalculatedPayslip calculate(PayslipCalculatePayload payload, Employee employee, boolean saveAsDraft, boolean clearContext) {
+    public PayslipController.CalculatedPayslip calculate(PayslipCalculatePayload payload, Employee employee, boolean clearContext) {
 
         try {
 
@@ -516,7 +516,7 @@ public class PayslipService {
         int n = Integer.parseInt(paramList[1]);
         n = perRequestElements().getCurrentDate().getMonthValue() < 7 ? n + 1 : n;
         LocalDate targetYear = perRequestElements().getCurrentDate().withMonth(7).withDayOfMonth(1).minusYears(n);
-        if (functionName.contains("FROM")) {
+        if (functionName.contains("APD")) {
             int nbrOfMonths = Integer.parseInt(paramList[2]);
             startDate = targetYear;
             endDate = startDate.plusMonths(nbrOfMonths).minusMonths(1);
@@ -544,11 +544,9 @@ public class PayslipService {
                 return 0.0;
             }
             DoubleStream values = perRequestElements().getFunctionElements()
-                    .stream().filter(el -> el.code().equals(paramList[0]) &&
-                            el.date().isBefore(period.end()) &&
-                            !el.date().isBefore(period.start().withDayOfMonth(1)))
+                    .stream().filter(el -> el.code().equals(paramList[0]) && DateUtils.isDateBetween(el.date(), period.start(), period.end()))
                     .mapToDouble(PayslipFunctionElement::value);
-            if (functionName.contains("AVRG")) {
+            if (functionName.contains("MOY")) {
                 return values.average().orElse(0.0);
             } else if (functionName.contains("MAX")) {
                 return values.max().orElse(0.0);

@@ -39,11 +39,15 @@ public class BackPaymentService extends CompanySupportService {
         if(backPaymentsMap.isEmpty()) {
             return;
         }
+        Map<String, BackPayment> monthlyBackPayments = repository.findAllByContractIdAndMonthAndSectionCodeIsNotNullAndSourceIsNotNull(dto.getContractId(), dto.getMonth().withDayOfMonth(1)).stream().collect(Collectors.toMap(BackPayment::getSectionCode,bkpayement -> bkpayement));
         Map<String, Section> sectionMap = sectionRepository.getSectionsTitles(backPaymentsMap.keySet(), SecurityUtils.getCurrentCompanyId()).stream().collect(Collectors.toMap(t -> t.get(0, String.class), t -> t.get(1, Section.class) ));
         backPaymentsMap.forEach((sectionCode, value) -> {
             if (value != 0) {
+                Long id = monthlyBackPayments.containsKey(sectionCode) ? monthlyBackPayments.get(sectionCode).getId() : null;
+                Double oldValue = monthlyBackPayments.containsKey(sectionCode) ? monthlyBackPayments.get(sectionCode).getValue() : 0d;
                 repository.save(BackPayment
                         .builder()
+                                .id(id)
                                 .code("RG-" + sectionMap.get(sectionCode).getIdentifier())
                                 .contractId(dto.getContractId())
                                 .resourceId(dto.getResourceId())
@@ -53,7 +57,7 @@ public class BackPaymentService extends CompanySupportService {
                                 .endMonth(dto.getEndMonth())
                                 .month(dto.getMonth())
                                 .source(savedBackPayment)
-                                .value(value)
+                                .value(oldValue + value)
                         .build());
             }
         });
@@ -100,7 +104,7 @@ public class BackPaymentService extends CompanySupportService {
     }
 
     private Map<String, Double> calculateValues(PayslipCalculatePayload calculatePayload) {
-        PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(calculatePayload, null, false, true);
+        PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(calculatePayload, null, true);
         if (calculatedPayslip == null || calculatedPayslip.calculatedElements() == null) {
             return Collections.emptyMap();
         }

@@ -29,7 +29,7 @@ public class PayslipController {
             @RequestBody PayslipCalculatePayload payload
     ) {
         try {
-            CalculatedPayslip result = payslipService.calculate(payload, null, true, true);
+            CalculatedPayslip result = payslipService.calculate(payload, null, true);
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             e.printStackTrace();
