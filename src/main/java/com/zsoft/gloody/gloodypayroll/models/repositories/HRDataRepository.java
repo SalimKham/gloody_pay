@@ -21,6 +21,7 @@ import java.util.Set;
 @Transactional
 public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
     Optional<HRMonthlyData> findTopHrMonthlyDataByVariableAndContractIdAndMonth(String variable, Long contractId, LocalDate month);
+
     List<HRMonthlyData> findAllByContractIdAndMonth(Long contractId, LocalDate month);
 
 
@@ -84,4 +85,9 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
                AND hr.pay_month = :active_month
             """, nativeQuery = true)
     void copyVariables(@Param("to_month") LocalDate toMonth, @Param("active_month") LocalDate activeMonth, @Param("company_id") Long company_id);
+
+    @Query("""
+            SELECT count(distinct hr.resourceId) FROM HRMonthlyData hr LEFT JOIN Employee e on e.id = hr.resourceId where hr.month = :month AND e.company = :company_id
+            """)
+    long countMonthlyPayslips(@Param("month") LocalDate month, @Param("company_id") Long companyId);
 }

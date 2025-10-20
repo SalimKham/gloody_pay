@@ -90,4 +90,9 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
             left join payslip_close pc on pc.code = s.code where el.payslip_setting_id = :template_id and  pc.contract_id = :contract_id and pc.month = :month
             """, nativeQuery = true)
     void insertClosedPayslip(@Param("template_id") Long templateId, @Param("payslip_id") Long payslipId, @Param("month") LocalDate month, @Param("contract_id") Long contractId);
+
+    @Query("""
+            SELECT count(distinct ps.employee) FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month AND ps.company = :company_id
+            """)
+    long countClosedByPaymentDate(@Param("month") LocalDate month, @Param("company_id") Long companyId);
 }
