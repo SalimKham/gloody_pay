@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class AccountingSettingService  extends EntityManagerService  {
+public class AccountingSettingService  extends CompanySupportService  {
     private final AccountingSettingRepository accountingSettingRepository;
     private final AccountingSettingMapper accountingSettingMapper;
     private final MessageSource messageSource;
@@ -215,7 +215,7 @@ public class AccountingSettingService  extends EntityManagerService  {
                 try {
                     calculatePayload.setContractId(contractId);
                     calculatePayload.setResourceId(contractResourceMap.get(contractId));
-                    PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(calculatePayload, employeeMap.get(contractResourceMap.get(contractId)), true, true);
+                    PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(calculatePayload, employeeMap.get(contractResourceMap.get(contractId)), true);
                     if (calculatedPayslip != null && calculatedPayslip.calculatedElements() != null && !calculatedPayslip.calculatedElements().isEmpty()) {
                         employeeAccountingList.addAll(mapPayslipToAccounting(calculatedPayslip.calculatedElements(), employeeMapper.toDto(employeeMap.getOrDefault(contractResourceMap.get(contractId), null)), sectionToAccountingMap));
                     }

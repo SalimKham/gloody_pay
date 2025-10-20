@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
@@ -23,4 +24,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
             SELECT e.id, e.address.id FROM Employee e WHERE e.id IN :employee_ids AND e.address IS NOT NULL
             """)
     List<Tuple> getAddresses(@Param("employee_ids")Collection<Long> employee_ids);
+
+    @Query("""
+            SELECT e.id FROM Employee e WHERE e.company = :company_id
+            """)
+    Set<Long> findAllIdsByCompanyId(@Param("company_id") Long companyId);
 }

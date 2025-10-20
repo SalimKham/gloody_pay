@@ -51,12 +51,18 @@ public class EmployeeDto {
     private String affiliate;
     private String office;
     private Integer seniorityOrderNumber;
-    private Double baseSalary;
+    @Builder.Default
+    private Double baseSalary = 0d;
     private String remunerationType;
     @NotNull
     private Long company;
     @Builder.Default
     List<CustomFieldDto> customFields  = new ArrayList();
+
+
+    public Double getBaseSalary() {
+        return Objects.requireNonNullElse(baseSalary, 0d);
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.util.List;
-
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,9 +34,4 @@ public class PayslipSettingElement extends CompanySupport {
     private boolean fix;
     @Column(name = "element_order")
     private int elementOrder;
-
-    @OneToMany(targetEntity = BackPayment.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "payslip_setting_element_id", nullable = false)
-    @ToString.Exclude
-    private List<BackPayment> backPayments;
 }

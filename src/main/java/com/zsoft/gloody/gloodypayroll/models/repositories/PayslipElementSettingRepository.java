@@ -64,6 +64,11 @@ public interface PayslipElementSettingRepository extends JpaRepository<PayslipSe
             """)
     Page<Tuple> getClosedElementsByEmployeeIdAndMonth(@Param("resource_ids") Set<Long> resourceIds, @Param("selected_month") LocalDate month, Pageable pageable);
 
+    @Query("""
+            SELECT  pse.section.code,  pse.value  FROM PayslipSettingElement  pse WHERE pse.value IS NOT NULL AND pse.payslipSetting.contract =  :contract_id AND pse.payslipSetting.closed AND  pse.payslipSetting.paymentDate = :selected_month
+            """)
+    List<Tuple> getClosedElementsByContractIdAndMonth(@Param("contract_id") Long contractId, @Param("selected_month") LocalDate month);
+
 
     @Query("""
                 SELECT

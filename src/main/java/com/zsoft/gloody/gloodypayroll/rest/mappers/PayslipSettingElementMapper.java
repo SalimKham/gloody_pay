@@ -3,11 +3,13 @@ package com.zsoft.gloody.gloodypayroll.rest.mappers;
 import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSettingElement;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingElementDto;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.*;
 
 import java.util.Objects;
 
-@Mapper(uses = {SectionMapper.class, BackPaymentMapper.class})
+@RequiredArgsConstructor
+@Mapper(uses = {SectionMapper.class})
 public abstract class PayslipSettingElementMapper {
 
     @Mapping(target = "payslipSettingId", ignore = true)
@@ -23,6 +25,7 @@ public abstract class PayslipSettingElementMapper {
         if (Objects.nonNull(element)) {
             element.setCompany(SecurityUtils.getCurrentCompanyId());
         }
+
     }
 }
 

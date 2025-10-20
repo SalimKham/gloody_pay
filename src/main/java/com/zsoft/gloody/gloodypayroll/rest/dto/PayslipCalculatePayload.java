@@ -1,10 +1,12 @@
 package com.zsoft.gloody.gloodypayroll.rest.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Setter
 @Getter
 public class PayslipCalculatePayload {
@@ -13,17 +15,11 @@ public class PayslipCalculatePayload {
     LocalDate month;
     private double holidaysCount;
     private PayslipSettingDto tempTemplate;
+    private boolean reCalculate;
+    private BackPaymentDto backPayment;
+    private boolean adjustBackPayments;
 
-    public PayslipCalculatePayload(Long resourceId, Long contractId, LocalDate month, double holidaysCount, PayslipSettingDto tempTemplate) {
-        this.resourceId = resourceId;
-        this.contractId = contractId;
-        this.month = month;
-        this.holidaysCount = holidaysCount;
-        this.tempTemplate = tempTemplate;
-    }
 
-    public PayslipCalculatePayload() {
-    }
 
     public void setValues(Long resourceId, Long contractId, LocalDate month) {
         this.resourceId = resourceId;

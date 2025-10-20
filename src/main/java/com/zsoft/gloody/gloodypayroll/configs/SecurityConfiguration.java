@@ -1,6 +1,8 @@
 package com.zsoft.gloody.gloodypayroll.configs;
+
 import com.zsoft.gloody.gloodypayroll.rest.filters.JwtTokenFilter;
 import com.zsoft.gloody.gloodypayroll.services.JwtUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +24,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.Arrays;
 
 @RequiredArgsConstructor
@@ -33,7 +33,8 @@ import java.util.Arrays;
 public class SecurityConfiguration {
     static final String[] PERMITTED_URLS = {
             "/index.html", "/", "/*.js", "/*.css", "/*.ico", "/*.webmanifest", "/assets/**",
-            "/api/authenticate"
+            "/api/authenticate",
+            "/api/variables_initializer/**"
     };
     private final JwtTokenFilter jwtTokenFilter;
     private final JwtUserDetailsService userDetailsService;

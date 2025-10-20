@@ -86,7 +86,7 @@ public class HRAsyncService extends EntityManagerService {
             Long contractId = resourceContracts.get(resourceId);
             payload.setContractId(contractId);
             payload.setResourceId(resourceId);
-            PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(payload, employeeMap.get(resourceId), false /*This must be false*/, false);
+            PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(payload, employeeMap.get(resourceId),  /*This must be false*/ false);
             PayslipSetting payslipSetting = payslipDraftService.prepareDraft(calculatedPayslip.template(), calculatedPayslip.calculatedElements(), contractId, resourceId, employeeMap.get(resourceId), finalMonth);
             payslipSettings.add(payslipSetting);
             i.getAndIncrement();
