@@ -1,6 +1,7 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.rest.dto.*;
+import com.zsoft.gloody.gloodypayroll.services.PayslipCloseService;
 import com.zsoft.gloody.gloodypayroll.services.PayslipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,8 @@ import java.util.Set;
 @RequestMapping("/api/payslip")
 public class PayslipController {
     private final PayslipService payslipService;
+    private final PayslipCloseService closeService;
+    private final PayslipCloseService payslipCloseService;
 
     @PostMapping("/print")
     public ResponseEntity<PayslipPrintDTO> print(@RequestBody PayslipCalculatePayload payload) {
@@ -27,7 +30,7 @@ public class PayslipController {
             @RequestBody PayslipCalculatePayload payload
     ) {
         try {
-            CalculatedPayslip result = payslipService.calculate(payload, null, true, true);
+            CalculatedPayslip result = payslipService.calculate(payload, null, true);
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,7 +57,7 @@ public class PayslipController {
             @RequestBody Set<Long> resourceIds,
             @PathVariable LocalDate month
     ) {
-        return ResponseEntity.ok().body( payslipService.closePayslips(resourceIds, month ));
+        return ResponseEntity.ok().body( closeService.closePayslips(resourceIds, month ));
     }
 
     @GetMapping("/close/fetch_closed/{month}")
@@ -62,5 +65,12 @@ public class PayslipController {
             @PathVariable LocalDate month
     ) {
         return ResponseEntity.ok().body(payslipService.getClosedPayslips(month));
+    }
+
+    @GetMapping("/close/fetch_closed_result/{month}")
+    public ResponseEntity<PayslipCloseResultDto> getPayslipCloseResults(
+            @PathVariable LocalDate month
+    ) {
+        return ResponseEntity.ok().body(payslipCloseService.getPayslipCloseResult(month));
     }
 }

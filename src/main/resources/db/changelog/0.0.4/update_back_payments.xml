@@ -1,0 +1,46 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="update-back-payments" author="Salim Kham">
+        <addColumn tableName="back_payment">
+            <column name="section_code" type="varchar(100)"/>
+            <column name="contract_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_month" type="date" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_month" type="date" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="month" type="date" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_id" type="bigint"/>
+        </addColumn>
+        <sql>
+            update back_payment b left join payslip_setting_element e on e.id = b.payslip_setting_element_id
+                left join payslip_setting ps on ps.id = e.payslip_setting_id
+                left join section s on s.id = e.section
+                set b.section_code = s.code, b.contract_id = ps.contract_id, b.month = ps.payment_date
+        </sql>
+        <addForeignKeyConstraint baseTableName="back_payment"
+                                 baseColumnNames="source_id"
+                                 constraintName="fk_back_payment_source_id" referencedTableName="back_payment"
+                                 referencedColumnNames="id"
+                                 onUpdate="CASCADE"
+                                 onDelete="CASCADE"
+        />
+        <dropForeignKeyConstraint baseTableName="back_payment" constraintName="fk_back_payment_to_payslip_element_id"/>
+        <dropColumn tableName="back_payment">
+            <column name="payslip_setting_element_id"/>
+        </dropColumn>
+    </changeSet>
+</databaseChangeLog>

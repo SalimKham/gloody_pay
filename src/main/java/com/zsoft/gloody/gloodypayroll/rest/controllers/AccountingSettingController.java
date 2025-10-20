@@ -20,6 +20,7 @@ import java.util.Optional;
 public class AccountingSettingController {
 
     private final AccountingSettingService accountingSettingService;
+
     @GetMapping
     public ResponseEntity<AccountingSettingDTO> getOne() {
         Optional<AccountingSettingDTO> accountingSettingDTO = accountingSettingService.findOne();
@@ -27,16 +28,16 @@ public class AccountingSettingController {
     }
 
     @PostMapping("/monthly-logs")
-    public ResponseEntity<AccountingSettingDTO> getAccountingMonthlyTotals( @RequestBody  AccountingExportFilterDto filter) {
+    public ResponseEntity<AccountingSettingDTO> getAccountingMonthlyTotals(@RequestBody AccountingExportFilterDto filter) {
         List<AccountingSettingDTO> result = accountingSettingService.getAccountingMonthlyTotals(filter);
         return ResponseEntity.ok().body(result != null && !result.isEmpty() ? result.get(0) : null);
     }
 
     @PostMapping("/monthly-logs/export")
-    public ResponseEntity<byte[]> exportAccountingData(@RequestBody  AccountingExportFilterDto filter) {
-        byte[] result  = accountingSettingService.exportAccountingData(filter);
+    public ResponseEntity<byte[]> exportAccountingData(@RequestBody AccountingExportFilterDto filter) {
+        byte[] result = accountingSettingService.exportAccountingData(filter);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\"" +  filter.getFileName() + "\"");
+        headers.add("Content-Disposition", "attachment; filename=\"" + filter.getFileName() + "\"");
         headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         return ResponseEntity.ok().headers(headers).body(result);
     }
@@ -44,9 +45,9 @@ public class AccountingSettingController {
     @GetMapping("/monthly-logs/export-plan")
     public ResponseEntity<byte[]> exportAccountingSetting() {
         String fileName = String.format("Accounting-Plan-%s", LocalDate.now().format(PayrollRecordsUtils.hyphenDateFormatter));
-        byte[] result  = accountingSettingService.exportAccountingSetting(fileName);
+        byte[] result = accountingSettingService.exportAccountingSetting(fileName);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\"" +  fileName + "\"");
+        headers.add("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
         headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         return ResponseEntity.ok().headers(headers).body(result);
     }
@@ -59,7 +60,14 @@ public class AccountingSettingController {
 
     @PostMapping
     public ResponseEntity<AccountingSettingDTO> save(@Valid @RequestBody AccountingSettingDTO accountingSettingDTO) {
+        try {
             AccountingSettingDTO result = accountingSettingService.save(accountingSettingDTO);
             return ResponseEntity.ok().body(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok().build();
+
     }
 }

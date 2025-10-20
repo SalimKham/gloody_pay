@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.models.repositories;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.enums.SummaryDataType;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,6 +21,7 @@ import java.util.Set;
 @Transactional
 public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
     Optional<HRMonthlyData> findTopHrMonthlyDataByVariableAndContractIdAndMonth(String variable, Long contractId, LocalDate month);
+
     List<HRMonthlyData> findAllByContractIdAndMonth(Long contractId, LocalDate month);
 
 
@@ -54,7 +56,7 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
             SELECT p.payment_date, p.employee_id, p.contract_id, 'TEMPLATE', p.id, 'TEMPLATE' FROM `payslip_setting`  p
             WHERE p.payment_date = :month AND p.closed AND p.id in :payslip_ids
             """, nativeQuery = true)
-    void bulkInsertClosedTemplateIds(@Param("month") LocalDate month, @Param("payslip_ids") List<Long> payslipIds);
+    void bulkInsertClosedTemplateIds(@Param("month") LocalDate month, @Param("payslip_ids") Collection<Long> payslipIds);
 
     @Query("SELECT hr.resourceId FROM HRMonthlyData hr WHERE hr.month = :current_month AND hr.variable = 'TEMPLATE' AND hr.value = :template_id")
     Set<Long> findAllResourcesByTemplateId(@Param("current_month") LocalDate month, @Param("template_id") Long templateId);
@@ -67,6 +69,25 @@ public interface HRDataRepository extends JpaRepository<HRMonthlyData, Long> {
             """)
     Set<Long> findAllResourcesByDefaultTemplate(@Param("current_month") LocalDate month);
 
+
+    @Nullable
+    @Query(value = "SELECT hr.value FROM hr_monthly_data hr where hr.contract_id = :contract_id AND hr.pay_month = :month AND hr.source_type = 'TEMPLATE' ", nativeQuery = true)
+    Double findTemplateId(@Param("contract_id") Long contractId, @Param("month") LocalDate month);
+
     void deleteByContractIdInAndTypeInAndMonth(Set<Long> contractIds, Set<SummaryDataType> types, LocalDate month);
 
+
+    @Modifying
+    @Query(value = """
+            insert into hr_monthly_data(resource_id, contract_id, pay_month, hr_variable, hr_value, source_type)
+            select hr.resource_id, hr.contract_id, :to_month, hr.hr_variable, hr.hr_value, hr.source_type FROM hr_monthly_data hr LEFT JOIN employee e ON e.id = hr.resource_id
+              WHERE e.company_id = :company_id
+               AND hr.pay_month = :active_month
+            """, nativeQuery = true)
+    void copyVariables(@Param("to_month") LocalDate toMonth, @Param("active_month") LocalDate activeMonth, @Param("company_id") Long company_id);
+
+    @Query("""
+            SELECT count(distinct hr.resourceId) FROM HRMonthlyData hr LEFT JOIN Employee e on e.id = hr.resourceId where hr.month = :month AND e.company = :company_id
+            """)
+    long countMonthlyPayslips(@Param("month") LocalDate month, @Param("company_id") Long companyId);
 }

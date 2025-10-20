@@ -8,7 +8,6 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingReposito
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,19 +26,19 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
     private final PayslipSettingMapper payslipSettingMapper;
     private final HRDataRepository hrDataRepository;
 
-    @Cacheable(
+ /*   @Cacheable(
             cacheNames = "company_default_template",
             key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
-    )
+    )*/
     public Optional<PayslipSettingDto> findDefaultTemplate() {
         return this.payslipSettingRepository.findTopByTemplateAndByDefaultOrderByIdAsc(true, true).map(this::toDto);
     }
 
 
-    @Cacheable(
+/*    @Cacheable(
             cacheNames = "company_template_by_id",
             key = "#id"
-    )
+    )*/
     public Optional<PayslipSettingDto> findById(Long id) {
         return this.payslipSettingRepository.findById(id).map(this::toDto);
     }

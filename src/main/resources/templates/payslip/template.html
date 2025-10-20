@@ -376,8 +376,8 @@
                         <small th:if="${element.description != null && !element.description.isEmpty()}"
                                th:text="${'(' + element.description + ')'}"></small>
                     </td>
-                    <td th:text="${#numbers.formatDecimal(element.gain, 2, 2)}" class="align-right"></td>
-                    <td th:text="${#numbers.formatDecimal(element.deduction, 2, 2)}" class="align-right"></td>
+                    <td th:if="${element.gain != null}" th:text="${#numbers.formatDecimal(element.getValue(), 2, 2)}" class="align-right"></td>
+                    <td th:if="${element.deduction != null}"  th:text="${#numbers.formatDecimal(element.getValue(), 2, 2)}" class="align-right"></td>
                     <td th:if="${show_employer_col}" class="align-right"></td>
                 </tr>
                 <tr th:if="${!element.total}">
@@ -389,19 +389,11 @@
                     </td>
                     <td th:text="${#numbers.formatDecimal(element.base, 2, 2)}" class="align-right"></td>
                     <td th:text="${#numbers.formatDecimal(element.rate, 1, 3)}" class="align-right"></td>
-                    <td  class="align-right">
-                        <span th:text="${#numbers.formatDecimal(element.gain, 2, 2)}"></span>
-                        <strong th:if="${element.getValueWithBackPayments() != null && element?.gain >= 0}" th:text="${' (' + #numbers.formatDecimal(element.getValueWithBackPayments(), 2, 2) + ')'}">
-                        </strong>
-                    </td>
-                    <td class="align-right">
-                        <span th:text="${#numbers.formatDecimal(element.deduction, 2, 2)}"></span>
-                        <strong th:if="${element.getValueWithBackPayments() != null && element?.deduction > 0}" th:text="${' (' + #numbers.formatDecimal(element.getValueWithBackPayments(), 2, 2) + ')'}">
-                        </strong>
-                    </td>
+                    <td th:text="${#numbers.formatDecimal(element.getGain(), 2, 2)}" class="align-right"></td>
+                    <td th:text="${#numbers.formatDecimal(element.getDeduction(), 2, 2)}" class="align-right"></td>
                     <td th:if="${show_employer_col}" class="align-right"></td>
                 </tr>
-                <th:block th:if="${element.backPayments != null}">
+                <th:block th:if="${!element.total && element.backPayments != null}">
                     <tr th:each="backPayment: ${element.backPayments}" class="back-payment-row">
                         <td th:text="${backPayment.code}" class="align-center"></td>
                         <td class="align-left">
