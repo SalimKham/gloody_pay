@@ -16,6 +16,7 @@ import java.util.Set;
 public class PayslipController {
     private final PayslipService payslipService;
     private final PayslipCloseService closeService;
+    private final PayslipCloseService payslipCloseService;
 
     @PostMapping("/print")
     public ResponseEntity<PayslipPrintDTO> print(@RequestBody PayslipCalculatePayload payload) {
@@ -64,5 +65,12 @@ public class PayslipController {
             @PathVariable LocalDate month
     ) {
         return ResponseEntity.ok().body(payslipService.getClosedPayslips(month));
+    }
+
+    @GetMapping("/close/fetch_closed_result/{month}")
+    public ResponseEntity<PayslipCloseResultDto> getPayslipCloseResults(
+            @PathVariable LocalDate month
+    ) {
+        return ResponseEntity.ok().body(payslipCloseService.getPayslipCloseResult(month));
     }
 }

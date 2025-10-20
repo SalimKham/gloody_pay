@@ -13,6 +13,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipCloseRepository
 import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipCalculatePayload;
+import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipCloseResultDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -137,4 +138,10 @@ public class PayslipCloseService {
         return failed;
     }
 
+    public PayslipCloseResultDto getPayslipCloseResult(LocalDate month) {
+        Long closed = payslipSettingRepository.countClosedByPaymentDate(month.withDayOfMonth(1), SecurityUtils.getCurrentCompanyId());
+        Long total = hrDataRepository.countMonthlyPayslips(month.withDayOfMonth(1), SecurityUtils.getCurrentCompanyId());
+        return new PayslipCloseResultDto(closed.intValue(), total.intValue());
+
+    }
 }
