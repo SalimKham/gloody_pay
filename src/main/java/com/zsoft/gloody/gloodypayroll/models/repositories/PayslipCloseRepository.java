@@ -7,11 +7,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 
 @Repository
 @Transactional
 public interface PayslipCloseRepository extends JpaRepository<PayslipClose, Long> {
     @Modifying
-    void deleteByContractIdAndMonth(Long contractId, LocalDate month);
+    void deleteByContractIdInAndMonth(Collection<Long> contractIds, LocalDate month);
 }
