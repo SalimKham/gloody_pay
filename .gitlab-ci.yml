@@ -18,7 +18,7 @@ build_staging:
 
 deploy_staging:
   stage: deploy
-  image: alpine:latest
+  image: alpine:3.20.3
   dependencies:
     - build_staging
   before_script:
@@ -59,7 +59,7 @@ build_preprod:
 
 deploy_preprod:
   stage: deploy
-  image: alpine:latest
+  image: alpine:3.20.3
   dependencies:
     - build_preprod
   before_script:
