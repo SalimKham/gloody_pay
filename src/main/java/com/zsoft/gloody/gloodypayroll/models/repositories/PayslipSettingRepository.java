@@ -40,9 +40,6 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @EntityGraph(value = "PayslipSetting.elements")
     Optional<PayslipSetting> findTopByTemplateAndByDefaultOrderByIdAsc(boolean template, boolean byDefault);
 
-    @Nonnull
-    @EntityGraph(value = "PayslipSetting.elements")
-    Optional<PayslipSetting> findTopByCompanyAndTemplateAndByDefaultOrderByIdAsc(Long companyId, boolean template, boolean byDefault);
 
     @Modifying
     @Query("UPDATE PayslipSetting  p SET p.byDefault = CASE WHEN p.id =:template_id THEN true ELSE false END")
@@ -53,6 +50,9 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
 
     @Modifying
     void deleteByContractAndPaymentDateAndIdNot(Long contractId, LocalDate paymentDate, Long id);
+
+    @Modifying
+    void deleteByContractInAndPaymentDate(Collection<Long> contractId, LocalDate paymentDate);
 
     Optional<PayslipSetting> findTopByContractAndPaymentDateAndByDefaultOrderByIdDesc(Long contractId, LocalDate paymentDate, Boolean byDefault);
 

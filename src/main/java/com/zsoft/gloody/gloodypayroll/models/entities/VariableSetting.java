@@ -40,7 +40,7 @@ public class VariableSetting extends CompanySupport {
             SELECT EXISTS (
               SELECT 1
               FROM section s
-              WHERE CONCAT(
+              WHERE s.company_id = company_id AND CONCAT(
                       COALESCE(s.base_formula, ''),
                       COALESCE(s.rate_formula, ''),
                       COALESCE(s.value_formula, '')
@@ -50,3 +50,4 @@ public class VariableSetting extends CompanySupport {
             """)
     private Boolean referenced;
 }
+

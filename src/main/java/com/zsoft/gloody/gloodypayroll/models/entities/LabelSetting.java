@@ -40,7 +40,7 @@ public class LabelSetting extends CompanySupport {
             SELECT EXISTS (
                 SELECT 1
                 FROM section s
-                WHERE CONCAT(
+                WHERE s.company_id = company_id AND  CONCAT(
                               COALESCE(s.base_formula, ''),
                               ',',
                               COALESCE(s.rate_formula, ''),
