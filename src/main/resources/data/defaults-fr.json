@@ -91,7 +91,7 @@
     },
     {
       "key": "V_PRET_TOTAL",
-      "source": "ADVANCE",
+      "source": "LOAN",
       "description": "Prêt",
       "label": "Prêt",
       "formula": "0"
