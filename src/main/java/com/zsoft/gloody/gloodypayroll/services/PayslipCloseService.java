@@ -74,7 +74,7 @@ public class PayslipCloseService {
         payslipService.initFunctionElements(contracts.keySet());
         Set<Long> closedContractIds = new HashSet<>();
         Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
-        payslipCloseRepository.deleteByContractIdInAndMonth( loadContractIds, month.withDayOfMonth(1));
+        payslipCloseRepository.deleteByContractIdInAndMonth(loadContractIds, month.withDayOfMonth(1));
         payslipSettingRepository.deleteByContractInAndPaymentDate(loadContractIds, month.withDayOfMonth(1));
         PayslipCalculatePayload payload = new PayslipCalculatePayload();
         List<HRMonthlyData> baseSalaries = new ArrayList<>();
@@ -125,7 +125,7 @@ public class PayslipCloseService {
                             baseSalaries.add(HRMonthlyData.builder().variable(Constants.BASE_SALARY).value(employee.getBaseSalary()).month(month).contractId(contractId).resourceId(resourceId).type(SummaryDataType.SALARY).build());
                             payslipSettingRepository.insertClosedPayslip(calculatedPayslip.template().getId(), closedPayslip.getId(), month, contractId);
                             long end = System.currentTimeMillis();
-                            System.out.println("CLOSING PAYLIPS IN "+(end - start));
+                            System.out.println("CLOSING PAYLIPS IN " + (end - start));
                             closedPayslips.add(closedPayslip.getId());
                             closedContractIds.add(contractId);
                         }
@@ -150,6 +150,20 @@ public class PayslipCloseService {
         Long closed = payslipSettingRepository.countClosedByPaymentDate(month.withDayOfMonth(1), SecurityUtils.getCurrentCompanyId());
         Long total = hrDataRepository.countMonthlyPayslips(month.withDayOfMonth(1), SecurityUtils.getCurrentCompanyId());
         return new PayslipCloseResultDto(closed.intValue(), total.intValue());
+    }
 
+    public void reOpenPayslip(LocalDate month, Long resourceId, Long contractId, Long templateId) {
+        hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", Collections.singleton(contractId), month.withDayOfMonth(1));
+        payslipSettingRepository.deleteByContractInAndPaymentDate(Collections.singleton(contractId), month.withDayOfMonth(1));
+        if (Objects.nonNull(templateId)) {
+            hrDataRepository.save(HRMonthlyData.builder()
+                    .type(SummaryDataType.TEMPLATE)
+                    .variable("TEMPLATE")
+                    .resourceId(resourceId)
+                    .contractId(contractId)
+                    .month(month.withDayOfMonth(1))
+                    .value(templateId)
+                    .build());
+        }
     }
 }
