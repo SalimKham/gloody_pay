@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="clear_salary_advance_renamed_to_loan" author="Salim Kham">
+     <sql>
+         update hr_monthly_data hr set hr.hr_variable = REPLACE(hr_variable, 'ADVANCE', 'LOAN' ) WHERE hr.hr_variable like '%ADVANCE%';
+         update hr_monthly_data hr set hr.source_type = REPLACE(hr_variable, 'SALARY_ADVANCE', 'SALARY_LOAN' ) WHERE hr.source_type like '%SALARY_ADVANCE%';
+     </sql>
+    </changeSet>
+</databaseChangeLog>

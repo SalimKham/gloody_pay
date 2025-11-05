@@ -60,6 +60,17 @@ public class PayslipController {
         return ResponseEntity.ok().body( closeService.closePayslips(resourceIds, month ));
     }
 
+    @GetMapping("/re_open/{month}")
+    public ResponseEntity<Void> reOpenPayslip(
+            @PathVariable LocalDate month,
+            @RequestParam(name = "resource_id") Long resourceId,
+            @RequestParam(name = "contract_id") Long contractId,
+            @RequestParam(name = "template_id", required = false) Long templateId
+    ) {
+        closeService.reOpenPayslip( month, resourceId, contractId, templateId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/close/fetch_closed/{month}")
     public ResponseEntity<Set<Long>> getCloseEmployeeIds(
             @PathVariable LocalDate month
