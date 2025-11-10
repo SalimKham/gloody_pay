@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add-final-settlement-variables" author="Salim Kham">
+        <sql>
+            insert into variable_setting(`key`, source, description, label, formula, company_id)
+            select 'VC_SOLDE_CONGES_NON_PRIS', 'REMAINING_BALANCE', '', 'Solde de congés non pris', '0', id from company;
+            insert into variable_setting(`key`, source, description, label, formula, company_id)
+            select 'VC_REMB_PRET_RESTANT', 'REMAINING_LOANS', '', 'SMontant total des remboursements des prêts restants', '0', id from company;
+            insert into variable_setting(`key`, source, description, label, formula, company_id)
+            select 'EST_SORTIE_DEFINITIVE', 'FINAL_EXIT', '', 'Booléen : true si sortie définitive, false sinon', '0', id from company;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

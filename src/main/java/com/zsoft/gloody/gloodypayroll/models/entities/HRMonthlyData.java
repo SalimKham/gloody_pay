@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Builder
@@ -46,10 +45,5 @@ public class HRMonthlyData {
     @Override
     public int hashCode() {
         return Objects.hash(contractId, month, variable);
-    }
-    public static void main(String[] args) {
-        UUID uuid = UUID.nameUUIDFromBytes("hello-2025-02-02".getBytes());
-        long id = uuid.getMostSignificantBits();
-        System.out.println(id);
     }
 }

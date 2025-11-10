@@ -47,5 +47,6 @@
     <include file="0.0.4/update_back_payments.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add-payslip-close-table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/clear_salary_advance_renamed_to_loan.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-final-settlement-variables.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
