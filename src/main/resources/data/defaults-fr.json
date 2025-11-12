@@ -188,6 +188,24 @@
       "source": "ABS_PY",
       "label": "absence consomé des solde N-1 anterieure",
       "formula": "0"
+    },
+    {
+      "key": "VC_REMB_PRET_RESTANT",
+      "source": "REMAINING_LOANS",
+      "label": "Montant total des remboursements des prêts restants",
+      "formula": "0"
+    },
+    {
+      "key": "VC_SOLDE_CONGES_NON_PRIS",
+      "source": "REMAINING_BALANCE",
+      "label": "Solde de congés non pris",
+      "formula": "0"
+    },
+    {
+      "key": "EST_SORTIE_DEFINITIVE",
+      "source": "FINAL_EXIT",
+      "label": "Booléen : true si sortie définitive, false sinon",
+      "formula": "0"
     }
   ],
   "default-categories": [
