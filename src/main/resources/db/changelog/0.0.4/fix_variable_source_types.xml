@@ -1,0 +1,13 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="fix_variable_source_types" author="Salim Kham">
+    <sql>
+        update hr_monthly_data hr set hr.source_type = 'SALARY_LOAN' where hr.hr_variable like '%LOAN%';
+    </sql>
+    </changeSet>
+</databaseChangeLog>

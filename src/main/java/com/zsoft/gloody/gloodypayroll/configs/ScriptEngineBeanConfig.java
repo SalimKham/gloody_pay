@@ -3,7 +3,6 @@ package com.zsoft.gloody.gloodypayroll.configs;
 import com.zsoft.gloody.gloodypayroll.services.IrgCalculatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.script.ScriptEngine;
@@ -19,7 +18,7 @@ import static com.zsoft.gloody.gloodypayroll.configs.Constants.IS_HANDICAP;
 @Slf4j
 public class ScriptEngineBeanConfig {
 
-    @Bean
+
     public ScriptEngine scriptEngine() {
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("js");
@@ -32,11 +31,8 @@ public class ScriptEngineBeanConfig {
             engine.put("irgCalculator", new IrgCalculatorService());
             engine.put(IS_HANDICAP, false);
             engine.put(IRG_YEAR, LocalDate.now().getYear());
-            engine.eval("function IRG(b, y, h) {" +
-                    "   if(b == undefined){b = 0;} " +
-                    "   if(y == undefined){y = " + IRG_YEAR + ";} " +
-                    "   if(h == undefined){h = " + IS_HANDICAP + ";} " +
-                    "   return irgCalculator.calculateIrg(b, y, h);" +
+            engine.eval("function IRG(b) {" +
+                    "   return irgCalculator.calculateIrg(b," + IRG_YEAR +  "," + IS_HANDICAP +");" +
                     "}");
             engine.eval("var max = MAX = Math.max;");
             engine.eval("var min = MIN = Math.min;");

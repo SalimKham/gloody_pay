@@ -31,9 +31,15 @@ public class RequestContext {
       dictionaryService.set(ds);
     }
 
-    public static void initRequestContext() {
-        initCompanySections();
-        initPerRequestElements();
+    public static void initRequestContext(boolean reload) {
+        if (reload || (companySections.get() == null)) {
+            initCompanySections();
+        }
+
+        if (reload || (perRequestElements.get() == null)) {
+            initPerRequestElements();
+        }
+
     }
 
     public static void initDictionaryService() {
@@ -110,8 +116,8 @@ public class RequestContext {
 
 
 
-    public static void initMonthlyValues(Set<Long> resourceIds) {
-        List<Tuple> tuples = SpringContextHolder.getBean(HRDataRepository.class).getMonthlyValues(LocalDate.now().withDayOfMonth(1), resourceIds);
+    public static void initMonthlyValues(LocalDate month, Set<Long> resourceIds) {
+        List<Tuple> tuples = SpringContextHolder.getBean(HRDataRepository.class).getMonthlyValues(month.withDayOfMonth(1), resourceIds);
         Map<Long, Map<String, Double>> result = tuples.stream()
                 .collect(Collectors.groupingBy(
                         tuple -> tuple.get(0, Long.class),

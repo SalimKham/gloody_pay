@@ -77,7 +77,7 @@ public class HRAsyncService extends EntityManagerService {
         long start = System.currentTimeMillis();
         LocalDate finalMonth = month;
         ArrayList<PayslipSetting> payslipSettings = new ArrayList<>();
-        RequestContext.initMonthlyValues(resourceIds);
+        RequestContext.initMonthlyValues(month, resourceIds);
         payslipService.initFunctionElements(resourceIds);
         resourceContracts.keySet().forEach(resourceId -> {
             if (!resourceIds.contains(resourceId)) {
