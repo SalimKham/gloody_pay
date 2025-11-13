@@ -141,7 +141,7 @@ public class RequestContext {
 
 
 
-    public static void initFunctionElements(Set<Long> resourceIds, List<String> codes) {
+    public static void initFunctionElements(Set<Long> resourceIds, Set<String> codes) {
         List<PayslipFunctionElement> elements = SpringContextHolder.getBean(PayslipElementSettingRepository.class).findAllByEmployeeIdAndClosed(resourceIds, codes);
         Map<Long, List<PayslipFunctionElement>> result = elements.stream().collect(Collectors.groupingBy(PayslipFunctionElement::resourceId));
         setFunctionElements(result);

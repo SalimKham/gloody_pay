@@ -105,7 +105,7 @@ public class PayslipService {
             if (employeeDto == null) {
                 throw new ApiRuntimeException("error.employee.required");
             }
-            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false);
+            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, true);
             if (calculatedPayslip == null || calculatedPayslip.template() == null) {
                 return null;
             }
@@ -216,7 +216,7 @@ public class PayslipService {
     }
 
     public void initFunctionElements(Set<Long> resourceIds) {
-        List<String> inFunctionsCodes = getInFunctionCodes();
+        Set<String> inFunctionsCodes = getInFunctionCodes();
         if (inFunctionsCodes == null || inFunctionsCodes.isEmpty() || resourceIds.isEmpty()) {
             RequestContext.setFunctionElements(Collections.emptyMap());
             return;
@@ -278,7 +278,7 @@ public class PayslipService {
     }
 
 
-    private void addFunctionCodes(List<String> codes, String formula) {
+    private void addFunctionCodes(Set<String> codes, String formula) {
         if (formula == null) {
             return;
         }
@@ -301,8 +301,8 @@ public class PayslipService {
     }
 
 
-    public List<String> getInFunctionCodes() {
-        List<String> codes = new ArrayList<>();
+    public Set<String> getInFunctionCodes() {
+        Set<String> codes = new HashSet<>();
         companySections().getSections().values().forEach(section -> {
                     addFunctionCodes(codes, section.getBaseFormula());
                     addFunctionCodes(codes, section.getValueFormula());
@@ -606,7 +606,7 @@ public class PayslipService {
                     formula = formula.replace(condition, newCondition);
                 }
             if (dictionaryService().getAllVariables().containsKey(m.group()) || Objects.equals(m.group(), "BASE") || Objects.equals(m.group(), "RATE") ) {
-                if (!formula.contains("#" + m.group())) {
+                if (!formula.contains("#" + m.group()) && !m.group().matches(FUNCTION_REGEX)) {
                     formula = formula.replaceAll("\\b" + m.group() + "\\b", "#" + m.group());
                 }
             }
