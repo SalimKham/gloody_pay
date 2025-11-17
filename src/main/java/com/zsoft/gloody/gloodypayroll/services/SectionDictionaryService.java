@@ -93,7 +93,7 @@ public class SectionDictionaryService extends CompanySupportService {
         setVariable(variablesMap.getOrDefault(HANDICAP, HANDICAP), employee.isDisabled() ? 1 : 0);
         setVariable(variablesMap.getOrDefault(SENIORITY, SENIORITY), Objects.nonNull(employee.getSeniority_date()) ? employee.getSeniority_date().until(LocalDate.now(), ChronoUnit.YEARS) : 0);
         if (salaryBase == 0) {
-            salaryBase =   employee.getBaseSalary();
+            salaryBase =   Objects.requireNonNullElse(employee.getBaseSalary(), 0d);
         }
         setVariable(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY), salaryBase);
 

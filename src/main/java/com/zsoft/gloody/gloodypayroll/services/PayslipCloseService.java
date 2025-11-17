@@ -1,5 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
+import com.zsoft.gloody.gloodypayroll.configs.CacheControl;
 import com.zsoft.gloody.gloodypayroll.configs.Constants;
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
@@ -15,7 +16,9 @@ import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipCalculatePayload;
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipCloseResultDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
+import com.zsoft.gloody.gloodypayroll.utils.CommonUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
+import com.zsoft.gloody.gloodypayroll.utils.TransactionSyncUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ public class PayslipCloseService {
     private final EmployeeRepository employeeRepository;
     private final PayslipCloseRepository payslipCloseRepository;
     private final PayslipService payslipService;
+    private final PayslipPostCloseService payslipPostCloseService;
 
     private Map<Long, List<Long>> loadContracts(Set<Long> resourceIds, LocalDate month) {
         if (resourceIds == null || resourceIds.isEmpty()) {
@@ -56,7 +60,8 @@ public class PayslipCloseService {
 
     public Set<Long> closePayslips(Set<Long> resourceIds, LocalDate month) {
         log.info("CLOSING PAYSLIPS FOR EMPLOYEES {} | MONTH {}", resourceIds, month);
-        Set<Long> closedPayslips = new HashSet<>();
+        CacheControl.enable();
+        payslipCloseRepository.clearAllData();
         Set<Long> failed = new HashSet<>();
         month = month.withDayOfMonth(1);
         if (resourceIds.isEmpty()) {
@@ -66,29 +71,29 @@ public class PayslipCloseService {
         if (contracts.isEmpty()) {
             return Collections.emptySet();
         }
-        if (contracts.size() > 20) {
-            RequestContext.initTemplates();
-        }
-        RequestContext.initMonthlyValues(contracts.keySet());
+        RequestContext.initMonthlyValues(month, contracts.keySet());
         Set<Long> loadContractIds = contracts.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
         payslipService.initFunctionElements(contracts.keySet());
         Set<Long> closedContractIds = new HashSet<>();
         Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
-        payslipCloseRepository.deleteByContractIdInAndMonth(loadContractIds, month.withDayOfMonth(1));
         payslipSettingRepository.deleteByContractInAndPaymentDate(loadContractIds, month.withDayOfMonth(1));
         PayslipCalculatePayload payload = new PayslipCalculatePayload();
         List<HRMonthlyData> baseSalaries = new ArrayList<>();
+        List<PayslipClose> closedElements = new ArrayList<>();
+        List<PayslipSetting> closedPayslipSettings = new ArrayList<>();
+        long startClosingTime = System.currentTimeMillis();
+        int closedCount = 0;
         for (Long resourceId : resourceIds) {
+            long start = System.currentTimeMillis();
             try {
                 if (contracts.containsKey(resourceId)) {
                     Set<Long> resourceContracts = new HashSet<>(contracts.get(resourceId));
                     for (Long contractId : resourceContracts) {
-                        long start = System.currentTimeMillis();
                         payload.setValues(resourceId, contractId, month);
                         PayslipController.CalculatedPayslip calculatedPayslip = payslipService.calculate(payload, employeeMap.getOrDefault(resourceId, null), false);
                         if (calculatedPayslip != null) {
                             LocalDate finalMonth = month;
-                            payslipCloseRepository.saveAll(calculatedPayslip.calculatedElements()
+                            closedElements.addAll(calculatedPayslip.calculatedElements()
                                     .stream()
                                     .map(el -> PayslipClose.builder().contractId(contractId)
                                             .month(finalMonth)
@@ -103,7 +108,8 @@ public class PayslipCloseService {
                             // save new Payslip
                             assert employeeMap.containsKey(resourceId);
                             Employee employee = employeeMap.get(resourceId);
-                            PayslipSetting closedPayslip = payslipSettingRepository.saveAndFlush(PayslipSetting.
+
+                            closedPayslipSettings.add(PayslipSetting.
                                     builder()
                                     .name(String.format("%s-%s-%s", resourceId, contractId, month))
                                     .closed(true)
@@ -119,30 +125,44 @@ public class PayslipCloseService {
                                     .employee(resourceId)
                                     .approved(false)
                                     .paymentDate(month)
+                                    .parentTemplateId(calculatedPayslip.template().getId())
                                     .payslipDetail(employeeMapper.employeeToPayslipDetails(employeeMap.getOrDefault(resourceId, null), contractId, month))
                                     .build()
                             );
-                            baseSalaries.add(HRMonthlyData.builder().variable(Constants.BASE_SALARY).value(employee.getBaseSalary()).month(month).contractId(contractId).resourceId(resourceId).type(SummaryDataType.SALARY).build());
-                            payslipSettingRepository.insertClosedPayslip(calculatedPayslip.template().getId(), closedPayslip.getId(), month, contractId);
-                            long end = System.currentTimeMillis();
-                            System.out.println("CLOSING PAYLIPS IN " + (end - start));
-                            closedPayslips.add(closedPayslip.getId());
+                            baseSalaries.add(HRMonthlyData.builder().variable(Constants.BASE_SALARY).value(Objects.requireNonNullElse(employee.getBaseSalary(), 0d)).month(month).contractId(contractId).resourceId(resourceId).type(SummaryDataType.SALARY).build());
+
                             closedContractIds.add(contractId);
                         }
                     }
                 }
+                long end = System.currentTimeMillis();
+                log.info("CLOSING PAYLIPS {}/{} IN {} ms",++ closedCount, resourceIds.size(), (end - start));
             } catch (Exception e) {
+                log.error("CLOSING PAYLIPS ERROR employee id {}", resourceId, e);
                 failed.add(resourceId);
             }
         }
+        CacheControl.disable();
         RequestContext.clear();
-        if (!closedPayslips.isEmpty()) {
-            hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", closedContractIds, month);
-            hrDataRepository.bulkInsertClosedTemplateIds(month, closedPayslips);
+        log.info("BULK SAVING RESULT");
+        if (!closedContractIds.isEmpty()) {
+            log.info("SAVING CALCULATED ELEMENTS");
+            payslipCloseRepository.saveAll(closedElements);
+            log.info("SAVING NEW PAYSLIPS");
+          payslipSettingRepository.saveAll(closedPayslipSettings);
+            LocalDate postCloseMonth = month;
+            TransactionSyncUtil.afterCommit(() -> {
+                CommonUtils.splitSet(closedContractIds, 300).parallelStream().forEach(batch -> payslipPostCloseService.postClose(batch, postCloseMonth));
+                log.info("CLOSING PAYSLIPS FOR EMPLOYEES: {} | MONTH: {} DONE", resourceIds, postCloseMonth);
+                log.info("ELAPSED TIME: {} ", (System.currentTimeMillis() - startClosingTime));
+                log.info("FAILED: {} ", failed.size());
+            });
+
         }
         if (!baseSalaries.isEmpty()) {
             hrDataRepository.saveAll(baseSalaries);
         }
+
         return failed;
     }
 

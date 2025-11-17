@@ -26,8 +26,14 @@ import java.util.List;
         })
 })
 public class PayslipSetting extends CompanySupport {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payslip_setting_sequence")
+    @SequenceGenerator(
+            name = "payslip_setting_sequence",
+            sequenceName = "payslip_setting_sequence",
+            allocationSize = 1
+    )
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -72,6 +78,9 @@ public class PayslipSetting extends CompanySupport {
     @Convert(converter = PayslipDetailConverter.class)
     @Column(name = "payslip_detail")
     private PayslipDetailDto payslipDetail;
+
+    @Column(name = "parent_id")
+    private Long parentTemplateId;
 
 
     @OneToMany(targetEntity = PayslipSettingElement.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add-missing-payslip-indexes" author="Salim Kham">
+        <createIndex tableName="payslip_setting" indexName="IDX_PAYSLIP_SETTING_PARENT">
+            <column name="parent_id"/>
+        </createIndex>
+        <createIndex tableName="payslip_close" indexName="IDX_PAYSLIP_CLOSE_CODE">
+            <column name="code"/>
+        </createIndex>
+        <createIndex tableName="payslip_close" indexName="IDX_PAYSLIP_CLOSE_CONTRACT">
+            <column name="contract_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

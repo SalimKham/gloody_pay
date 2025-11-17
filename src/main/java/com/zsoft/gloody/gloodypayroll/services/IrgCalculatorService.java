@@ -1,11 +1,15 @@
 package com.zsoft.gloody.gloodypayroll.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.Objects;
 
 @Slf4j
+@Component
 public class IrgCalculatorService {
     public static String formatDouble(double value) {
         return String.format("%-8s", BigDecimal.valueOf(value).setScale(2, RoundingMode.DOWN));
@@ -13,11 +17,14 @@ public class IrgCalculatorService {
 
     public static void main(String[] args) {
         double b = .5;
-        double irg = new IrgCalculatorService().calculateIrg( 72839.51, 2023, false);
+        double irg = new IrgCalculatorService().IRG( 72839.51);
         System.out.println("irg: "+  irg);
     }
 
-    public double calculateIrg(double baseValue, int year, boolean isHandicap) {
+    public static double IRG(Double value) {
+        double baseValue = Objects.requireNonNullElse(value, 0d);
+        int year =  LocalDate.now().getYear();
+        boolean isHandicap = false;
         int base = BigDecimal.valueOf(baseValue).setScale(0, RoundingMode.HALF_DOWN).intValue();
         base = base - (base % 10);
         if (year >= 2023) {
@@ -29,7 +36,7 @@ public class IrgCalculatorService {
         }
     }
 
-    public double calculateIrg2023(double baseValue, boolean isHandicap) {
+    public static  double calculateIrg2023(double baseValue, boolean isHandicap) {
         if (baseValue <= 30000) {
             return 0d;
         }
@@ -63,7 +70,7 @@ public class IrgCalculatorService {
                 .doubleValue();
     }
 
-    public double calculateIrg2020(double baseValue, boolean isHandicap) {
+    public static  double calculateIrg2020(double baseValue, boolean isHandicap) {
         if (baseValue <= 30000) {
             return 0d;
         }
@@ -84,7 +91,7 @@ public class IrgCalculatorService {
         return BigDecimal.valueOf(irg).setScale(0, RoundingMode.CEILING).doubleValue();
     }
 
-    public double calculateIrg2008(double baseValue, boolean isHandicap) {
+    public static double calculateIrg2008(double baseValue, boolean isHandicap) {
         double irg;
         if (isHandicap) {
             if (baseValue <= 15000) {
