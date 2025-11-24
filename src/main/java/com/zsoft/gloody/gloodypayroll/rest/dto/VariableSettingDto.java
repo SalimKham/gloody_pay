@@ -16,6 +16,7 @@ public class VariableSettingDto {
     private String source;
     private String formula;
     private String label;
+    private VariableSettingGroupDto group;
     private String description;
     private Boolean referenced;
 }

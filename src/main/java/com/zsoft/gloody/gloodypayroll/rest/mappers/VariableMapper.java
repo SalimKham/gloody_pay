@@ -7,7 +7,7 @@ import org.mapstruct.*;
 
 import java.util.Objects;
 
-@Mapper
+@Mapper(uses = {VariableSettingGroupMapper.class})
 public interface VariableMapper {
     VariableSettingDto toDto(VariableSetting variableSetting);
     @BeanMapping(builder = @Builder(disableBuilder = true))
