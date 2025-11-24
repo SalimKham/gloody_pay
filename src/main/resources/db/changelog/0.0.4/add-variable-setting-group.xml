@@ -1,0 +1,44 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+>
+    <changeSet id="add-variable-setting-group" author="Salim Kham">
+        <createTable tableName="variable_setting_group">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="label" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="created_by" type="bigint"/>
+            <column name="updated_by" type="bigint"/>
+            <column name="updated_at" type="datetime"/>
+        </createTable>
+        <addColumn tableName="variable_setting">
+            <column name="group_id" type="bigint" afterColumn="label"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="variable_setting_group"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_variable_setting_group_to_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                 onUpdate="CASCADE"
+                                 onDelete="CASCADE"
+        />
+        <addForeignKeyConstraint baseTableName="variable_setting"
+                                 baseColumnNames="group_id"
+                                 constraintName="fk_variable_setting_to_variable_setting_group"
+                                 referencedTableName="variable_setting_group"
+                                 referencedColumnNames="id"
+                                 onUpdate="CASCADE"
+                                 onDelete="SET NULL"
+        />
+    </changeSet>
+</databaseChangeLog>

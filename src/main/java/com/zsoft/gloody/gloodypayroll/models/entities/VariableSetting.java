@@ -31,6 +31,10 @@ public class VariableSetting extends CompanySupport {
     @Column(name = "label")
     private String label;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private VariableSettingGroup group;
+
 
     @Column(name = "description")
     private String description;
