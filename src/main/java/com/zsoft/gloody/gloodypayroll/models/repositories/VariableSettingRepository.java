@@ -4,6 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.VariableSetting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
-public interface VariableSettingRepository extends JpaRepository<VariableSetting, Long> {
+public interface VariableSettingRepository extends JpaRepository<VariableSetting, Long>, JpaSpecificationExecutor<VariableSetting> {
     boolean existsByKeyAndCompanyAndIdNot(String key, Long company, Long id);
     boolean existsByKeyAndCompany(String key, Long company);
     void deleteBySource(String key);
