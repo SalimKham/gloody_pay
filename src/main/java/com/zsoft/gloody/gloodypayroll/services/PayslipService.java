@@ -605,7 +605,6 @@ public class PayslipService {
     /*    if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
             return ZERO;
         }*/
-        formula = formula.replaceAll("=", "==");
         formula = calculateFormulaVariables(formula);
         try {
             Pattern pattern = Pattern.compile(FUNCTION_REGEX);
