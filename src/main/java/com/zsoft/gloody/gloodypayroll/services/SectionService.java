@@ -65,6 +65,9 @@ public class SectionService extends CompanySupportService {
         if (Objects.nonNull(filter.query())) {
             specification = specification.and((root, q, cb) -> cb.like(cb.lower(cb.concat(root.get("identifier"), root.get("label"))), "%" + filter.query().toLowerCase() + "%"));
         }
+        if(Objects.equals(filter.hasBackPayment(), true)) {
+            specification = specification.and((root, query, cb) -> cb.isTrue(root.get("hasBackPayment")));
+        }
         if (Objects.nonNull(filter.categories()) && !filter.categories().isEmpty()) {
             specification = specification.and((root, query, cb) -> root.get("category").get("id").in(filter.categories()));
         }

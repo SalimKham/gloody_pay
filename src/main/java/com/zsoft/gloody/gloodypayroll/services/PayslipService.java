@@ -6,7 +6,6 @@ import com.zsoft.gloody.gloodypayroll.models.entities.CustomField;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
-import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.*;
@@ -40,6 +39,7 @@ import java.util.stream.DoubleStream;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.*;
+import static com.zsoft.gloody.gloodypayroll.utils.FormulaUtils.*;
 
 
 @Service
@@ -50,7 +50,6 @@ public class PayslipService {
     public static final String ATTRIBUTE_PREFIX = "TOT_";
     public static final String NATURE_PREFIX = "NTR_";
     public static final String CODE_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)|[A-Z][A-Z0-9_]{2,}";
-    public static final String FUNCTION_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)";
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
     private final ExpressionParser parser;
@@ -64,15 +63,6 @@ public class PayslipService {
     private final EmployeeMapper employeeMapper;
     private final BackPaymentMapper backPaymentMapper;
     private final CompanyMapper companyMapper;
-    // TODO CHECK IF THIS STILL NEEDED
-    public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
-        {
-            put(SectionNature.NOT_TAXABLE_CONTRIBUTORY, "NTC");
-            put(SectionNature.NOT_TAXABLE_NOT_CONTRIBUTORY, "NTNC");
-            put(SectionNature.TAXABLE_NOT_CONTRIBUTORY, "TNC");
-            put(SectionNature.TAXABLE_CONTRIBUTORY, "TC");
-        }
-    };
     private final EmployeeRepository employeeRepository;
     private final CompanyRepository companyRepository;
     private final BackPaymentsRepository backPaymentsRepository;
@@ -321,8 +311,7 @@ public class PayslipService {
             if (section == null) {
                 continue;
             }
-            boolean isInCategory = prefix.equals(ATTRIBUTE_PREFIX) ? section.getLabelKeys() != null && section.getLabelKeys().contains(label) :
-                    Objects.equals(label, SECTION_NATURE_ABBR.get(section.getNature()));
+            boolean isInCategory = prefix.equals(ATTRIBUTE_PREFIX) && section.getLabelKeys() != null && section.getLabelKeys().contains(label);
             if (!isInCategory) {
                 continue;
             }
@@ -428,14 +417,14 @@ public class PayslipService {
         elementDto.get().setRatePercent(section.isRatePercent());
         Map<String, Double> localRubricVariables = new HashMap<>(3);
         BigDecimal sectionValue;
-        BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, localRubricVariables, section.getNature());
+        BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, localRubricVariables);
         localRubricVariables.put(BASE, base.doubleValue());
         elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(3, RoundingMode.DOWN));
-        BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, localRubricVariables, section.getNature());
+        BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, localRubricVariables);
         localRubricVariables.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
         elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.DOWN));
         if (value == null) {
-            sectionValue = calculateSectionValue(section.getValueFormula(), value, localRubricVariables, section.getNature());
+            sectionValue = calculateSectionValue(section.getValueFormula(), value, localRubricVariables);
         } else {
             sectionValue = BigDecimal.valueOf(value);
         }
@@ -482,7 +471,8 @@ public class PayslipService {
                     }
                     return;
                 }
-                boolean hasOwnVariables = section.getVariables() != null && !section.getVariables().isEmpty();
+                elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
+          /*      boolean hasOwnVariables = section.getVariables() != null && !section.getVariables().isEmpty();
                 if (hasOwnVariables) {
 
                     LinkedHashMap<String, Object> currentVariables = new LinkedHashMap<>(dictionaryService().getAllVariables()); // first we need to save the current variables state
@@ -504,7 +494,7 @@ public class PayslipService {
                     dictionaryService().setAddElements(currentAddElement);
                 } else {
                     elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
-                }
+                }*/
                 if (dictionaryService().getAddElements()) {
                     addCalculatedElement(elementDto.get());
                 }
@@ -515,8 +505,8 @@ public class PayslipService {
     }
 
     private Period getFunctionPeriod(String functionName, String[] paramList) {
-        LocalDate startDate = null;
-        LocalDate endDate = null;
+        LocalDate startDate;
+        LocalDate endDate;
         int n = Integer.parseInt(paramList[1]);
         n = perRequestElements().getCurrentDate().getMonthValue() < 7 ? n + 1 : n;
         LocalDate targetYear = perRequestElements().getCurrentDate().withMonth(7).withDayOfMonth(1).minusYears(n);
@@ -600,30 +590,22 @@ public class PayslipService {
         }
         m.reset();
         while (m.find()) {
-                if (formula.contains("?")) {
-                    String condition = formula.substring(0, formula.indexOf("?"));
-                    String newCondition = condition.replaceAll("\\b" + m.group() + "\\b",   m.group() + "!= 0");
-                    formula = formula.replace(condition, newCondition);
-                }
-            if (dictionaryService().getAllVariables().containsKey(m.group()) || Objects.equals(m.group(), "BASE") || Objects.equals(m.group(), "RATE") ) {
-                if (!formula.contains("#" + m.group()) && !m.group().matches(FUNCTION_REGEX)) {
-                    formula = formula.replaceAll("\\b" + m.group() + "\\b", "#" + m.group());
-                }
-            }
+             formula = parseFormula(formula, m.group());
         }
         return  formula;
     }
 
-    private BigDecimal calculateSectionValue(String formula, Double value,   Map<String, Double> localRubricVariables , SectionNature nature) {
+    private BigDecimal calculateSectionValue(String formula, Double value,   Map<String, Double> localRubricVariables) {
         if (formula == null && value == null) {
             return ZERO;
         }
         if (formula == null || value != null) {
             return BigDecimal.valueOf(value);
         }
-        if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
+    /*    if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
             return ZERO;
-        }
+        }*/
+        formula = formula.replaceAll("=", "==");
         formula = calculateFormulaVariables(formula);
         try {
             Pattern pattern = Pattern.compile(FUNCTION_REGEX);
@@ -636,9 +618,7 @@ public class PayslipService {
             StandardEvaluationContext context = new StandardEvaluationContext(baseContext.getRootObject());
             context.setVariables(dictionaryService().getAllVariables());
             localRubricVariables.forEach(context::setVariable);
-            formula = formula.replaceAll("\\(BASE\\)", "(#BASE)" );
-            formula = formula.replaceAll("IRG\\(", "T(com.zsoft.gloody.gloodypayroll.utils.FormulaUtils).IRG(" );
-
+            formula = parseIrgFunction(formula);
             Expression expression = parser.parseExpression(formula);
             Object result =expression.getValue(context);
             if (result instanceof String) {
