@@ -1,7 +1,6 @@
 package com.zsoft.gloody.gloodypayroll.models.entities;
 
 import com.zsoft.gloody.gloodypayroll.models.entities.accounting.AccountingSettingAccount;
-import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionType;
 import com.zsoft.gloody.gloodypayroll.support.StringListConverter;
 import jakarta.persistence.*;
@@ -9,7 +8,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Formula;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SuperBuilder
@@ -59,9 +57,10 @@ public class Section extends CompanySupport {
     @ToString.Exclude
     private SectionCategory category;
 
-    @Enumerated(EnumType.STRING)
+
+ /*   @Enumerated(EnumType.STRING)
     @Column(name = "nature")
-    private SectionNature nature;
+    private SectionNature nature;*/
 
     @OneToOne(fetch = FetchType.LAZY)
     private AccountingSettingAccount accounting;
@@ -70,6 +69,9 @@ public class Section extends CompanySupport {
     @Column(name = "label_keys")
     private List<String> labelKeys;
 
+    @Column(name = "has_backpayment")
+    private boolean hasBackPayment = false;
+
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "parental_id")
@@ -77,11 +79,11 @@ public class Section extends CompanySupport {
     private Section parental;
 
 
-    @Builder.Default
+/*    @Builder.Default
     @OneToMany(targetEntity = SectionVariable.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_section_id", nullable = false)
     @ToString.Exclude
-    private List<SectionVariable> variables= new ArrayList<>();
+    private List<SectionVariable> variables= new ArrayList<>();*/
 
     @Basic(fetch = FetchType.LAZY)
     @Formula("""
