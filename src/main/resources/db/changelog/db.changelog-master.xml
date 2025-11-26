@@ -39,4 +39,14 @@
     <include file="0.0.4/add_column_seniority_order.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add-activity-sector-to-company.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/unset-employee-marital-status.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/update_maritalstatus-column-type.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-back-payment.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-custom-fields.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-handicap-column.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-seniority-years-variable.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/update_back_payments.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-payslip-close-table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/clear_salary_advance_renamed_to_loan.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-final-settlement-variables.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

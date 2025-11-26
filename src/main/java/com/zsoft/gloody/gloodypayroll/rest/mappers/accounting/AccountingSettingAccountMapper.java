@@ -4,7 +4,7 @@ import com.zsoft.gloody.gloodypayroll.models.entities.accounting.AccountingSetti
 import com.zsoft.gloody.gloodypayroll.rest.dto.accounting.AccountingSettingAccountDTO;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface AccountingSettingAccountMapper  {
 
     AccountingSettingAccountDTO toDto(AccountingSettingAccount accountingSettingAccount);

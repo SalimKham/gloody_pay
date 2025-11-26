@@ -13,6 +13,8 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @SuperBuilder
@@ -41,8 +43,10 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     @Column(name = "employee_title")
     private EmployeeTitle employeeTitle;
-    @Column(name = "family_situation")
+    @Column(name = "handicap")
+    private boolean disabled;
     @Enumerated(EnumType.STRING)
+    @Column(name = "family_situation")
     private MaritalStatus maritalStatus;
     @Column(name = "number_of_children")
     private Integer numberOfChildren;
@@ -60,7 +64,7 @@ public class Employee {
     @Column(name = "bank_name")
     private String bankName;
     @Column(name = "account_number")
-    private String iban;
+    private String accountNumber;
 
     @Column(name = "entered_date")
     private LocalDate hireDate;
@@ -101,7 +105,13 @@ public class Employee {
     @Builder.Default
     private Long company = 1L;
 
+    @Builder.Default
+    @OneToMany(targetEntity = CustomField.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "employee_id", nullable = false)
+    @ToString.Exclude
+    private List<CustomField> customFields = new ArrayList();
+
     public String getFullName() {
-        return StringUtils.capitalize(Objects.requireNonNullElse(firstName, "")).concat(" ").concat(StringUtils.capitalize(Objects.requireNonNullElse(lastName, "")));
+        return String.format("%s %s", Objects.requireNonNullElse(this.lastName, "").toUpperCase(), StringUtils.capitalize(Objects.requireNonNullElse(this.firstName, "").toLowerCase()));
     }
 }

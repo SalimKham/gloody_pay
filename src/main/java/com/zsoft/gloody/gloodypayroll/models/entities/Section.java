@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Formula;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuperBuilder
@@ -75,10 +76,12 @@ public class Section extends CompanySupport {
     @ToString.Exclude
     private Section parental;
 
+
+    @Builder.Default
     @OneToMany(targetEntity = SectionVariable.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payslip_section_id", nullable = false)
     @ToString.Exclude
-    private List<SectionVariable> variables;
+    private List<SectionVariable> variables= new ArrayList<>();
 
     @Basic(fetch = FetchType.LAZY)
     @Formula("""

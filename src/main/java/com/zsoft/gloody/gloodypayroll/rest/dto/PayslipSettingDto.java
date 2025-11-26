@@ -27,8 +27,7 @@ public class PayslipSettingDto implements Cloneable{
     private PayslipRate rate = PayslipRate.DAILY;
     @Builder.Default
     private boolean showIntermediate = false;
-    @Builder.Default
-    private boolean showZero= true;
+    private Boolean showZero;
 
     private LocalDate paymentDate = LocalDate.now();
     private boolean closed;

@@ -2,7 +2,6 @@ package com.zsoft.gloody.gloodypayroll.rest.dto.accounting;
 
 import lombok.*;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Builder
@@ -13,7 +12,7 @@ import java.util.Set;
 @ToString
 public class AccountingSettingDTO  {
     private Long id;
-    private Set<AccountingSettingGroupDTO> groups = new HashSet<>();
+    private Set<AccountingSettingGroupDTO> groups = null;
     private Double debitMonthlyTotal;
     private Double creditMonthlyTotal;
 }

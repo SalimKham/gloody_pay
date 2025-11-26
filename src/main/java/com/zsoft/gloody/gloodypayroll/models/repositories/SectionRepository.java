@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.models.repositories;
 
 import com.zsoft.gloody.gloodypayroll.models.beans.SectionMapEntry;
 import com.zsoft.gloody.gloodypayroll.models.entities.Section;
+import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -32,10 +34,16 @@ public interface SectionRepository extends JpaRepository<Section, Long>, JpaSpec
 
     Boolean existsByCodeAndCompany(String code, Long company_id);
 
-    @Query("SELECT s FROM Section  s WHERE s.code LIKE :code AND s.company = :companyId")
+    @Query("SELECT s FROM Section  s WHERE s.code = :code AND s.company = :companyId")
     Optional<Section> findByCodeAndCompany(@Param("code")  String  code, @Param("companyId") Long CompanyId);
 
     boolean existsByCode(String code);
 
     void deleteByCode(String code);
+
+    @Query("""
+            SELECT s.code, s FROM Section s WHERE s.company = :company_id AND s.code IN :codes
+            """)
+    List<Tuple> getSectionsTitles(@Param("codes") Collection<String> sectionCodes, @Param("company_id") Long companyId);
+
 }

@@ -10,6 +10,8 @@ import lombok.*;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -26,6 +28,7 @@ public class EmployeeDto {
     private String firstName;
     private String middleName;
     private String title;
+    private boolean disabled;
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     private Integer numberOfChildren;
@@ -35,7 +38,7 @@ public class EmployeeDto {
     private String socialSecurity;
     private String paymentMode;
     private String bankName;
-    private String iban;
+    private String accountNumber;
     private LocalDate hireDate;
     private LocalDate birthDate;
     private LocalDate seniority_date;
@@ -48,10 +51,18 @@ public class EmployeeDto {
     private String affiliate;
     private String office;
     private Integer seniorityOrderNumber;
-    private Double baseSalary;
+    @Builder.Default
+    private Double baseSalary = 0d;
     private String remunerationType;
     @NotNull
     private Long company;
+    @Builder.Default
+    List<CustomFieldDto> customFields  = new ArrayList();
+
+
+    public Double getBaseSalary() {
+        return Objects.requireNonNullElse(baseSalary, 0d);
+    }
 
     @Override
     public boolean equals(Object o) {

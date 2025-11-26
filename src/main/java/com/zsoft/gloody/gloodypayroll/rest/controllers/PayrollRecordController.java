@@ -37,6 +37,12 @@ public class PayrollRecordController {
         return  ResponseEntity.ok().build();
     }
 
+    @PostMapping("generate/payroll_transfer")
+    public ResponseEntity<Void> generatePayrollJournal(@RequestBody PayrollTransferPayloadDTO payload) {
+        recordService.generatePayrollTransfer(payload );
+        return  ResponseEntity.ok().build();
+    }
+
     @GetMapping("generate/das_details/{year}")
     public ResponseEntity<Void> generateDasDetails(@PathVariable int year) {
         recordService.generateDasDetails(year);
@@ -44,8 +50,8 @@ public class PayrollRecordController {
     }
 
     @GetMapping("generate/das_header/{year}")
-    public ResponseEntity<Void> generateDasHeader(@PathVariable int year, @RequestParam("activity_sector") String activitySector,  @RequestParam("address") String address) {
-        recordService.generateDasHeader(year, activitySector, address);
+    public ResponseEntity<Void> generateDasHeader(@PathVariable int year, @RequestParam("affiliate_name") String affiliateName, @RequestParam("activity_sector") String activitySector,  @RequestParam("address") String address) {
+        recordService.generateDasHeader(year, affiliateName,  activitySector, address);
         return  ResponseEntity.ok().build();
     }
 

@@ -1,10 +1,9 @@
 package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipDetailDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipElementDto;
-import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
+import com.zsoft.gloody.gloodypayroll.rest.dto.*;
+import com.zsoft.gloody.gloodypayroll.services.PayslipCloseService;
 import com.zsoft.gloody.gloodypayroll.services.PayslipService;
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,10 +15,12 @@ import java.util.Set;
 @RequestMapping("/api/payslip")
 public class PayslipController {
     private final PayslipService payslipService;
+    private final PayslipCloseService closeService;
+    private final PayslipCloseService payslipCloseService;
 
     @PostMapping("/print")
-    public ResponseEntity<String> print(@RequestBody PayslipCalculatePayload payload) {
-        String result = payslipService.print(payload);
+    public ResponseEntity<PayslipPrintDTO> print(@RequestBody PayslipCalculatePayload payload) {
+        PayslipPrintDTO result = payslipService.print(payload);
         return ResponseEntity.ok().body(result);
     }
 
@@ -29,7 +30,7 @@ public class PayslipController {
             @RequestBody PayslipCalculatePayload payload
     ) {
         try {
-            CalculatedPayslip result = payslipService.calculate(payload, null, true, true);
+            CalculatedPayslip result = payslipService.calculate(payload, null, true);
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,23 +47,7 @@ public class PayslipController {
         return ResponseEntity.ok().body(result);
     }
 
-    @Setter
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class PayslipCalculatePayload {
-        private Long resourceId;
-        private Long contractId;
-        LocalDate month;
-        private double holidaysCount;
-        private PayslipSettingDto tempTemplate;
 
-        public void setValues(Long resourceId, Long contractId, LocalDate month) {
-            this.resourceId = resourceId;
-            this.contractId = contractId;
-            this.month = month;
-        }
-    }
 
     public record CalculatedPayslip(PayslipSettingDto template, Set<PayslipElementDto> calculatedElements) {
     }
@@ -72,7 +57,18 @@ public class PayslipController {
             @RequestBody Set<Long> resourceIds,
             @PathVariable LocalDate month
     ) {
-        return ResponseEntity.ok().body( payslipService.closePayslips(resourceIds, month ));
+        return ResponseEntity.ok().body( closeService.closePayslips(resourceIds, month ));
+    }
+
+    @GetMapping("/re_open/{month}")
+    public ResponseEntity<Void> reOpenPayslip(
+            @PathVariable LocalDate month,
+            @RequestParam(name = "resource_id") Long resourceId,
+            @RequestParam(name = "contract_id") Long contractId,
+            @RequestParam(name = "template_id", required = false) Long templateId
+    ) {
+        closeService.reOpenPayslip( month, resourceId, contractId, templateId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/close/fetch_closed/{month}")
@@ -80,5 +76,12 @@ public class PayslipController {
             @PathVariable LocalDate month
     ) {
         return ResponseEntity.ok().body(payslipService.getClosedPayslips(month));
+    }
+
+    @GetMapping("/close/fetch_closed_result/{month}")
+    public ResponseEntity<PayslipCloseResultDto> getPayslipCloseResults(
+            @PathVariable LocalDate month
+    ) {
+        return ResponseEntity.ok().body(payslipCloseService.getPayslipCloseResult(month));
     }
 }

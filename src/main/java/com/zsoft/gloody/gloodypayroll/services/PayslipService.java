@@ -2,20 +2,18 @@ package com.zsoft.gloody.gloodypayroll.services;
 
 import com.zsoft.gloody.gloodypayroll.configs.RequestContext;
 import com.zsoft.gloody.gloodypayroll.exceptions.ApiRuntimeException;
+import com.zsoft.gloody.gloodypayroll.models.entities.CustomField;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
-import com.zsoft.gloody.gloodypayroll.models.entities.PayslipSetting;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
 import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
-import com.zsoft.gloody.gloodypayroll.models.repositories.CompanyRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.EmployeeRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.HRDataRepository;
-import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingRepository;
+import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.*;
+import com.zsoft.gloody.gloodypayroll.rest.dto.section.SectionDto;
+import com.zsoft.gloody.gloodypayroll.rest.mappers.BackPaymentMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.CompanyMapper;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.EmployeeMapper;
-import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import com.zsoft.gloody.gloodypayroll.utils.DateUtils;
 import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
@@ -44,6 +42,7 @@ import java.util.stream.DoubleStream;
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.*;
 
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -57,13 +56,13 @@ public class PayslipService {
     private final SpringTemplateEngine templateEngine;
     private final ScriptEngine engine;
     private final PayslipSettingRepository payslipSettingRepository;
-    private final PayslipSettingMapper payslipSettingMapper;
     private static final List<String> defaultFunctionCodes = List.of("irg(base)", "int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
     private final PayslipSettingReadOnlyService payslipSettingService;
     private final HRDataRepository hrDataRepository;
     private final VariableService variableService;
     private final EmployeeMapper employeeMapper;
+    private final BackPaymentMapper backPaymentMapper;
     private final CompanyMapper companyMapper;
     // TODO CHECK IF THIS STILL NEEDED
     public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
@@ -75,84 +74,12 @@ public class PayslipService {
         }
     };
     private final EmployeeRepository employeeRepository;
-    private final PayslipDraftService payslipDraftService;
     private final CompanyRepository companyRepository;
+    private final BackPaymentsRepository backPaymentsRepository;
 
 
     public Set<Long> getClosedPayslips(LocalDate month) {
         return payslipSettingRepository.getAllClosedPayslipResources(month.withDayOfMonth(1));
-    }
-    public Set<Long> closePayslips(Set<Long> resourceIds, LocalDate month) {
-        log.info("CLOSING PAYSLIPS FOR EMPLOYEES {} | MONTH {}", resourceIds, month);
-        List<PayslipSettingDto> result = new ArrayList<>();
-        Set<Long> failed = new HashSet<>();
-        month = month.withDayOfMonth(1);
-        if (resourceIds.isEmpty()) {
-            return Collections.emptySet();
-        }
-        Map<Long, List<Long>> contracts = loadContracts(resourceIds, month);
-        if (contracts.isEmpty()) {
-            return Collections.emptySet();
-        }
-        if (contracts.size() > 20) {
-            RequestContext.initTemplates();
-        }
-        RequestContext.initMonthlyValues(contracts.keySet());
-        this.initFunctionElements(contracts.keySet());
-        Set<Long> closedContractIds = new HashSet<>();
-        Map<Long, Employee> employeeMap = employeeRepository.findAllById(contracts.keySet()).stream().collect(Collectors.toMap(Employee::getId, em -> em));
-        PayslipController.PayslipCalculatePayload payload = new PayslipController.PayslipCalculatePayload();
-        // todo ignore only closed, for draft once they need to be marked as closed
-        Set<Long> closedIds = payslipSettingRepository.getAllClosedPayslipResources(month);
-       // Set<Long> draftIds = payslipSettingRepository.getAllDraftPayslipResources(month);
-        resourceIds.removeAll(closedIds);
-        for (Long resourceId : resourceIds) {
-            try {
-                if (contracts.containsKey(resourceId)) {
-                    Set<Long> resourceContracts = new HashSet<>(contracts.get(resourceId));
-                    for (Long contractId : resourceContracts) {
-                        payload.setValues(resourceId, contractId, month);
-                        PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, employeeMap.getOrDefault(resourceId, null), false, false);
-                        PayslipSettingDto payslip = calculatedPayslip.template();
-                        Long payslipId = payslip.getId();
-                        boolean isDefault = payslip.isTemplate() || payslip.isByDefault();
-                        if (isDefault) {
-                            payslip = (PayslipSettingDto) payslip.clone();
-                            payslip.setId(null);
-                        }
-                        Map<String, PayslipElementDto> calculatedElementsMap = calculatedPayslip.calculatedElements() != null ? calculatedPayslip.calculatedElements().stream().collect(Collectors.toMap(PayslipElementDto::getCode, el -> el)) : Collections.emptyMap();
-                        payslip.setElements(payslip.getElements().stream().peek(e -> {
-                            PayslipElementDto element = calculatedElementsMap.getOrDefault(e.getSection(), null);
-                            calculatedElementToTemplateElement(e, element);
-                            e.setPayslipSettingId(isDefault ? null : payslipId);
-                            e.setId(isDefault ? null : e.getId());
-                        }).toList());
-
-                        payslip.setClosed(true);
-                        payslip.setTemplate(false);
-                        payslip.setDraft(false);
-                        payslip.setContract(ContractDto.builder().id(contractId).build());
-                        payslip.setByDefault(false);
-                        payslip.setName(String.format("%s-%s-%s", resourceId, contractId, month));
-                        payslip.setPaymentDate(month);
-                        payslip.setEmployee(EmployeeDto.builder().id(resourceId).build());
-                        if (payslip.getPayslipDetail() == null) {
-                            payslip.setPayslipDetail(employeeMapper.employeeToPayslipDetails(employeeMap.getOrDefault(resourceId, null), contractId, month));
-                        }
-                        result.add(payslip);
-                        closedContractIds.add(contractId);
-                    }
-                }
-            } catch (Exception e) {
-                failed.add(resourceId);
-            }
-        }
-        RequestContext.clear();
-        List<PayslipSetting> closedPayslips = payslipSettingRepository.saveAll(result.stream().map(payslipSettingMapper::toEntity).toList());
-        hrDataRepository.deleteAllByVariableAndContractIdInAndMonth("TEMPLATE", closedContractIds, month);
-        hrDataRepository.bulkInsertClosedTemplateIds(month, closedPayslips.stream().map(PayslipSetting::getId).toList());
-        payslipDraftService.deleteAllDraftedByContractAndMonth(closedContractIds, month);
-        return failed;
     }
 
 
@@ -172,22 +99,34 @@ public class PayslipService {
         }
     }
 
-    public String print(PayslipController.PayslipCalculatePayload payload) {
-        EmployeeDto employeeDto = employeeRepository.findById(payload.getResourceId()).map(employeeMapper::toDto).orElse(null);
-        if (employeeDto == null) {
-            throw new ApiRuntimeException("error.employee.required");
+    public PayslipPrintDTO print(PayslipCalculatePayload payload) {
+        try {
+            EmployeeDto employeeDto = employeeRepository.findById(payload.getResourceId()).map(employeeMapper::toDto).orElse(null);
+            if (employeeDto == null) {
+                throw new ApiRuntimeException("error.employee.required");
+            }
+            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false);
+            if (calculatedPayslip == null || calculatedPayslip.template() == null) {
+                return null;
+            }
+            CompanyDto companyDto = companyRepository.findById(SecurityUtils.getCurrentCompanyId()).map(companyMapper::toDto).orElse(null);
+            Locale locale = Locale.getDefault();
+            Context context = new Context(locale);
+            context.setVariable("locale", locale);
+            context.setVariable("elements", calculatedPayslip.calculatedElements());
+            templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
+            String content = templateEngine.process("payslip/template", context);
+            PayslipPrintDTO result = new PayslipPrintDTO();
+            result.setContent(content);
+            if (Objects.nonNull(calculatedPayslip.template())) {
+                result.setShowIntermediate(calculatedPayslip.template().getShowZero());
+                result.setShowIntermediate(calculatedPayslip.template().isShowIntermediate());
+            }
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false, false);
-        if (calculatedPayslip == null || calculatedPayslip.template() == null) {
-            return null;
-        }
-        CompanyDto companyDto  = companyRepository.findById(SecurityUtils.getCurrentCompanyId()).map(companyMapper::toDto).orElse(null);
-        Locale locale = Locale.getDefault();
-        Context context = new Context(locale);
-        context.setVariable("locale", locale);
-        context.setVariable("elements", calculatedPayslip.calculatedElements());
-        templateHelper.getPayrollData(calculatedPayslip.template().getPayslipDetail(), employeeDto, locale, companyDto).forEach(context::setVariable);
-        return templateEngine.process("payslip/template", context);
+        return null;
     }
 
     private PayslipSettingDto mergeTempTemplate(PayslipSettingDto template, PayslipSettingDto tempTemplate) {
@@ -197,7 +136,7 @@ public class PayslipService {
         try {
             PayslipSettingDto newTemplate = (PayslipSettingDto) template.clone();
             newTemplate.setRate(Objects.requireNonNullElse(tempTemplate.getRate(), template.getRate()));
-            newTemplate.setShowZero(tempTemplate.isShowZero());
+            newTemplate.setShowZero(Objects.requireNonNullElse(tempTemplate.getShowZero(), template.getShowZero()));
             if (tempTemplate.getElements() != null && !tempTemplate.getElements().isEmpty()) {
                 newTemplate.setElements(tempTemplate.getElements());
             }
@@ -208,46 +147,19 @@ public class PayslipService {
 
     }
 
-    private Map<Long, List<Long>> loadContracts(Set<Long> resourceIds, LocalDate month) {
-        if (resourceIds == null || resourceIds.isEmpty()) {
-            return Collections.emptyMap();
+
+    private double getCustomFieldValue(String source, Employee employee) {
+        if (source == null || source.isEmpty()) {
+            return 0d;
         }
-        return hrDataRepository.getContractIdsByMonthAndResourceIdIn(month.withDayOfMonth(1), resourceIds)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(0, Long.class),
-                        Collectors.mapping(
-                                tuple -> tuple.get(1, Long.class),
-                                Collectors.toCollection(ArrayList::new)
-                        )
-                ));
+        if (employee == null || employee.getCustomFields() == null) {
+            return 0d;
+        }
+        CustomField customField = employee.getCustomFields().stream().filter(c -> Objects.equals(c.getCode(), source)).findFirst().orElse(null);
+        return Objects.nonNull(customField) ? customField.getValue() : 0d;
     }
 
-    public LinkedHashSet<PayslipElementDto> loadDraftedIfPresent(PayslipController.PayslipCalculatePayload payload, Map<String, Double> monthlyValues, PayslipSettingDto payslipTemplate, boolean isTemporary) {
-        return null;
-        // todo uncomment this later
-      /*  LinkedHashSet<PayslipElementDto> calculatedElements = new LinkedHashSet<>();
-        if (payslipTemplate.isClosed()) {
-            payslipTemplate.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
-        } else {
-            if (isTemporary) {
-                return null;
-            }
-            if (!monthlyValues.containsKey("DRAFT_ID")) {
-                return null;
-            }
-            Long draftId = monthlyValues.get("DRAFT_ID").longValue();
-            PayslipSettingDto template = getTemplate(draftId, true, false);
-            if (template == null) {
-                return null;
-            }
-            template.getElements().forEach(el -> calculatedElements.add(templateElementToCalculatedElement(el)));
-        }
-
-        return calculatedElements;*/
-    }
-
-    private Map<String, Double> getMonthlyValues(PayslipController.PayslipCalculatePayload payload, Employee employee) {
+    private Map<String, Double> getMonthlyValues(PayslipCalculatePayload payload, Employee employee) {
         initDictionaryService();
         LocalDate month = Objects.requireNonNullElse(payload.getMonth(), LocalDate.now()).withDayOfMonth(1);
         Map<String, Double> monthlyValues = RequestContext.monthlyValues() != null && RequestContext.monthlyValues().containsKey(payload.getContractId()) ? RequestContext.monthlyValues().get(payload.getContractId())
@@ -265,7 +177,11 @@ public class PayslipService {
             try {
                 if (!variables.containsKey(variable.getKey())) {
                     if (variable.getSource() != null) {
-                        variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), variable.getFormula()  == null ? 0 :  Double.parseDouble(variable.getFormula() )));
+                        if (variable.getSource().contains("CUSTOM_FIELD")) {
+                            variables.put(variable.getKey(), getCustomFieldValue(variable.getSource(), employee));
+                        } else {
+                            variables.put(variable.getKey(), monthlyValues.getOrDefault(variable.getSource(), variable.getFormula() == null ? 0 : Double.parseDouble(variable.getFormula())));
+                        }
                         monthlyValues.remove(variable.getSource());
                     } else {
                         variables.put(variable.getKey(), Double.valueOf(variable.getFormula()));
@@ -284,17 +200,19 @@ public class PayslipService {
         return variables;
     }
 
-    private void initPerRequestElements(PayslipSettingDto template, Long resourceId) {
+    private void initPerRequestElements(PayslipCalculatePayload payload, PayslipSettingDto template, Long resourceId) {
         perRequestElements().setCalculatedElements(new TreeSet<>((o1, o2) -> Integer.compare(indexOf(o1), indexOf(o2))));
         perRequestElements().setSettingsElements(template.getElements());
         perRequestElements().setShowIntermediate(template.isShowIntermediate());
-        perRequestElements().setShowZero(template.isShowZero());
+        perRequestElements().setShowZero(template.getShowZero());
         perRequestElements().setEmployeeId(template.getEmployee().getId());
         perRequestElements().setCurrentDate(template.getPaymentDate());
+        perRequestElements().setAdjustBackPayments(payload.isAdjustBackPayments());
+        perRequestElements().setResetElementValues(payload.isReCalculate());
         if (RequestContext.functionElements() == null) {
             this.initFunctionElements(Set.of(resourceId));
         }
-        RequestContext.functionElements().getOrDefault(resourceId, Collections.emptyList());
+        perRequestElements().setFunctionElements(RequestContext.functionElements().getOrDefault(resourceId, Collections.emptyList()));
     }
 
     public void initFunctionElements(Set<Long> resourceIds) {
@@ -306,24 +224,7 @@ public class PayslipService {
         RequestContext.initFunctionElements(resourceIds, inFunctionsCodes);
     }
 
-    private boolean isTemp(PayslipController.PayslipCalculatePayload payload, PayslipSettingDto template) {
-        if (payload.getTempTemplate() == null) {
-            return false;
-        }
-        if (payload.getTempTemplate().getId() != null) {
-            return true;
-        }
-        if (!Objects.equals(template.isShowZero(), payload.getTempTemplate().isShowZero())) {
-            return true;
-        }
-
-        if (!Objects.equals(template.getRate(), payload.getTempTemplate().getRate())) {
-            return true;
-        }
-        return payload.getTempTemplate().getElements() != null && !payload.getTempTemplate().getElements().isEmpty();
-    }
-
-    public PayslipController.CalculatedPayslip calculate(PayslipController.PayslipCalculatePayload payload, Employee employee, boolean saveAsDraft, boolean clearContext) {
+    public PayslipController.CalculatedPayslip calculate(PayslipCalculatePayload payload, Employee employee, boolean clearContext) {
 
         try {
 
@@ -338,28 +239,20 @@ public class PayslipService {
             if (payload.getTempTemplate() != null && payload.getTempTemplate().getId() != null) {
                 templateId = payload.getTempTemplate().getId();
             }
-            PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false, false) : getTemplate(templateId, false, true);
+            PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false) : getTemplate(templateId, true);
             if (template == null) {
                 return null;
             }
             dictionaryService().setRate(template.getRate());
-            boolean isTemporary = isTemp(payload, template);
-            LinkedHashSet<PayslipElementDto> calculatedElements = loadDraftedIfPresent(payload, monthlyValues, template, isTemporary);
-            if (calculatedElements != null) {
-                return new PayslipController.CalculatedPayslip(template, calculatedElements);
-            }
             initRequestContext();
             template = mergeTempTemplate(template, payload.getTempTemplate());
+            setBackPayments(template, payload.getContractId(), payload.getMonth().withDayOfMonth(1), payload.getBackPayment());
             engine.setBindings(new SimpleBindings(dictionaryService().getAllVariables()), ScriptContext.GLOBAL_SCOPE);
             dictionaryService().setAddElements(true);
-            initPerRequestElements(template, payload.getResourceId());
-
+            initPerRequestElements(payload, template, payload.getResourceId());
             for (PayslipSettingElementDto elementDto : template.getElements()) {
                 calculateSection(elementDto);
             }
-          /*  if (saveAsDraft && !isTemporary) {
-                payslipDraftService.saveAsDraftAsync(SecurityUtils.getCurrentCompanyId(), template, perRequestElements().getCalculatedElements(), payload.getContractId(), payload.getResourceId(), employee, month);
-            }*/
             return new PayslipController.CalculatedPayslip(template, perRequestElements().getCalculatedElements());
         } finally {
             if (clearContext) {
@@ -367,6 +260,14 @@ public class PayslipService {
             }
         }
 
+    }
+
+    private void resetValues(PayslipSettingElementDto elementDto) {
+        if (perRequestElements().isResetElementValues()) {
+            elementDto.setValue(null);
+            elementDto.setBaseValue(null);
+            elementDto.setRateValue(null);
+        }
     }
 
     private int indexOf(PayslipElementDto elementDto) {
@@ -424,18 +325,21 @@ public class PayslipService {
                 continue;
             }
             PayslipElementDto el = calculateSection(element);
+            if (Objects.isNull(el)) {
+                return;
+            }
             if (el.isTotal() || section.isSalary()) {
                 continue;
             }
-            updateTotal(prefix, label, el.getGain(), el.getDeduction());
+            updateTotal(prefix, label, section.isGain(), BigDecimal.valueOf(dictionaryService().findDoubleValue(section.getCode())));
         }
-        updateTotal(prefix, label, BigDecimal.ZERO, BigDecimal.ZERO);
+        updateTotal(prefix, label, true, BigDecimal.ZERO);
     }
 
-    private void updateTotal(String prefix, String label, BigDecimal gain, BigDecimal deduction) {
+    private void updateTotal(String prefix, String label, boolean gain, BigDecimal value) {
         String key = String.format(prefix + "%s", label);
         BigDecimal recentTotal = BigDecimal.valueOf(dictionaryService().findDoubleValue(key));
-        dictionaryService().setVariable(key, recentTotal.add((gain != null ? gain : BigDecimal.ZERO)).subtract((deduction != null ? deduction : BigDecimal.ZERO)));
+        dictionaryService().setVariable(key, gain ? recentTotal.add(value) : recentTotal.subtract(value));
     }
 
     private PayslipElementDto getTotalElement(String label) {
@@ -467,6 +371,7 @@ public class PayslipService {
                     return alreadyExistsElement;
                 }
             }
+            resetValues(element);
             return calculateSection(element.getSection(), element.getLabel(), element.getBaseValue(), element.getRateValue(), element.getValue());
         } catch (Exception e) {
             log.error("ERROR WHILE CALCULATING ELEMENT {}", element.getSection(), e);
@@ -479,12 +384,34 @@ public class PayslipService {
                 (!perRequestElements().isShowZero() && element.isZero());
     }
 
+    private void adjustBackPayments(PayslipSettingElementDto element, PayslipElementDto dto) {
+
+        if (Objects.isNull(element) || Objects.isNull(element.getBackPayments()) || element.getBackPayments().isEmpty()) {
+            return;
+        }
+        double backPayments = element.getBackPayments().stream().mapToDouble(BackPaymentDto::getValue).sum();
+        double currentValue = dictionaryService().findDoubleValue(element.getSection());
+        if (!element.isFix() || perRequestElements().isAdjustBackPayments()) {
+            dto.setValue(currentValue + backPayments);
+        }
+        if (perRequestElements().isAdjustBackPayments() && !dto.isTotal()) {
+            dictionaryService().setVariable(element.getSection(), currentValue + backPayments);
+        }
+
+    }
+
     public void addCalculatedElement(PayslipElementDto element) {
         EMPTY_SETTING_ELEMENT.setSection(element.getCode());
         if (!perRequestElements().getSettingsElements().contains(EMPTY_SETTING_ELEMENT)) {
             return;
         }
+        PayslipSettingElementDto settingElementDto = perRequestElements().getSettingsElements().stream().filter(el -> el.getSection().equals(element.getCode())).findFirst().orElse(null);
+        if (settingElementDto == null) {
+            return;
+        }
+        adjustBackPayments(settingElementDto, element);
         if (!isHidden(element)) {
+            element.setBackPayments(settingElementDto.getBackPayments());
             perRequestElements().getCalculatedElements().add(element);
         }
     }
@@ -501,15 +428,16 @@ public class PayslipService {
         BigDecimal sectionValue;
         BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context, section.getNature());
         context.put(BASE, base.doubleValue());
-        elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(2, RoundingMode.HALF_UP));
+        elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(3, RoundingMode.DOWN));
         BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context, section.getNature());
         context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
-        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(2, RoundingMode.HALF_UP));
+        elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.DOWN));
         if (value == null) {
             sectionValue = calculateSectionValue(section.getValueFormula(), value, context, section.getNature());
         } else {
             sectionValue = BigDecimal.valueOf(value);
         }
+
         if (sectionValue == null) {
             return elementDto.get();
         }
@@ -590,7 +518,7 @@ public class PayslipService {
         int n = Integer.parseInt(paramList[1]);
         n = perRequestElements().getCurrentDate().getMonthValue() < 7 ? n + 1 : n;
         LocalDate targetYear = perRequestElements().getCurrentDate().withMonth(7).withDayOfMonth(1).minusYears(n);
-        if (functionName.contains("FROM")) {
+        if (functionName.contains("APD")) {
             int nbrOfMonths = Integer.parseInt(paramList[2]);
             startDate = targetYear;
             endDate = startDate.plusMonths(nbrOfMonths).minusMonths(1);
@@ -618,11 +546,9 @@ public class PayslipService {
                 return 0.0;
             }
             DoubleStream values = perRequestElements().getFunctionElements()
-                    .stream().filter(el -> el.code().equals(paramList[0]) &&
-                            el.date().isBefore(period.end()) &&
-                            !el.date().isBefore(period.start().withDayOfMonth(1)))
+                    .stream().filter(el -> el.code().equals(paramList[0]) && DateUtils.isDateBetween(el.date(), period.start(), period.end()))
                     .mapToDouble(PayslipFunctionElement::value);
-            if (functionName.contains("AVRG")) {
+            if (functionName.contains("MOY")) {
                 return values.average().orElse(0.0);
             } else if (functionName.contains("MAX")) {
                 return values.max().orElse(0.0);
@@ -714,10 +640,10 @@ public class PayslipService {
         }
     }
 
-    public PayslipDetailDto getPayslipDetails(PayslipController.PayslipCalculatePayload payload) {
+    public PayslipDetailDto getPayslipDetails(PayslipCalculatePayload payload) {
         if (payslipSettingRepository.isClosedPayslip(payload.getMonth().withDayOfMonth(1), payload.getContractId())) {
             Long templateId = hrDataRepository.findTopHrMonthlyDataByVariableAndContractIdAndMonth("TEMPLATE", payload.getContractId(), payload.getMonth().withDayOfMonth(1)).map(HRMonthlyData::getValue).orElse(-1d).longValue();
-            PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false, false) : getTemplate(templateId, false, true);
+            PayslipSettingDto template = templateId != -1 ? getTemplate(templateId, false) : getTemplate(templateId, true);
             if (template == null) {
                 return null;
             }
@@ -729,16 +655,35 @@ public class PayslipService {
         return employeeMapper.employeeToPayslipDetails(employee, payload.getContractId(), payload.getMonth().withDayOfMonth(1));
     }
 
-    private PayslipSettingDto getTemplate(Long id, boolean draft, boolean isDefault) {
-        if (!draft) {
-            if (isDefault) {
-                return RequestContext.defaultTemplate() != null ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
-            } else {
-                return RequestContext.templates() != null && RequestContext.templates().containsKey(id) ? RequestContext.templates().get(id) : payslipSettingService.findById(id).orElse(null);
-            }
+    private PayslipSettingDto getTemplate(Long id, boolean isDefault) {
+
+        if (isDefault) {
+            return RequestContext.defaultTemplate() != null ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
         } else {
-            return payslipSettingService.findDraftById(id).orElse(null);
+            return RequestContext.templates() != null && RequestContext.templates().containsKey(id) ? RequestContext.templates().get(id) : payslipSettingService.findById(id).orElse(null);
         }
+
+    }
+
+
+    private void setBackPayment(PayslipSettingDto template, BackPaymentDto backPaymentDto) {
+        if (template == null || template.getElements() == null || backPaymentDto == null) {
+            return;
+        }
+        template.getElements().forEach(element -> element.setBackPayments(null));
+        template.getElements().stream().filter(el -> Objects.equals(el.getSection(), backPaymentDto.getSectionCode())).forEach(element -> element.setBackPayments(List.of(backPaymentDto)));
+    }
+
+    public void setBackPayments(PayslipSettingDto template, Long contractId, LocalDate month, BackPaymentDto backPaymentDto) {
+        if (template == null || template.getElements() == null) {
+            return;
+        }
+        setBackPayment(template, backPaymentDto);
+        Map<String, List<BackPaymentDto>> backPayments = backPaymentsRepository.findAllByContractIdAndMonthAndSectionCodeIsNotNullAndSourceIsNotNull(contractId, month).stream().map(backPaymentMapper::toDto).collect(Collectors.groupingBy(BackPaymentDto::getSectionCode));
+        if (backPayments.isEmpty()) {
+            return;
+        }
+        template.getElements().forEach(element -> element.setBackPayments(backPayments.getOrDefault(element.getSection(), null)));
     }
 
 }
