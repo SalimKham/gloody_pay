@@ -237,7 +237,8 @@ public class PayrollJournalService {
             identificationRow.getCell(cellNum).setCellValue(Objects.requireNonNullElse(employee.getIdentification(), ""));
             lastNameRow.getCell(cellNum).setCellValue(Objects.requireNonNullElse(employee.getLastName(), ""));
             firstNameRow.getCell(cellNum).setCellValue(Objects.requireNonNullElse(employee.getFirstName(), ""));
-            MaritalStatusRow.getCell(cellNum).setCellValue(Objects.nonNull(employee.getMaritalStatus()) ? getMaritalStatus(employee.getMaritalStatus()) : "");
+            String maritalStatus = Objects.nonNull(employee.getMaritalStatus()) ? getMaritalStatus(employee.getMaritalStatus()) : "";
+            MaritalStatusRow.getCell(cellNum).setCellValue(String.format("%s %s", maritalStatus, Objects.requireNonNullElse(employee.getNumberOfChildren(), "0")));
             jobRow.getCell(cellNum).setCellValue(Objects.requireNonNullElse(employee.getJobTitle(), ""));
             cellNum++;
         }
