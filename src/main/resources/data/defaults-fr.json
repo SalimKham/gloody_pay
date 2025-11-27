@@ -817,6 +817,7 @@
       "code": "R_SALAIRE",
       "label": "Salaire de base",
       "type": "SALARY",
+      "hasBackPayment": true,
       "category": "C002",
       "base_formula": "V_SALAIRE/V_NBR_JOUR",
       "rate_formula": "V_NBR_JOUR",
