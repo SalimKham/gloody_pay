@@ -14,7 +14,7 @@ public class FormulaUtils {
     }
     public static String parseFormula(String formula, String term) {
         if (formula.contains("?")) {
-            String regex = "(?<![<>==])\\b" + Pattern.quote(term) + "\\b";
+            String regex = "(?<![<>]=?|!=|==)\\b" + Pattern.quote(term) + "\\b(?![<>]=?|!=|==)";
             String replacement = term + " != 0";
             String condition = formula.substring(0, formula.indexOf("?"));
             String newCondition = condition.replaceAll(regex,   replacement);
