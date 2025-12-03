@@ -44,8 +44,10 @@ public class EmployeeService extends CompanySupportService {
         Map<Long, Long> addresses = employeeRepository.getAddresses(ids).stream().collect(Collectors.toMap(t ->t.get(0, Long.class), t -> t.get(1, Long.class)));
         List<Employee> employees = dtos.stream().map(dto -> {
             Employee entity = this.employeeMapper.toEntity(dto);
-            if(addresses.containsKey(entity.getId())) {
-                entity.getAddress().setId(addresses.get(entity.getId()));
+            if (dto.getAddress() != null) {
+                if(addresses.containsKey(entity.getId())) {
+                    entity.getAddress().setId(addresses.get(entity.getId()));
+                }
             }
             return entity;
         }).toList();

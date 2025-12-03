@@ -158,6 +158,7 @@ public class CompanyDefaultConfigurationService {
                     .valueFormula(obj.has("value_formula")  && Objects.nonNull(obj.get("value_formula"))  ? obj.get("value_formula").asText() : null)
                     .description(obj.has("description") ? obj.get("description").asText() : null)
                     .ratePercent(obj.has("rate_percent") && obj.get("rate_percent").asBoolean())
+                    .hasBackPayment(obj.has("hasBackPayment") && obj.get("hasBackPayment").asBoolean())
                     .company(companyId)
                     .build();
             sections.add(section);

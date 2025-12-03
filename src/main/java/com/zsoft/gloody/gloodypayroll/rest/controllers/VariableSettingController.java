@@ -2,6 +2,7 @@ package com.zsoft.gloody.gloodypayroll.rest.controllers;
 
 import com.zsoft.gloody.gloodypayroll.rest.dto.VariableSettingDto;
 import com.zsoft.gloody.gloodypayroll.services.VariableService;
+import com.zsoft.gloody.gloodypayroll.services.VariableSettingFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +17,9 @@ import java.util.List;
 public class VariableSettingController {
     private final VariableService variableService;
 
-    @GetMapping
-    public ResponseEntity<Page<VariableSettingDto>> findAll(Pageable pageable, @RequestParam(value = "query", required = false) String query) {
-        Page<VariableSettingDto> result = variableService.findAll(pageable, query);
+    @PostMapping
+    public ResponseEntity<Page<VariableSettingDto>> findAll(Pageable pageable, @RequestBody VariableSettingFilter filter) {
+        Page<VariableSettingDto> result = variableService.findAll(pageable, filter);
         return ResponseEntity.ok().body(result);
     }
 

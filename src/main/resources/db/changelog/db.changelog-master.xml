@@ -48,5 +48,12 @@
     <include file="0.0.4/add-payslip-close-table.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/clear_salary_advance_renamed_to_loan.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add-final-settlement-variables.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-parent-column-to-payslip-setting.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-payslip-close-sequence.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-payslip-setting-sequence.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/fix_variable_source_types.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-missing-index-for-fast-payslip-close.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.4/add-variable-setting-group.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.5/add-has-backpayment-to-section-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

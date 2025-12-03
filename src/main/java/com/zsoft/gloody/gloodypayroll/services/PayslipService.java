@@ -6,7 +6,6 @@ import com.zsoft.gloody.gloodypayroll.models.entities.CustomField;
 import com.zsoft.gloody.gloodypayroll.models.entities.Employee;
 import com.zsoft.gloody.gloodypayroll.models.entities.HRMonthlyData;
 import com.zsoft.gloody.gloodypayroll.models.entities.Period;
-import com.zsoft.gloody.gloodypayroll.models.enums.SectionNature;
 import com.zsoft.gloody.gloodypayroll.models.repositories.*;
 import com.zsoft.gloody.gloodypayroll.rest.controllers.PayslipController;
 import com.zsoft.gloody.gloodypayroll.rest.dto.*;
@@ -19,15 +18,14 @@ import com.zsoft.gloody.gloodypayroll.utils.SecurityUtils;
 import com.zsoft.gloody.gloodypayroll.utils.TemplateHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.SimpleBindings;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -41,6 +39,7 @@ import java.util.stream.DoubleStream;
 
 import static com.zsoft.gloody.gloodypayroll.configs.Constants.*;
 import static com.zsoft.gloody.gloodypayroll.configs.RequestContext.*;
+import static com.zsoft.gloody.gloodypayroll.utils.FormulaUtils.*;
 
 
 @Service
@@ -51,10 +50,10 @@ public class PayslipService {
     public static final String ATTRIBUTE_PREFIX = "TOT_";
     public static final String NATURE_PREFIX = "NTR_";
     public static final String CODE_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)|[A-Z][A-Z0-9_]{2,}";
-    public static final String FUNCTION_REGEX = "\\b(\\w+)\\s*\\(\\s*([^)]*)\\s*\\)";
     private final TemplateHelper templateHelper;
     private final SpringTemplateEngine templateEngine;
-    private final ScriptEngine engine;
+    private final ExpressionParser parser;
+    private final StandardEvaluationContext baseContext;
     private final PayslipSettingRepository payslipSettingRepository;
     private static final List<String> defaultFunctionCodes = List.of("irg(base)", "int(base)");
     private static final PayslipSettingElementDto EMPTY_SETTING_ELEMENT = new PayslipSettingElementDto();
@@ -64,15 +63,6 @@ public class PayslipService {
     private final EmployeeMapper employeeMapper;
     private final BackPaymentMapper backPaymentMapper;
     private final CompanyMapper companyMapper;
-    // TODO CHECK IF THIS STILL NEEDED
-    public static final Map<SectionNature, String> SECTION_NATURE_ABBR = new HashMap<>() {
-        {
-            put(SectionNature.NOT_TAXABLE_CONTRIBUTORY, "NTC");
-            put(SectionNature.NOT_TAXABLE_NOT_CONTRIBUTORY, "NTNC");
-            put(SectionNature.TAXABLE_NOT_CONTRIBUTORY, "TNC");
-            put(SectionNature.TAXABLE_CONTRIBUTORY, "TC");
-        }
-    };
     private final EmployeeRepository employeeRepository;
     private final CompanyRepository companyRepository;
     private final BackPaymentsRepository backPaymentsRepository;
@@ -105,7 +95,7 @@ public class PayslipService {
             if (employeeDto == null) {
                 throw new ApiRuntimeException("error.employee.required");
             }
-            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, false);
+            PayslipController.CalculatedPayslip calculatedPayslip = calculate(payload, null, true);
             if (calculatedPayslip == null || calculatedPayslip.template() == null) {
                 return null;
             }
@@ -216,7 +206,7 @@ public class PayslipService {
     }
 
     public void initFunctionElements(Set<Long> resourceIds) {
-        List<String> inFunctionsCodes = getInFunctionCodes();
+        Set<String> inFunctionsCodes = getInFunctionCodes();
         if (inFunctionsCodes == null || inFunctionsCodes.isEmpty() || resourceIds.isEmpty()) {
             RequestContext.setFunctionElements(Collections.emptyMap());
             return;
@@ -243,16 +233,18 @@ public class PayslipService {
             if (template == null) {
                 return null;
             }
+
             dictionaryService().setRate(template.getRate());
-            initRequestContext();
+            initRequestContext(clearContext);
             template = mergeTempTemplate(template, payload.getTempTemplate());
             setBackPayments(template, payload.getContractId(), payload.getMonth().withDayOfMonth(1), payload.getBackPayment());
-            engine.setBindings(new SimpleBindings(dictionaryService().getAllVariables()), ScriptContext.GLOBAL_SCOPE);
             dictionaryService().setAddElements(true);
+
             initPerRequestElements(payload, template, payload.getResourceId());
             for (PayslipSettingElementDto elementDto : template.getElements()) {
                 calculateSection(elementDto);
             }
+
             return new PayslipController.CalculatedPayslip(template, perRequestElements().getCalculatedElements());
         } finally {
             if (clearContext) {
@@ -276,7 +268,7 @@ public class PayslipService {
     }
 
 
-    private void addFunctionCodes(List<String> codes, String formula) {
+    private void addFunctionCodes(Set<String> codes, String formula) {
         if (formula == null) {
             return;
         }
@@ -299,8 +291,8 @@ public class PayslipService {
     }
 
 
-    public List<String> getInFunctionCodes() {
-        List<String> codes = new ArrayList<>();
+    public Set<String> getInFunctionCodes() {
+        Set<String> codes = new HashSet<>();
         companySections().getSections().values().forEach(section -> {
                     addFunctionCodes(codes, section.getBaseFormula());
                     addFunctionCodes(codes, section.getValueFormula());
@@ -319,8 +311,7 @@ public class PayslipService {
             if (section == null) {
                 continue;
             }
-            boolean isInCategory = prefix.equals(ATTRIBUTE_PREFIX) ? section.getLabelKeys() != null && section.getLabelKeys().contains(label) :
-                    Objects.equals(label, SECTION_NATURE_ABBR.get(section.getNature()));
+            boolean isInCategory = prefix.equals(ATTRIBUTE_PREFIX) && section.getLabelKeys() != null && section.getLabelKeys().contains(label);
             if (!isInCategory) {
                 continue;
             }
@@ -424,16 +415,16 @@ public class PayslipService {
         elementDto.get().setDescription(section.getDescription());
         elementDto.get().setTotal(section.isIntermediate());
         elementDto.get().setRatePercent(section.isRatePercent());
-        Bindings context = new SimpleBindings();
+        Map<String, Double> localRubricVariables = new HashMap<>(3);
         BigDecimal sectionValue;
-        BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, context, section.getNature());
-        context.put(BASE, base.doubleValue());
+        BigDecimal base = calculateSectionValue(section.getBaseFormula(), baseValue, localRubricVariables);
+        localRubricVariables.put(BASE, base.doubleValue());
         elementDto.get().setBase(base.equals(ZERO) ? null : base.setScale(3, RoundingMode.DOWN));
-        BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, context, section.getNature());
-        context.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
+        BigDecimal rate = calculateSectionValue(section.getRateFormula(), rateValue, localRubricVariables);
+        localRubricVariables.put(RATE, section.isRatePercent() ? rate.doubleValue() / 100d : rate.doubleValue());
         elementDto.get().setRate(rate.equals(ZERO) ? null : rate.setScale(3, RoundingMode.DOWN));
         if (value == null) {
-            sectionValue = calculateSectionValue(section.getValueFormula(), value, context, section.getNature());
+            sectionValue = calculateSectionValue(section.getValueFormula(), value, localRubricVariables);
         } else {
             sectionValue = BigDecimal.valueOf(value);
         }
@@ -480,7 +471,8 @@ public class PayslipService {
                     }
                     return;
                 }
-                boolean hasOwnVariables = section.getVariables() != null && !section.getVariables().isEmpty();
+                elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
+          /*      boolean hasOwnVariables = section.getVariables() != null && !section.getVariables().isEmpty();
                 if (hasOwnVariables) {
 
                     LinkedHashMap<String, Object> currentVariables = new LinkedHashMap<>(dictionaryService().getAllVariables()); // first we need to save the current variables state
@@ -502,7 +494,7 @@ public class PayslipService {
                     dictionaryService().setAddElements(currentAddElement);
                 } else {
                     elementDto.set(evaluateSectionFormulas(section, label, baseValue, rateValue, value));
-                }
+                }*/
                 if (dictionaryService().getAddElements()) {
                     addCalculatedElement(elementDto.get());
                 }
@@ -513,8 +505,8 @@ public class PayslipService {
     }
 
     private Period getFunctionPeriod(String functionName, String[] paramList) {
-        LocalDate startDate = null;
-        LocalDate endDate = null;
+        LocalDate startDate;
+        LocalDate endDate;
         int n = Integer.parseInt(paramList[1]);
         n = perRequestElements().getCurrentDate().getMonthValue() < 7 ? n + 1 : n;
         LocalDate targetYear = perRequestElements().getCurrentDate().withMonth(7).withDayOfMonth(1).minusYears(n);
@@ -554,7 +546,11 @@ public class PayslipService {
                 return values.max().orElse(0.0);
             } else if (functionName.contains("MIN")) {
                 return values.min().orElse(0.0);
-            } else
+
+            } else if (functionName.contains("SUM")) {
+                return values.sum();
+
+            }  else
                 return values.min().orElse(0.0);
         }
 
@@ -576,7 +572,7 @@ public class PayslipService {
         return defaultFunctionCodes.stream().noneMatch((func) -> value.toLowerCase().contains(func)) && value.matches(FUNCTION_REGEX);
     }
 
-    private void calculateFormulaVariables(String formula) {
+    private String calculateFormulaVariables(String formula) {
         Pattern pattern = Pattern.compile(CODE_REGEX, Pattern.MULTILINE);
         Matcher m = pattern.matcher(formula);
         Set<String> sections = new HashSet<>();
@@ -592,19 +588,24 @@ public class PayslipService {
                 }
             }
         }
+        m.reset();
+        while (m.find()) {
+             formula = parseFormula(formula, m.group());
+        }
+        return  formula;
     }
 
-    private BigDecimal calculateSectionValue(String formula, Double value, Bindings context, SectionNature nature) {
+    private BigDecimal calculateSectionValue(String formula, Double value,   Map<String, Double> localRubricVariables) {
         if (formula == null && value == null) {
             return ZERO;
         }
         if (formula == null || value != null) {
             return BigDecimal.valueOf(value);
         }
-        if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
+    /*    if (nature != null && formula.contains(SECTION_NATURE_ABBR.get(nature))) {
             return ZERO;
-        }
-        calculateFormulaVariables(formula);
+        }*/
+        formula = calculateFormulaVariables(formula);
         try {
             Pattern pattern = Pattern.compile(FUNCTION_REGEX);
             Matcher matcher = pattern.matcher(formula);
@@ -613,9 +614,12 @@ public class PayslipService {
                     formula = formula.replace(matcher.group(), String.valueOf(dictionaryService().findDoubleValue(matcher.group())));
                 }
             }
-            formula = formula.replace("INT(BASE)", "parseInt(BASE)");
-            engine.getBindings(ScriptContext.GLOBAL_SCOPE).putAll(context);
-            Object result = engine.eval(formula);
+            StandardEvaluationContext context = new StandardEvaluationContext(baseContext.getRootObject());
+            context.setVariables(dictionaryService().getAllVariables());
+            localRubricVariables.forEach(context::setVariable);
+            formula = parseIrgFunction(formula);
+            Expression expression = parser.parseExpression(formula);
+            Object result =expression.getValue(context);
             if (result instanceof String) {
                 return new BigDecimal(String.valueOf(result));
             }
@@ -656,7 +660,6 @@ public class PayslipService {
     }
 
     private PayslipSettingDto getTemplate(Long id, boolean isDefault) {
-
         if (isDefault) {
             return RequestContext.defaultTemplate() != null ? RequestContext.defaultTemplate() : payslipSettingService.findDefaultTemplate().orElse(null);
         } else {

@@ -16,7 +16,12 @@ import java.time.LocalDate;
 @Table(name = "payslip_close")
 public class PayslipClose {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payslip_close_sequence")
+    @SequenceGenerator(
+            name = "payslip_close_sequence",
+            sequenceName = "payslip_close_sequence",
+            allocationSize = 1
+    )
     @Column(name = "id", nullable = false)
     private Long id;
     @Column(name = "code")

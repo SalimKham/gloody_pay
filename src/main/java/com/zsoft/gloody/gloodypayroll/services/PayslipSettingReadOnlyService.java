@@ -8,6 +8,7 @@ import com.zsoft.gloody.gloodypayroll.models.repositories.PayslipSettingReposito
 import com.zsoft.gloody.gloodypayroll.rest.dto.PayslipSettingDto;
 import com.zsoft.gloody.gloodypayroll.rest.mappers.PayslipSettingMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
@@ -26,19 +28,21 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
     private final PayslipSettingMapper payslipSettingMapper;
     private final HRDataRepository hrDataRepository;
 
- /*   @Cacheable(
+    @Cacheable(
             cacheNames = "company_default_template",
-            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()"
-    )*/
+            key = "T(com.zsoft.gloody.gloodypayroll.utils.SecurityUtils).getCurrentCompanyId()",
+            condition = "@cacheControl.isEnabled()"
+    )
     public Optional<PayslipSettingDto> findDefaultTemplate() {
         return this.payslipSettingRepository.findTopByTemplateAndByDefaultOrderByIdAsc(true, true).map(this::toDto);
     }
 
 
-/*    @Cacheable(
+    @Cacheable(
             cacheNames = "company_template_by_id",
-            key = "#id"
-    )*/
+            key = "#id",
+            condition = "@cacheControl.isEnabled()"
+    )
     public Optional<PayslipSettingDto> findById(Long id) {
         return this.payslipSettingRepository.findById(id).map(this::toDto);
     }
@@ -49,12 +53,12 @@ public class PayslipSettingReadOnlyService extends CompanySupportService {
 
     public Page<PayslipSettingDto> findAllTemplates(String query, Pageable pageable) {
         query = query == null ? "%%" : "%" + query + "%";
-        return this.payslipSettingRepository.findAllByNameLikeAndTemplateIsTrue( query, pageable)
+        return this.payslipSettingRepository.findAllByNameLikeAndTemplateIsTrue(query, pageable)
                 .map(this::toDto);
     }
 
     public PayslipSettingDto toDto(PayslipSetting payslipSetting) {
-        PayslipSettingDto  payslipSettingDto = payslipSettingMapper.toDto(payslipSetting);
+        PayslipSettingDto payslipSettingDto = payslipSettingMapper.toDto(payslipSetting);
         if (payslipSettingDto != null && Objects.nonNull(payslipSettingDto.getElements())) {
             payslipSettingDto.getElements().forEach(payslipSettingElementDto -> {
                 entityManager.detach(payslipSetting);

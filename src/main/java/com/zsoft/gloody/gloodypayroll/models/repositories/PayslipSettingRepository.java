@@ -86,10 +86,13 @@ public interface PayslipSettingRepository extends JpaRepository<PayslipSetting, 
     @Modifying
     @Query(value = """
             INSERT INTO payslip_setting_element( payslip_setting_id, section, base_value, rate_value, value, fix, element_order, created_by, created_at, updated_by, updated_at, company_id)
-            SELECT :payslip_id, s.id, pc.base_value, pc.rate_value, pc.value, true, el.element_order, null , now(), null, now() , s.company_id FROM payslip_setting_element el left join section s on s.id = el.section
-            left join payslip_close pc on pc.code = s.code where el.payslip_setting_id = :template_id and  pc.contract_id = :contract_id and pc.month = :month
+            SELECT template.id, s.id, pc.base_value, pc.rate_value, pc.value, true, el.element_order, null , now(), null, now() , s.company_id 
+            FROM payslip_setting_element el INNER join section s on s.id = el.section
+            INNER JOIN payslip_setting template on template.parent_id = el.payslip_setting_id 
+            INNER join payslip_close pc on pc.code = s.code AND pc.contract_id = template.contract_id where template.closed 
+            AND template.payment_date = :month AND  pc.contract_id in :contract_ids and pc.month = :month GROUP BY template.id,  s.id
             """, nativeQuery = true)
-    void insertClosedPayslip(@Param("template_id") Long templateId, @Param("payslip_id") Long payslipId, @Param("month") LocalDate month, @Param("contract_id") Long contractId);
+    void insertClosedPayslip(@Param("month") LocalDate month, @Param("contract_ids") Set<Long> contractIds);
 
     @Query("""
             SELECT count(distinct ps.employee) FROM PayslipSetting ps WHERE ps.closed AND ps.paymentDate = :month AND ps.company = :company_id
