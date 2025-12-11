@@ -55,5 +55,6 @@
     <include file="0.0.4/add-missing-index-for-fast-payslip-close.xml" relativeToChangelogFile="true"/>
     <include file="0.0.4/add-variable-setting-group.xml" relativeToChangelogFile="true"/>
     <include file="0.0.5/add-has-backpayment-to-section-table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.5/add-salary-advance-variable.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -206,6 +206,13 @@
       "source": "FINAL_EXIT",
       "label": "Booléen : true si sortie définitive, false sinon",
       "formula": "0"
+    },
+    {
+      "key": "V_AVANCE_SALAIRE",
+      "source": "SALARY_ADVANCE",
+      "label": "BAvance sur salaire",
+      "description": "Variable qui récupère automatiquement le montant demandé par l’employé pour son avance sur salaire",
+      "formula": "0"
     }
   ],
   "default-categories": [
