@@ -124,6 +124,9 @@ public class HRMonthlyDataService extends CompanySupportService {
         if (source.startsWith("ABSENCE")) {
             return SummaryDataType.ABSENCE;
         }
+        if (source.startsWith("SALARY_ADVANCE")) {
+            return SummaryDataType.SALARY_ADVANCE;
+        }
         if (source.startsWith("LOAN")) {
             return SummaryDataType.SALARY_LOAN;
         }
