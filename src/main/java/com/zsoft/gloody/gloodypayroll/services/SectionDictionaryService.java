@@ -82,7 +82,7 @@ public class SectionDictionaryService extends CompanySupportService {
     }
 
 
-    public void setVariables(Employee employee, Map<String, Double> monthlyValues, Map<String, String> variablesMap) {
+    public void setVariables(Employee employee, Map<String, Double> monthlyValues, Map<String, String> variablesMap, LocalDate month) {
         variables = new LinkedHashMap<>(monthlyValues);
         double totalAbsences = monthlyValues.getOrDefault(variablesMap.getOrDefault("ABS_TTL", "ABS_TTL"), 0d);
         double salaryBase = monthlyValues.getOrDefault(variablesMap.getOrDefault(BASE_SALARY, BASE_SALARY), 0d);
@@ -91,7 +91,7 @@ public class SectionDictionaryService extends CompanySupportService {
         setVariable(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR), countWorkingDays - findDoubleValue(variablesMap.getOrDefault(CONTRACT_OFF_DAYS, CONTRACT_OFF_DAYS)));
         setVariable(variablesMap.getOrDefault(WORKING_HOURS_NBR, WORKING_HOURS_NBR), (findDoubleValue(variablesMap.getOrDefault(WORKING_DAYS_NBR, WORKING_DAYS_NBR)) * hoursByDay));
         setVariable(variablesMap.getOrDefault(HANDICAP, HANDICAP), employee.isDisabled() ? 1 : 0);
-        setVariable(variablesMap.getOrDefault(SENIORITY, SENIORITY), Objects.nonNull(employee.getSeniority_date()) ? employee.getSeniority_date().until(LocalDate.now(), ChronoUnit.YEARS) : 0);
+        setVariable(variablesMap.getOrDefault(SENIORITY, SENIORITY), Objects.nonNull(employee.getSeniority_date()) ? employee.getSeniority_date().until(month.withDayOfMonth(1), ChronoUnit.MONTHS) /12f : 0);
         if (salaryBase == 0) {
             salaryBase =   Objects.requireNonNullElse(employee.getBaseSalary(), 0d);
         }
