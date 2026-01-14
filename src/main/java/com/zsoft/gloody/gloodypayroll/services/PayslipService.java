@@ -185,7 +185,7 @@ public class PayslipService {
         // todo fix holidays
         variables.put("HOLIDAYS", payload.getHolidaysCount());
         variables.putAll(monthlyValues);
-        dictionaryService().setVariables(employee, variables, variablesMap);
+        dictionaryService().setVariables(employee, variables, variablesMap, Objects.requireNonNullElse(payload.getMonth(), LocalDate.now()) );
         dictionaryService().setPeriod(period);
         return variables;
     }
