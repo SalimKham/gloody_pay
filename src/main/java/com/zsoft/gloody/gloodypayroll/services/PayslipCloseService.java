@@ -130,7 +130,6 @@ public class PayslipCloseService {
                                     .build()
                             );
                             baseSalaries.add(HRMonthlyData.builder().variable(Constants.BASE_SALARY).value(Objects.requireNonNullElse(employee.getBaseSalary(), 0d)).month(month).contractId(contractId).resourceId(resourceId).type(SummaryDataType.SALARY).build());
-
                             closedContractIds.add(contractId);
                         }
                     }
@@ -160,6 +159,7 @@ public class PayslipCloseService {
 
         }
         if (!baseSalaries.isEmpty()) {
+            hrDataRepository.deleteAllByVariableAndContractIdInAndMonth(Constants.BASE_SALARY, closedContractIds, month);
             hrDataRepository.saveAll(baseSalaries);
         }
 
